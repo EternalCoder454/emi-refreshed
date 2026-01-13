@@ -28,7 +28,7 @@ import net.minecraft.world.level.material.Fluid;
 
 public class JemiRecipeSlotBuilder implements IRecipeSlotBuilder {
 	public final JemiIngredientAcceptor acceptor;
-	public boolean large = false;
+	public boolean large = false, defaultBackground = false;
 	public int x, y;
 	public Optional<String> name = Optional.empty();
 	public IRecipeSlotRichTooltipCallback richTooltipCallback;
@@ -231,12 +231,14 @@ public class JemiRecipeSlotBuilder implements IRecipeSlotBuilder {
 
 	@Override
 	public IRecipeSlotBuilder setStandardSlotBackground() {
-		this.large = true;
+		this.defaultBackground = true;
 		return this;
 	}
 
 	@Override
 	public IRecipeSlotBuilder setOutputSlotBackground() {
+		this.defaultBackground = true;
+		this.large = true;
 		return this;
 	}
 }

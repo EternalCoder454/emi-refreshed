@@ -13,7 +13,7 @@ loom {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-	mappings "net.fabricmc:yarn:${rootProject.yarn_mappings}:v2"
+	mappings loom.officialMojangMappings()
 
 	modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
@@ -66,7 +66,7 @@ tasks.named("build").configure {
 publishing {
 	publications {
 		register('maven', MavenPublication) {
-			artifactId = "${rootProject.name}-xplat-intermediary"
+			artifactId = "${rootProject.name}-xplat-mojmap"
 			version = project.ext.mavenVersion
 			artifact(remapJar) {
 				builtBy remapJar

@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientConfigurationPacketListenerImpl.class)
 public class ClientConfigurationNetworkHandlerMixin {
-    @Inject(at = @At("RETURN"), method = "onSynchronizeTags")
+    @Inject(at = @At("RETURN"), method = "handleUpdateTags")
     private void refreshTagBasedData(CallbackInfo info) {
         EmiReloadManager.reloadTags();
     }

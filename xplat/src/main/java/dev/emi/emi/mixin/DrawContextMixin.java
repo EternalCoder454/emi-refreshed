@@ -13,8 +13,8 @@ import net.minecraft.world.item.ItemStack;
 @Mixin(GuiGraphics.class)
 public class DrawContextMixin {
 
-	@Inject(at = @At("HEAD"), method = "drawItemTooltip(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;II)V")
-	private void drawItemTooltip(Font text, ItemStack stack, int x, int y, CallbackInfo info) {
+	@Inject(at = @At("HEAD"), method = "renderTooltip(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V")
+	private void drawItemTooltip(Font font, ItemStack stack, int x, int y, CallbackInfo info) {
 		EmiScreenManager.lastStackTooltipRendered = stack;
 	}
 }

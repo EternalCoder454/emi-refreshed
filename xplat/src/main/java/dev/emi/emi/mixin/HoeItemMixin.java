@@ -16,12 +16,12 @@ import dev.emi.emi.platform.EmiClient;
 @Mixin(HoeItem.class)
 public class HoeItemMixin {
 
-	@Inject(at = @At("RETURN"), method = "createTillAction")
+	@Inject(at = @At("RETURN"), method = "changeIntoState")
 	private static void createTillAction(BlockState result, CallbackInfoReturnable<Consumer<UseOnContext>> info) {
 		EmiClient.HOE_ACTIONS.put(info.getReturnValue(), List.of(result.getBlock()));
 	}
 
-	@Inject(at = @At("RETURN"), method = "createTillAndDropAction")
+	@Inject(at = @At("RETURN"), method = "changeIntoStateAndDropItem")
 	private static void createTillAndDropAction(BlockState result, ItemLike droppedItem,
 			CallbackInfoReturnable<Consumer<UseOnContext>> info) {
 		EmiClient.HOE_ACTIONS.put(info.getReturnValue(), List.of(droppedItem, result.getBlock()));

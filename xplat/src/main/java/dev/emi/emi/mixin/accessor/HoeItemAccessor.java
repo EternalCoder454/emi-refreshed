@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(HoeItem.class)
 public interface HoeItemAccessor {
 
-	@Accessor("TILLING_ACTIONS")
+	@Accessor("TILLABLES")
 	public static Map<Block, Pair<Predicate<UseOnContext>, Consumer<UseOnContext>>> getTillingActions() {
 		throw new AssertionError();
 	}

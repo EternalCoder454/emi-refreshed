@@ -24,15 +24,15 @@ import dev.emi.emi.runtime.EmiSidebars;
 @Mixin(ResultSlot.class)
 public class CraftingResultSlotMixin {
 	@Shadow @Final
-	private CraftingContainer input;
+	private CraftingContainer craftSlots;
 	@Shadow @Final
 	private Player player;
 	
-	@Inject(at = @At("HEAD"), method = "onCrafted(Lnet/minecraft/item/ItemStack;)V")
+	@Inject(at = @At("HEAD"), method = "checkTakeAchievements(Lnet/minecraft/world/item/ItemStack;)V")
 	private void onCrafted(ItemStack stack, CallbackInfo info) {
 		Level world = player.level();
 		if (world.isClientSide) {
-			Optional<CraftingRecipe> opt = world.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input.asPositionedCraftInput().input(), world).map(RecipeHolder::value);
+			Optional<CraftingRecipe> opt = world.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftSlots.asPositionedCraftInput().input(), world).map(RecipeHolder::value);
 			if (opt.isPresent()) {
 				EmiRecipe recipe = EmiApi.getRecipeManager().getRecipe(EmiPort.getId(opt.get()));
 				if (recipe != null) {

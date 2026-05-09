@@ -14,7 +14,7 @@ import net.minecraft.client.gui.components.toasts.ToastComponent;
 @Mixin(ToastComponent.class)
 public class ToastManagerMixin {
 	
-	@Inject(at = @At("HEAD"), method = "draw", cancellable = true)
+	@Inject(at = @At("HEAD"), method = "render", cancellable = true)
 	private void drawHead(GuiGraphics raw, CallbackInfo info) {
 		Minecraft client = Minecraft.getInstance();
 		if (client.screen != null && EmiConfig.enabled && EmiApi.getHandledScreen() != null) {

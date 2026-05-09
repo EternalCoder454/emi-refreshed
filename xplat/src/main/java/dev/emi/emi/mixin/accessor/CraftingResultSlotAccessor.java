@@ -8,6 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ResultSlot.class)
 public interface CraftingResultSlotAccessor {
 	
-	@Accessor("input")
+	@Accessor("craftSlots")
     CraftingContainer getInput();
 }

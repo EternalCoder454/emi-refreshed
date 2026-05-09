@@ -9,21 +9,21 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(AbstractContainerScreen.class)
 public interface HandledScreenAccessor {
 	
-	@Accessor("focusedSlot")
+	@Accessor("hoveredSlot")
 	Slot getFocusedSlot();
 
-	@Accessor("x")
+	@Accessor("leftPos")
 	int getX();
 
-	@Accessor("y")
+	@Accessor("topPos")
 	int getY();
 
-	@Accessor("backgroundWidth")
+	@Accessor("imageWidth")
 	int getBackgroundWidth();
 
-	@Accessor("backgroundHeight")
+	@Accessor("imageHeight")
 	int getBackgroundHeight();
 
-	@Invoker("getSlotAt")
+	@Invoker("findSlot")
 	Slot invokeGetSlotAt(double x, double y);
 }

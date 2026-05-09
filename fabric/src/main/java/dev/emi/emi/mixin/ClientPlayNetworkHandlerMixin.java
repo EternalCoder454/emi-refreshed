@@ -23,18 +23,18 @@ public class ClientPlayNetworkHandlerMixin {
 	@Unique
 	private int infoMask = 0;
 
-	@Inject(at = @At(value = "INVOKE", target = "net/minecraft/recipe/RecipeManager.setRecipes(Ljava/lang/Iterable;)V",
-		shift = Shift.AFTER), method = "onSynchronizeRecipes")
+	@Inject(at = @At(value = "INVOKE", target = "net/minecraft/world/item/crafting/RecipeManager.replaceRecipes(Ljava/lang/Iterable;)V",
+		shift = Shift.AFTER), method = "handleUpdateRecipes")
 	private void onSynchronizeRecipes(ClientboundUpdateRecipesPacket packet, CallbackInfo info) {
 		EmiReloadManager.reloadRecipes();
 	}
 
-	@Inject(at = @At("RETURN"), method = "onSynchronizeTags")
+	@Inject(at = @At("RETURN"), method = "handleUpdateTags")
 	private void refreshTagBasedData(CallbackInfo info) {
 		EmiReloadManager.reloadTags();
 	}
 
-	@Inject(at = @At("RETURN"), method = "onGameJoin")
+	@Inject(at = @At("RETURN"), method = "handleLogin")
 	private void onGameJoin(CallbackInfo info) {
 		EmiLog.info("Joining server, EMI waiting for data from server...");
 	}

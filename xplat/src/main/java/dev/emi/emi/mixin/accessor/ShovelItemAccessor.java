@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ShovelItem.class)
 public interface ShovelItemAccessor {
 
-	@Accessor("PATH_STATES")
+	@Accessor("FLATTENABLES")
 	static Map<Block, BlockState> getPathStates() {
 		throw new UnsupportedOperationException();
 	}

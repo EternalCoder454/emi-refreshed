@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(GuiGraphics.class)
 public interface DrawContextAccessor {
 
-	@Invoker("drawTooltip")
+	@Invoker("renderTooltipInternal")
 	void invokeDrawTooltip(Font textRenderer, List<ClientTooltipComponent> components, int x, int y, ClientTooltipPositioner positioner);
 }

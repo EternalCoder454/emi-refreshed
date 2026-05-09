@@ -34,28 +34,28 @@ public abstract class AbstractInventoryScreenMixin<T extends AbstractContainerMe
 	private AbstractInventoryScreenMixin() { super(null, null, null); }
 
 	@Shadow
-	private Component getStatusEffectDescription(MobEffectInstance effect) {
+	private Component getEffectName(MobEffectInstance effect) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Shadow
-	private void drawStatusEffectBackgrounds(GuiGraphics draw, int x, int height, Iterable<MobEffectInstance> statusEffects, boolean wide) {
+	private void renderBackgrounds(GuiGraphics draw, int x, int height, Iterable<MobEffectInstance> statusEffects, boolean wide) {
 		throw new UnsupportedOperationException();
 	}
 	
 	@Shadow
-	private void drawStatusEffectSprites(GuiGraphics draw, int x, int height, Iterable<MobEffectInstance> statusEffects, boolean wide) {
+	private void renderIcons(GuiGraphics draw, int x, int height, Iterable<MobEffectInstance> statusEffects, boolean wide) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Shadow
-	private void drawStatusEffectDescriptions(GuiGraphics draw, int x, int height, Iterable<MobEffectInstance> statusEffects) {
+	private void renderLabels(GuiGraphics draw, int x, int height, Iterable<MobEffectInstance> statusEffects) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Inject(at = @At(value = "INVOKE",
-			target = "net/minecraft/client/gui/screen/ingame/AbstractInventoryScreen.drawStatusEffectBackgrounds(Lnet/minecraft/client/gui/DrawContext;IILjava/lang/Iterable;Z)V"),
-		method = "drawStatusEffects")
+			target = "net/minecraft/client/gui/screens/inventory/EffectRenderingInventoryScreen.renderBackgrounds(Lnet/minecraft/client/gui/GuiGraphics;IILjava/lang/Iterable;Z)V"),
+		method = "renderEffects")
 	private void drawStatusEffects(GuiGraphics draw, int mouseX, int mouseY, CallbackInfo info) {
 		if (EmiConfig.effectLocation == EffectLocation.TOP) {
 			emi$drawCenteredEffects(draw, mouseX, mouseY);
@@ -63,7 +63,7 @@ public abstract class AbstractInventoryScreenMixin<T extends AbstractContainerMe
 	}
 
 	@ModifyVariable(at = @At(value = "INVOKE", target = "java/util/Collection.size()I", ordinal = 0),
-		method = "drawStatusEffects", ordinal = 0)
+		method = "renderEffects", ordinal = 0)
 	private Collection<MobEffectInstance> drawStatusEffects(Collection<MobEffectInstance> original) {
 		if (EmiConfig.effectLocation == EffectLocation.TOP || EmiConfig.effectLocation == EffectLocation.HIDDEN) {
 			return List.of();
@@ -102,10 +102,10 @@ public abstract class AbstractInventoryScreenMixin<T extends AbstractContainerMe
 			for (MobEffectInstance inst : effects) {
 				int ew = wide ? 120 : 32;
 				List<MobEffectInstance> single = List.of(inst);
-				this.drawStatusEffectBackgrounds(context.raw(), x, 32, single, wide);
-				this.drawStatusEffectSprites(context.raw(), x, 32, single, wide);
+				this.renderBackgrounds(context.raw(), x, 32, single, wide);
+				this.renderIcons(context.raw(), x, 32, single, wide);
 				if (wide) {
-					this.drawStatusEffectDescriptions(context.raw(), x, 32, single);
+					this.renderLabels(context.raw(), x, 32, single);
 				}
 				if (mouseX >= x && mouseX < x + ew && mouseY >= y && mouseY < y + 32) {
 					hovered = inst;
@@ -116,19 +116,19 @@ public abstract class AbstractInventoryScreenMixin<T extends AbstractContainerMe
 			this.topPos = restoreY;
 		}
 		if (hovered != null && size > 1) {
-			List<Component> list = List.of(this.getStatusEffectDescription(hovered), MobEffectUtil.formatDuration(hovered, 1.0f, minecraft.level.tickRateManager().tickrate()));
+			List<Component> list = List.of(this.getEffectName(hovered), MobEffectUtil.formatDuration(hovered, 1.0f, minecraft.level.tickRateManager().tickrate()));
 			context.raw().renderTooltip(minecraft.font, list, Optional.empty(), mouseX, Math.max(mouseY, 16));
 		}
 	}
 	
 	@ModifyVariable(at = @At(value = "STORE", ordinal = 0),
-		method = "drawStatusEffects", ordinal = 0)
+		method = "renderEffects", ordinal = 0)
 	private boolean squishEffects(boolean original) {
 		return !EmiConfig.effectLocation.compressed;
 	}
 
 	@ModifyVariable(at = @At(value = "STORE", ordinal = 0),
-		method = "drawStatusEffects", ordinal = 2)
+		method = "renderEffects", ordinal = 2)
 	private int changeEffectSpace(int original) {
 		return switch (EmiConfig.effectLocation) {
 			case RIGHT, RIGHT_COMPRESSED, HIDDEN -> original;

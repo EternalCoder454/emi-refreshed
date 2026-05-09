@@ -21,7 +21,7 @@ import dev.emi.emi.search.EmiSearch;
 @Mixin(value = ItemStack.class, priority = 500)
 public class ItemStackMixin {
 	
-	@Inject(at = @At("RETURN"), method = "getTooltip")
+	@Inject(at = @At("RETURN"), method = "getTooltipLines")
 	private void getTooltip(Item.TooltipContext context, @Nullable Player player, TooltipFlag type, CallbackInfoReturnable<List<Component>> info) {
 		List<Component> text = info.getReturnValue();
 		if (EmiConfig.appendItemModId && EmiConfig.appendModId && Thread.currentThread() != EmiSearch.searchThread && text != null && !text.isEmpty()) {

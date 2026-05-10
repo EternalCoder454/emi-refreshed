@@ -126,7 +126,7 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	@Override
 	public boolean isSideLit() {
 		ItemStackRenderState state = new ItemStackRenderState();
-		Minecraft.getInstance().getItemModelResolver().updateForTopItem(state, getItemStack(), ItemDisplayContext.GUI, false, null, null, 0);
+		Minecraft.getInstance().getItemModelResolver().updateForTopItem(state, getItemStack(), ItemDisplayContext.GUI, null, null, 0);
 		return state.usesBlockLight();
 	}
 	
@@ -147,10 +147,10 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 		ItemStack stack = getItemStack();
 		ItemRenderer ir = client.getItemRenderer();
 		ItemStackRenderState state = new ItemStackRenderState();
-		Minecraft.getInstance().getItemModelResolver().updateForTopItem(state, stack, ItemDisplayContext.GUI, false, null, null, 0);
+		Minecraft.getInstance().getItemModelResolver().updateForTopItem(state, stack, ItemDisplayContext.GUI, null, null, 0);
 		context.push();
 		try {
-			context.matrices().translate(x, y, 100.0f + z + (state.isGui3d() ? 50 : 0));
+			context.matrices().translate(x, y, 100.0f + z + (state.usesBlockLight() ? 50 : 0));
 			context.matrices().translate(8.0, 8.0, 0.0);
 			context.matrices().scale(16.0f, -16.0f, 16.0f);
 			ir.renderStatic(stack, ItemDisplayContext.GUI, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, context.matrices(), vcp, null, 0);

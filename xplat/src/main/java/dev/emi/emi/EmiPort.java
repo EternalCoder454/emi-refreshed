@@ -13,9 +13,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Button.OnPress;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.renderer.CoreShaders;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
@@ -43,6 +41,7 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.TransmuteResult;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -51,19 +50,14 @@ import net.minecraft.world.level.block.TallFlowerBlock;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.MeshData;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.mixin.accessor.SmithingTransformRecipeAccessor;
 import dev.emi.emi.registry.EmiRecipes;
 
-/**
- * Multiversion quarantine, to avoid excessive git pain
- */
 public final class EmiPort {
 	private static final net.minecraft.util.RandomSource RANDOM = net.minecraft.util.RandomSource.create();
 
@@ -129,29 +123,13 @@ public final class EmiPort {
 		}
 	}
 
-	public static void setShader(VertexBuffer buf, Matrix4f mat) {
-		buf.bind();
-		buf.drawWithShader(mat, RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
-	}
-
-	public static List<BakedQuad> getQuads(BakedModel model) {
-		return model.getQuads(null, null, RANDOM);
-	}
-
-	public static void draw(BufferBuilder bufferBuilder) {
-		BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
+	public static void draw(BufferBuilder bufferBuilder, RenderType renderType) {
+		MeshData meshData = bufferBuilder.buildOrThrow();
+		renderType.draw(meshData);
 	}
 
 	public static int getGuiScale(Minecraft client) {
 		return (int) client.getWindow().getGuiScale();
-	}
-
-	public static void setPositionTexShader() {
-		RenderSystem.setShader(CoreShaders.POSITION_TEX);
-	}
-
-	public static void setPositionColorTexShader() {
-		RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
 	}
 
 	public static Registry<Item> getItemRegistry() {
@@ -188,13 +166,13 @@ public final class EmiPort {
 		} else if (recipe instanceof SingleItemRecipe single) {
 			return single.assemble(new SingleRecipeInput(ItemStack.EMPTY), client.level.registryAccess());
 		} else if (recipe instanceof SmithingTransformRecipe smithing) {
-			return ((SmithingTransformRecipeAccessor) smithing).getResult();
+			TransmuteResult result = ((SmithingTransformRecipeAccessor) smithing).getResult();
+			return new ItemStack(result.item(), result.count(), result.components());
 		}
 		return ItemStack.EMPTY;
 	}
 
 	public static void focus(EditBox widget, boolean focused) {
-		// Also ensure a current focus-element in the screen is cleared if it changes
 		Minecraft client = Minecraft.getInstance();
 		if (client != null && client.screen != null) {
 			var currentFocus = client.screen.getFocused();

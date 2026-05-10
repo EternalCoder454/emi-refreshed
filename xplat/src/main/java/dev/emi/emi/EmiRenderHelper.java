@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -88,10 +89,7 @@ public class EmiRenderHelper {
 			return;
 		}
 		Minecraft.getInstance().renderBuffers().bufferSource().endBatch();
-		EmiPort.setPositionColorTexShader();
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-		RenderSystem.setShaderTexture(0, sprite.atlasLocation());
-		RenderSystem.enableBlend();
 		
 		float r = ((color >> 16) & 255) / 256f;
 		float g = ((color >> 8) & 255) / 256f;
@@ -113,7 +111,7 @@ public class EmiRenderHelper {
 		bufferBuilder.addVertex(model, xMax, yMax, 1).setUv(uMax, vMax).setColor(r, g, b, 1);
 		bufferBuilder.addVertex(model, xMax, yMin, 1).setUv(uMax, vMin).setColor(r, g, b, 1);
 		bufferBuilder.addVertex(model, xMin, yMin, 1).setUv(uMin, vMin).setColor(r, g, b, 1);
-		EmiPort.draw(bufferBuilder);
+		EmiPort.draw(bufferBuilder, RenderType.guiTextured(sprite.atlasLocation()));
 	}
 
 	public static void drawScroll(EmiDrawContext context, int x, int y, int width, int height, int progress, int total, int color) {
@@ -204,7 +202,6 @@ public class EmiRenderHelper {
 			}
 		}
 		context.enableDepthTest();
-		EmiPort.setPositionTexShader();
 		context.resetColor();
 		((DrawContextAccessor) context.raw()).invokeDrawTooltip(CLIENT.font, mutable, x, y, positioner, null);
 	}
@@ -213,10 +210,8 @@ public class EmiRenderHelper {
 		context.push();
 		context.matrices().translate(0, 0, z);
 		context.raw().flush();
-		RenderSystem.colorMask(true, true, true, false);
 		context.fill(x, y, w, h, -2130706433);
 		context.raw().flush();
-		RenderSystem.colorMask(true, true, true, true);
 		context.pop();
 	}
 
@@ -272,7 +267,6 @@ public class EmiRenderHelper {
 		context.push();
 		context.matrices().translate(0, 0, 200);
 		context.raw().flush();
-		RenderSystem.setShaderTexture(0, EmiRenderHelper.WIDGETS);
 		context.drawTexture(WIDGETS, x, y, 8, 252, 4, 4);
 		context.raw().flush();
 		context.pop();
@@ -341,6 +335,7 @@ public class EmiRenderHelper {
 	public static void renderRecipe(EmiRecipe recipe, EmiDrawContext context, int x, int y, boolean showMissing, int overlayColor) {
 		try {
 			renderRecipeBackground(recipe, context, x, y);
+			context.raw().flush();
 
 			List<Widget> widgets = Lists.newArrayList();
 			WidgetHolder holder = new WidgetHolder() {
@@ -383,16 +378,9 @@ public class EmiRenderHelper {
 
 			context.pop();
 
-			// Force translucency to match that of the recipe background
 			context.raw().flush();
-			context.disableBlend();
-			RenderSystem.colorMask(false, false, false, true);
-			context.disableDepthTest();
 			renderRecipeBackground(recipe, context, x, y);
 			context.raw().flush();
-			context.enableDepthTest();
-			RenderSystem.colorMask(true, true, true, true);
-			// Blend should be off by default
 		} catch (Throwable e) {
 			EmiLog.error("Error rendering recipe", e);
 		}

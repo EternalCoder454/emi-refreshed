@@ -6,7 +6,6 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.data.EmiData;
 import dev.emi.emi.network.EmiNetwork;
 import dev.emi.emi.platform.EmiClient;
-import dev.emi.emi.registry.EmiTags;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiReloadManager;
 import dev.emi.emi.screen.ConfigScreen;
@@ -23,7 +22,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
-import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -44,12 +42,6 @@ public class EmiClientNeoForge {
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::postRenderScreen);
 		ModList.get().getModContainerById("emi").orElseThrow().registerExtensionPoint(IConfigScreenFactory.class,
 				(container, last) -> new ConfigScreen(last));
-	}
-
-	@SubscribeEvent
-	public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
-		Minecraft client = Minecraft.getInstance();
-		EmiTags.registerTagModels(client.getResourceManager(), mrl -> event.register(mrl.id()), "standalone");
 	}
 
 	@SubscribeEvent

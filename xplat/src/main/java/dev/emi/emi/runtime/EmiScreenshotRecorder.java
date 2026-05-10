@@ -1,6 +1,7 @@
 package dev.emi.emi.runtime;
 
 import java.io.File;
+import java.util.OptionalInt;
 import java.util.function.Consumer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -8,11 +9,17 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import org.joml.Matrix4f;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.textures.GpuTexture;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.EmiConfig;
 import org.joml.Matrix4fStack;
@@ -20,26 +27,9 @@ import org.joml.Matrix4fStack;
 public class EmiScreenshotRecorder {
 	private static final String SCREENSHOTS_DIRNAME = "screenshots";
 
-	/**
-	 * Saves a screenshot to the game's `screenshots` directory, doing the appropriate setup so that anything rendered in renderer will be captured
-	 * and saved.
-	 * <p>
-	 * <b>Note:</b> the path can have <code>/</code> characters, indicating subdirectories. Java handles these correctly on Windows. The path should
-	 * <b>not</b> contain the <code>.png</code> extension, as that will be added after checking for duplicates. If a file with this path already
-	 * exists, then path will be suffixed with a <code>_#</code>, before adding the <code>.png</code> extension, where <code>#</code> represents an
-	 * increasing number to avoid conflicts.
-	 * <p>
-	 * <b>Note 2:</b> The width and height parameters are reflected in the viewport when rendering. But the EMI-config
-	 * <code>ui.recipe-screenshot-scale</code> value causes the resulting image to be scaled.
-	 *
-	 * @param path     the path to save the screenshot to, without extension.
-	 * @param width    the width of the screenshot, not counting EMI-config scale.
-	 * @param height   the height of the screenshot, not counting EMI-config scale.
-	 * @param renderer a function to render the things being screenshotted.
-	 */
 	public static void saveScreenshot(String path, int width, int height, Runnable renderer) {
 		if (!RenderSystem.isOnRenderThread()) {
-			RenderSystem.recordRenderCall(() -> saveScreenshotInner(path, width, height, renderer));
+			Minecraft.getInstance().execute(() -> saveScreenshotInner(path, width, height, renderer));
 		} else {
 			saveScreenshotInner(path, width, height, renderer);
 		}
@@ -55,73 +45,87 @@ public class EmiScreenshotRecorder {
 			scale = EmiConfig.recipeScreenshotScale;
 		}
 
-		RenderTarget framebuffer = new TextureTarget(width * scale, height * scale, true);
-		framebuffer.setClearColor(0f, 0f, 0f, 0f);
-		framebuffer.clear();
+		RenderTarget framebuffer = new TextureTarget("EMI Screenshot", width * scale, height * scale, true);
 
-		framebuffer.bindWrite(true);
+		GpuTexture colorTexture = framebuffer.getColorTexture();
+		if (colorTexture != null) {
+			try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(colorTexture, OptionalInt.of(0))) {
+				Matrix4fStack view = RenderSystem.getModelViewStack();
+				view.pushMatrix();
+				view.identity();
+				view.translate(-1.0f, 1.0f, 0.0f);
+				view.scale(2f / width, -2f / height, -1f / 1000f);
+				view.translate(0.0f, 0.0f, 10.0f);
 
-		Matrix4fStack view = RenderSystem.getModelViewStack();
-		view.pushMatrix();
-		view.identity();
-		view.translate(-1.0f, 1.0f, 0.0f);
-		view.scale(2f / width, -2f / height, -1f / 1000f);
-		view.translate(0.0f, 0.0f, 10.0f);
+				Matrix4f backupProj = RenderSystem.getProjectionMatrix();
+				ProjectionType backupProjType = RenderSystem.getProjectionType();
+				RenderSystem.setProjectionMatrix(new Matrix4f().identity(), ProjectionType.ORTHOGRAPHIC);
 
-		Matrix4f backupProj = RenderSystem.getProjectionMatrix();
-		ProjectionType backupProjType = RenderSystem.getProjectionType();
-		RenderSystem.setProjectionMatrix(new Matrix4f().identity(), ProjectionType.ORTHOGRAPHIC);
+				renderer.run();
 
-		renderer.run();
-
-		RenderSystem.setProjectionMatrix(backupProj, backupProjType);
-		view.popMatrix();
-
-		framebuffer.unbindWrite();
-		client.getMainRenderTarget().bindWrite(true);
+				RenderSystem.setProjectionMatrix(backupProj, backupProjType);
+				view.popMatrix();
+			}
+		}
 
 		saveScreenshotInner(client.gameDirectory, path, framebuffer,
 			message -> client.execute(() -> client.gui.getChat().addMessage(message)));
 	}
 
 	private static void saveScreenshotInner(File gameDirectory, String suggestedPath, RenderTarget framebuffer, Consumer<Component> messageReceiver) {
-		NativeImage nativeImage = takeScreenshot(framebuffer);
+		takeScreenshot(framebuffer, nativeImage -> {
+			File screenshots = new File(gameDirectory, SCREENSHOTS_DIRNAME);
+			screenshots.mkdir();
 
-		File screenshots = new File(gameDirectory, SCREENSHOTS_DIRNAME);
-		screenshots.mkdir();
+			String filename = getScreenshotFilename(screenshots, suggestedPath);
+			File file = new File(screenshots, filename);
 
-		String filename = getScreenshotFilename(screenshots, suggestedPath);
-		File file = new File(screenshots, filename);
+			File parent = file.getParentFile();
+			parent.mkdirs();
 
-		// Make sure the parent file exists. Note: `/`s in suggestedPath are valid, as they indicate subdirectories. Java even translates this
-		// correctly on Windows.
-		File parent = file.getParentFile();
-		parent.mkdirs();
+			Util.ioPool().execute(() -> {
+				try {
+					nativeImage.writeToFile(file);
 
-		Util.ioPool().execute(() -> {
-			try {
-				nativeImage.writeToFile(file);
-
-				Component text = EmiPort.literal(filename,
-					Style.EMPTY.withUnderlined(true).withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath())));
-				messageReceiver.accept(EmiPort.translatable("screenshot.success", text));
-			} catch (Throwable e) {
-				EmiLog.error("Failed to write screenshot", e);
-				messageReceiver.accept(EmiPort.translatable("screenshot.failure", e.getMessage()));
-			} finally {
-				nativeImage.close();
-			}
+					Component text = EmiPort.literal(filename,
+						Style.EMPTY.withUnderlined(true).withClickEvent(new ClickEvent.OpenFile(file.getAbsoluteFile())));
+					messageReceiver.accept(EmiPort.translatable("screenshot.success", text));
+				} catch (Throwable e) {
+					EmiLog.error("Failed to write screenshot", e);
+					messageReceiver.accept(EmiPort.translatable("screenshot.failure", e.getMessage()));
+				} finally {
+					nativeImage.close();
+				}
+			});
 		});
 	}
 
-	private static NativeImage takeScreenshot(RenderTarget framebuffer) {
+	private static void takeScreenshot(RenderTarget framebuffer, Consumer<NativeImage> consumer) {
 		int i = framebuffer.width;
 		int j = framebuffer.height;
-		NativeImage nativeImage = new NativeImage(i, j, false);
-		RenderSystem.bindTexture(framebuffer.getColorTextureId());
-		nativeImage.downloadTexture(0, false);
-		nativeImage.flipY();
-		return nativeImage;
+		GpuTexture gputexture = framebuffer.getColorTexture();
+		if (gputexture == null) {
+			return;
+		}
+		GpuBuffer gpubuffer = RenderSystem.getDevice()
+			.createBuffer(() -> "EMI Screenshot buffer", BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, i * j * gputexture.getFormat().pixelSize());
+		CommandEncoder commandencoder = RenderSystem.getDevice().createCommandEncoder();
+		RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(gputexture, gpubuffer, 0, () -> {
+			try (GpuBuffer.ReadView gpubuffer$readview = commandencoder.readBuffer(gpubuffer)) {
+				NativeImage nativeimage = new NativeImage(i, j, false);
+
+				for (int i1 = 0; i1 < j; i1++) {
+					for (int j1 = 0; j1 < i; j1++) {
+						int k1 = gpubuffer$readview.data().getInt((j1 + i1 * i) * gputexture.getFormat().pixelSize());
+						nativeimage.setPixelABGR(j1, j - i1 - 1, k1 | 0xFF000000);
+					}
+				}
+
+				consumer.accept(nativeimage);
+			}
+
+			gpubuffer.close();
+		}, 0);
 	}
 
 	private static String getScreenshotFilename(File directory, String path) {

@@ -5,28 +5,17 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.ItemDisplayContext;
 import org.jetbrains.annotations.ApiStatus;
-import org.joml.Matrix4f;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.Lighting;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.EmiUtil;
 import dev.emi.emi.api.render.EmiRender;
 import dev.emi.emi.config.EmiConfig;
-import dev.emi.emi.mixin.accessor.BakedModelManagerAccessor;
 import dev.emi.emi.mixin.accessor.DrawContextAccessor;
-import dev.emi.emi.mixin.accessor.ItemRendererAccessor;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.registry.EmiTags;
 import dev.emi.emi.runtime.EmiDrawContext;
@@ -114,41 +103,10 @@ public class TagEmiIngredient implements EmiIngredient {
 	@Override
 	public void render(GuiGraphics draw, int x, int y, float delta, int flags) {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
-		Minecraft client = Minecraft.getInstance();
 
 		if ((flags & RENDER_ICON) != 0) {
-			if (!tagKey.hasCustomModel()) {
-				if (stacks.size() > 0) {
-					stacks.get(0).render(context.raw(), x, y, delta, -1 ^ RENDER_AMOUNT);
-				}
-			} else {
-				BakedModel model = EmiAgnos.getBakedTagModel(tagKey.getCustomModel());
-
-				context.matrices().pushPose();
-				context.matrices().translate(x + 8, y + 8, 150);
-				context.matrices().mulPose(new Matrix4f().scaling(1.0f, -1.0f, 1.0f));
-				context.matrices().scale(16.0f, 16.0f, 16.0f);
-				
-				model.getTransforms().getTransform(ItemDisplayContext.GUI).apply(false, context.matrices());
-				context.matrices().translate(-0.5f, -0.5f, -0.5f);
-				
-				if (!model.usesBlockLight()) {
-					Lighting.setupForFlatItems();
-				}
-				MultiBufferSource.BufferSource immediate = ((DrawContextAccessor) context.raw()).emi$getBufferSource();
-				
-				((ItemRendererAccessor) client.getItemRenderer())
-					.invokeRenderBakedItemModel(model,
-						new int[]{-1}, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, context.matrices(), 
-						ItemRenderer.getFoilBuffer(immediate,
-							Sheets.translucentItemSheet(), true, false));
-				immediate.endBatch();
-				
-				if (!model.usesBlockLight()) {
-					Lighting.setupFor3DItems();
-				}
-
-				context.matrices().popPose();
+			if (stacks.size() > 0) {
+				stacks.get(0).render(context.raw(), x, y, delta, -1 ^ RENDER_AMOUNT);
 			}
 		}
 		if ((flags & RENDER_AMOUNT) != 0 && !tagKey.isOf(EmiPort.getFluidRegistry())) {

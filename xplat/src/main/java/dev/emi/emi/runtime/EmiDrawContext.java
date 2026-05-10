@@ -100,19 +100,15 @@ public class EmiDrawContext {
 	}
 
 	public void enableDepthTest() {
-		RenderSystem.enableDepthTest();
 	}
 
 	public void disableDepthTest() {
-		RenderSystem.disableDepthTest();
 	}
 
 	public void enableBlend() {
-		RenderSystem.enableBlend();
 	}
 
 	public void disableBlend() {
-		RenderSystem.disableBlend();
 	}
 
 	public void resetColor() {

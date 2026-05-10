@@ -433,11 +433,17 @@ public class VanillaPlugin implements EmiPlugin {
 			//addRecipeSafe(registry, () -> new EmiSmithingRecipe(recipe), recipe);
 			Minecraft client = Minecraft.getInstance();
 			if (recipe instanceof SmithingTransformRecipe str) {
-				addRecipeSafe(registry, () -> new EmiSmithingRecipe(EmiIngredient.of(str.templateIngredient().get()), EmiIngredient.of(str.baseIngredient().get()),
-					EmiIngredient.of(str.additionIngredient().get()), EmiStack.of(EmiPort.getOutput(recipe)), EmiPort.getId(recipe)), recipe);
-			} else if (recipe instanceof SmithingTransformRecipe str) {
-				addRecipeSafe(registry, () -> new EmiSmithingTrimRecipe(EmiIngredient.of(str.templateIngredient().get()), EmiIngredient.of(str.baseIngredient().get()),
-					EmiIngredient.of(str.additionIngredient().get()), EmiStack.of(EmiPort.getOutput(recipe)), recipe), recipe);
+				addRecipeSafe(registry, () -> new EmiSmithingRecipe(
+					str.templateIngredient().map(EmiIngredient::of).orElse(EmiStack.EMPTY),
+					EmiIngredient.of(str.baseIngredient()),
+					str.additionIngredient().map(EmiIngredient::of).orElse(EmiStack.EMPTY),
+					EmiStack.of(EmiPort.getOutput(recipe)), EmiPort.getId(recipe)), recipe);
+			} else if (recipe instanceof SmithingTrimRecipe str) {
+				addRecipeSafe(registry, () -> new EmiSmithingTrimRecipe(
+					str.templateIngredient().map(EmiIngredient::of).orElse(EmiStack.EMPTY),
+					EmiIngredient.of(str.baseIngredient()),
+					str.additionIngredient().map(EmiIngredient::of).orElse(EmiStack.EMPTY),
+					EmiStack.of(EmiPort.getOutput(recipe)), recipe), recipe);
 			}
 		}
 		for (StonecutterRecipe recipe : getRecipes(registry, RecipeType.STONECUTTING)) {
@@ -643,7 +649,7 @@ public class VanillaPlugin implements EmiPlugin {
 				.id(synthetic("world/cauldron_washing", EmiUtil.subId(i)))
 				.leftInput(EmiStack.EMPTY, s -> new GeneratedSlotWidget(r -> {
 					ItemStack stack = i.getDefaultInstance();
-					stack.set(DataComponents.DYED_COLOR, new DyedItemColor(r.nextInt(0xFFFFFF + 1), true));
+					stack.set(DataComponents.DYED_COLOR, new DyedItemColor(r.nextInt(0xFFFFFF + 1)));
 					return EmiStack.of(stack);
 				}, uniq, s.getBounds().x(), s.getBounds().y()))
 				.rightInput(cauldron, true)

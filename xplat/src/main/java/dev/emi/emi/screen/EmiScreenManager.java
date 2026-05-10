@@ -1752,7 +1752,6 @@ public class EmiScreenManager {
 		public void render(EmiDrawContext context, int mouseX, int mouseY, float delta, int startIndex) {
 			if (this.pageSize > 0) {
 				context.enableDepthTest();
-				EmiPort.setPositionTexShader();
 				context.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 				int hx = -1, hy = -1;
 				batcher.begin(0, 0, 0);

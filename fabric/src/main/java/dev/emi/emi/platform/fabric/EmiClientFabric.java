@@ -13,12 +13,10 @@ import dev.emi.emi.network.EmiNetwork;
 import dev.emi.emi.network.EmiPacket;
 import dev.emi.emi.network.PingS2CPacket;
 import dev.emi.emi.platform.EmiClient;
-import dev.emi.emi.registry.EmiTags;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelModifier;
-import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
@@ -54,16 +52,6 @@ public class EmiClientFabric implements ClientModInitializer {
 					return reloader.getEmiId();
 				}
 			});
-		});
-
-		PreparableModelLoadingPlugin.<List<ResourceLocation>>register((manager, executor) -> {
-			return CompletableFuture.supplyAsync(() -> {
-				List<ResourceLocation> ids = new ArrayList<>();
-				EmiTags.registerTagModels(manager, id -> ids.add(id.id()), "");
-				return ids;
-			}, executor);
-		}, (ids, context) -> {
-			context.addModels(ids);
 		});
 
 		EmiNetwork.initClient(packet -> {

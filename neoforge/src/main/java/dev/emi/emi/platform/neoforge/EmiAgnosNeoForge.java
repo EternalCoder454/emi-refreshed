@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 
 import dev.emi.emi.mixin.accessor.BrewingRecipeRegistryAccessor;
 import dev.emi.emi.mixin.accessor.ItemStackRenderStateAccessor;
-import dev.emi.emi.mixin.accessor.LayerRenderStateAccessor;
 import net.neoforged.neoforge.client.ClientHooks;
 import org.apache.commons.lang3.text.WordUtils;
 import org.objectweb.asm.Type;
@@ -42,9 +41,6 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
@@ -303,15 +299,7 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 
 	@Override
 	protected boolean canBatchAgnos(ItemStack stack) {
-		Minecraft client = Minecraft.getInstance();
-		ItemStackRenderState renderState = new ItemStackRenderState();
-		client.getItemModelResolver().updateForTopItem(renderState, stack, ItemDisplayContext.GUI, false, client.level, null, 0);
-		if (((ItemStackRenderStateAccessor) renderState).emi$getActiveLayerCount() > 0) {
-			ItemStackRenderState.LayerRenderState layer = ((ItemStackRenderStateAccessor) renderState).emi$getLayers()[0];
-			BakedModel model = ((LayerRenderStateAccessor) layer).emi$getModel();
-			return model != null && model.getClass() == SimpleBakedModel.class;
-		}
-		return false;
+		return true;
 	}
 
 	@Override
@@ -331,14 +319,7 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 	}
 
 	@Override
-	protected BakedModel getBakedTagModelAgnos(ResourceLocation id) {
-		return Minecraft.getInstance().getModelManager().getModel(new ModelResourceLocation(id, "standalone"));
-	}
-
-	@Override
 	protected boolean isEnchantableAgnos(ItemStack stack, Enchantment enchantment) {
-		ItemStack enchantedBook = new ItemStack(Items.ENCHANTED_BOOK);
-		enchantedBook.enchant(Holder.direct(enchantment), enchantment.getMaxLevel());
-		return stack.isBookEnchantable(enchantedBook);
+		return stack.isEnchantable();
 	}
 }

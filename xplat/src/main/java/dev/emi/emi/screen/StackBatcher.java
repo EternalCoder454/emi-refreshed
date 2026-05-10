@@ -20,34 +20,26 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.mixin.accessor.ItemStackRenderStateAccessor;
-import dev.emi.emi.mixin.accessor.LayerRenderStateAccessor;
-import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiLog;
 
-/**
- * @author Una "unascribed" Thompson
- */
 public class StackBatcher {
 	private static MethodHandle sodiumSpriteHandle;
 
@@ -55,7 +47,6 @@ public class StackBatcher {
 		try {
 			Class<?> clazz = null;
 			try {
-				// Try Sodium 0.5 name
 				clazz = Class.forName("me.jellysquid.mods.sodium.client.render.texture.SpriteUtil");
 			} catch (Throwable t) {
 			}
@@ -77,7 +68,7 @@ public class StackBatcher {
 
 	private final BatcherVertexConsumerProvider imm;
 	private final MultiBufferSource unlitFacade;
-	private final Map<RenderType, VertexBuffer> buffers = new LinkedHashMap<>();
+	private final Map<RenderType, MeshData> buffers = new LinkedHashMap<>();
 	private final Set<TextureAtlasSprite> spritesToUpdate = Sets.newHashSet();
 	private boolean populated = false;
 	private boolean dirty = false;
@@ -100,7 +91,6 @@ public class StackBatcher {
 		assign(buffers, Sheets.cutoutBlockSheet());
 		assign(buffers, Sheets.translucentItemSheet());
 		assign(buffers, RenderType.glint());
-		//assign(buffers, RenderLayer.getDirectGlint());
 		assign(buffers, RenderType.entityGlint());
 		for (RenderType layer : EXTRA_RENDER_LAYERS) {
 			assign(buffers, layer);
@@ -156,21 +146,18 @@ public class StackBatcher {
 					b.renderForBatch(b.isSideLit() ? imm : unlitFacade, draw, x-this.x, y + this.y, z, delta);
 					if (sodiumSpriteHandle != null && !stack.isEmpty()) {
 						ItemStack is = stack.getEmiStacks().get(0).getItemStack();
-					Minecraft client = Minecraft.getInstance();
-					ItemStackRenderState renderState = new ItemStackRenderState();
-					client.getItemModelResolver().updateForTopItem(renderState, is, ItemDisplayContext.GUI, false, client.level, null, 0);
-					if (((ItemStackRenderStateAccessor) renderState).emi$getActiveLayerCount() > 0) {
-						ItemStackRenderState.LayerRenderState layer = ((ItemStackRenderStateAccessor) renderState).emi$getLayers()[0];
-						BakedModel model = ((LayerRenderStateAccessor) layer).emi$getModel();
-						if (model != null) {
-							List<BakedQuad> quads = EmiPort.getQuads(model);
+						Minecraft client = Minecraft.getInstance();
+						ItemStackRenderState renderState = new ItemStackRenderState();
+						client.getItemModelResolver().updateForTopItem(renderState, is, ItemDisplayContext.GUI, client.level, null, 0);
+						if (((ItemStackRenderStateAccessor) renderState).emi$getActiveLayerCount() > 0) {
+							ItemStackRenderState.LayerRenderState layer = ((ItemStackRenderStateAccessor) renderState).emi$getLayers()[0];
+							List<BakedQuad> quads = layer.prepareQuadList();
 							for (BakedQuad quad : quads) {
 								if (quad != null) {
-									spritesToUpdate.add(quad.getSprite());
+									spritesToUpdate.add(quad.sprite());
 								}
 							}
 						}
-					}
 					}
 				} catch (Throwable t) {
 					if (EmiConfig.devMode) {
@@ -201,21 +188,19 @@ public class StackBatcher {
 			bake();
 			populated = true;
 		}
-		RenderSystem.enableDepthTest();
 		Lighting.setupFor3DItems();
-		Matrix4f mat = new Matrix4f(RenderSystem.getModelViewMatrix());
-		mat.mul(new Matrix4f().translation(x, y, 0));
-		for (Map.Entry<RenderType, VertexBuffer> en : buffers.entrySet()) {
-			en.getKey().setupRenderState();
-			EmiPort.setShader(en.getValue(), mat);
-			en.getKey().clearRenderState();
+		Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+		modelViewStack.pushMatrix();
+		modelViewStack.translate(x, y, 0);
+		for (Map.Entry<RenderType, MeshData> en : buffers.entrySet()) {
+			en.getKey().draw(en.getValue());
 		}
-		BufferUploader.reset();
+		modelViewStack.popMatrix();
 	}
 	
 	private void bake() {
 		imm.drawCurrentLayer();
-		buffers.values().forEach(VertexBuffer::close);
+		buffers.values().forEach(MeshData::close);
 		buffers.clear();
 		for (Map.Entry<RenderType, BufferBuilder> entry : imm.getPendingLayerBuffers().entrySet()) {
 			bake(entry.getKey(), entry.getValue());
@@ -228,13 +213,9 @@ public class StackBatcher {
 		if (builtBuffer == null) {
 			return;
 		}
-		VertexBuffer vb = new VertexBuffer(BufferUsage.DYNAMIC_WRITE);
-		vb.bind();
-		vb.upload(builtBuffer);
-		buffers.put(layer, vb);
+		buffers.put(layer, builtBuffer);
 	}
 
-	// Apparently BufferBuilder leaks memory in vanilla. Go figure
 	public static class ClaimedCollection {
 		private Set<StackBatcher> claimed = Sets.newHashSet();
 		private List<StackBatcher> unclaimed = Lists.newArrayList();
@@ -272,10 +253,6 @@ public class StackBatcher {
 		}
 	}
 
-	/*
-	 * This class is mostly a copy of a 1.21 implementation of VertexConsumerProvider.Immediate
-	 * The reimplementation allows compatibility with shader mods, as well as less hackery.
-	 */
 	private static class BatcherVertexConsumerProvider implements MultiBufferSource {
 		protected final ByteBufferBuilder fallbackBuffer;
 		protected final Map<RenderType, ByteBufferBuilder> layerBuffers;
@@ -294,10 +271,8 @@ public class StackBatcher {
 			if (bufferBuilder == null) {
 				ByteBufferBuilder allocator = this.layerBuffers.get(renderLayer);
 				if (allocator != null) {
-					// Dedicated layer buffer, we can make a new buffer builder safely
 					bufferBuilder = new BufferBuilder(allocator, renderLayer.mode(), renderLayer.format());
 				} else {
-					// Not dedicated, flush previous layer first
 					if (this.currentLayer != null) {
 						this.draw(this.currentLayer);
 					}
@@ -337,7 +312,6 @@ public class StackBatcher {
 			}
 			MeshData buffer = builder.build();
 			if (buffer != null) {
-				// TODO: do we actually need to sort quads still?
 				buffer.sortQuads(bufferAllocator, VertexSorting.ORTHOGRAPHIC_Z);
 				layer.draw(buffer);
 			}
@@ -373,11 +347,9 @@ public class StackBatcher {
 
 			@Override
 			public VertexConsumer setNormal(float x, float y, float z) {
-				delegate.setNormal(0, -1, 0); // this is the change
+				delegate.setNormal(0, -1, 0);
 				return this;
 			}
-			
-			// all other methods are direct delegation
 
 			@Override
 			public VertexConsumer addVertex(float x, float y, float z) {

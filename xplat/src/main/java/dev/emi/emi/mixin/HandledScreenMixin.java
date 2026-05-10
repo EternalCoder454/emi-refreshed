@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import dev.emi.emi.EmiPort;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.EmiScreenManager;
@@ -44,7 +43,6 @@ public abstract class HandledScreenMixin extends Screen {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		context.push();
 		context.matrices().translate(-leftPos, -topPos, 0.0);
-		EmiPort.setPositionTexShader();
 		EmiScreenManager.render(context, mouseX, mouseY, delta);
 		EmiScreenManager.drawForeground(context, mouseX, mouseY, delta);
 		context.pop();

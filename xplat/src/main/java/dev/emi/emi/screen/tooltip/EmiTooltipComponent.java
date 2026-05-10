@@ -29,12 +29,14 @@ public interface EmiTooltipComponent extends ClientTooltipComponent {
 
 	@Override
 	default void renderImage(Font textRenderer, int x, int y, int width, int height, GuiGraphics raw) {
+		raw.flush();
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		context.push();
 		context.matrices().translate(x, y, 0);
 		Minecraft client = Minecraft.getInstance();
 		drawTooltip(context, new TooltipRenderData(textRenderer, client.getItemRenderer(), x, y));
 		context.pop();
+		raw.flush();
 	}
 
 	@Override

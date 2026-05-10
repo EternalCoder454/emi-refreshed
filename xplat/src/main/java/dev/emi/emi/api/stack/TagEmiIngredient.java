@@ -26,6 +26,7 @@ import dev.emi.emi.EmiUtil;
 import dev.emi.emi.api.render.EmiRender;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.mixin.accessor.BakedModelManagerAccessor;
+import dev.emi.emi.mixin.accessor.DrawContextAccessor;
 import dev.emi.emi.mixin.accessor.ItemRendererAccessor;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.registry.EmiTags;
@@ -135,13 +136,13 @@ public class TagEmiIngredient implements EmiIngredient {
 				if (!model.usesBlockLight()) {
 					Lighting.setupForFlatItems();
 				}
-				MultiBufferSource.BufferSource immediate = context.raw().bufferSource();
+				MultiBufferSource.BufferSource immediate = ((DrawContextAccessor) context.raw()).emi$getBufferSource();
 				
 				((ItemRendererAccessor) client.getItemRenderer())
 					.invokeRenderBakedItemModel(model,
 						ItemStack.EMPTY, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, context.matrices(), 
-						ItemRenderer.getFoilBufferDirect(immediate,
-							Sheets.translucentCullBlockSheet(), true, false));
+						ItemRenderer.getFoilBuffer(immediate,
+							Sheets.translucentItemSheet(), true, false));
 				immediate.endBatch();
 				
 				if (!model.usesBlockLight()) {

@@ -23,7 +23,12 @@ public interface EmiTooltipComponent extends ClientTooltipComponent {
 	}
 
 	@Override
-	default void renderImage(Font textRenderer, int x, int y, GuiGraphics raw) {
+	default int getWidth(Font font) {
+		return 0;
+	}
+
+	@Override
+	default void renderImage(Font textRenderer, int x, int y, int width, int height, GuiGraphics raw) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		context.push();
 		context.matrices().translate(x, y, 0);

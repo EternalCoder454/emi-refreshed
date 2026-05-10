@@ -693,14 +693,13 @@ public class EmiScreenManager {
 					Matrix4fStack view = RenderSystem.getModelViewStack();
 					view.pushMatrix();
 					view.translate(0, 0, 200);
-					EmiPort.applyModelViewMatrix();
 					int lhx = space.getRawX(lastHoveredCraftableOffset);
 					int lhy = space.getRawY(lastHoveredCraftableOffset);
 					context.fill(lhx, lhy, 18, 18, 0x44AA00FF);
 					lastHoveredCraftable.getStack().render(context.raw(), lhx + 1, lhy + 1, delta,
 							EmiIngredient.RENDER_ICON);
+					context.raw().flush();
 					view.popMatrix();
-					EmiPort.applyModelViewMatrix();
 				}
 			}
 		}
@@ -1336,7 +1335,7 @@ public class EmiScreenManager {
 		EmiConfig.enabled = !EmiConfig.enabled;
 		EmiConfig.writeConfig();
 		if (notify && !EmiConfig.enabled && EmiConfig.helpLevel.has(HelpLevel.VERBOSE)) {
-			client.getToasts().addToast(new DisabledToast());
+			client.getToastManager().addToast(new DisabledToast());
 		}
 		if (EmiConfig.enabled) {
 			forceRecalculate();
@@ -1786,7 +1785,9 @@ public class EmiScreenManager {
 						}
 					}
 				}
+				context.raw().flush();
 				batcher.draw();
+				context.raw().flush();
 				context.pop();
 			}
 		}

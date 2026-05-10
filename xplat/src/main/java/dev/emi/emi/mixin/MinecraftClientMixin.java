@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import dev.emi.emi.EmiPort;
 import dev.emi.emi.platform.EmiClient;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.runtime.EmiReloadManager;
@@ -27,7 +28,7 @@ public class MinecraftClientMixin {
 		if (future != null) {
 			future.thenRunAsync(() -> {
 				Minecraft client = Minecraft.getInstance();
-				if (client.level != null && client.level.getRecipeManager() != null) {
+				if (client.level != null && EmiPort.getRecipeManager() != null) {
 					EmiReloadManager.reload();
 				}
 			}, Executors.newFixedThreadPool(1));

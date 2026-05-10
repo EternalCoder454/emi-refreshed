@@ -9,7 +9,6 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
@@ -52,9 +51,10 @@ public class StonecuttingRecipeHandler implements StandardRecipeHandler<Stonecut
 	public boolean craft(EmiRecipe recipe, EmiCraftContext<StonecutterMenu> context) {
 		boolean action = StandardRecipeHandler.super.craft(recipe, context);
 		Minecraft client = Minecraft.getInstance();
-		Level world = client.level;
 		SingleRecipeInput inv = new SingleRecipeInput(recipe.getInputs().get(0).getEmiStacks().get(0).getItemStack());
-		List<StonecutterRecipe> recipes = world.getRecipeManager().getRecipesFor(RecipeType.STONECUTTING, inv, world).stream().map(RecipeHolder::value).toList();
+		List<StonecutterRecipe> recipes = EmiPort.getRecipeManager().getRecipes().stream()
+			.filter(h -> h.value() instanceof StonecutterRecipe sr && sr.matches(inv, client.level))
+			.map(RecipeHolder::value).map(r -> (StonecutterRecipe) r).toList();
 		for (int i = 0; i < recipes.size(); i++) {
 			if (EmiPort.getId(recipes.get(i)) != null && EmiPort.getId(recipes.get(i)).equals(recipe.getId())) {
 				StonecutterMenu sh = context.getScreenHandler();

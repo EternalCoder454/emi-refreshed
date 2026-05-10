@@ -28,7 +28,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-import net.fabricmc.fabric.api.registry.FuelRegistry;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
@@ -138,20 +138,20 @@ public class EmiAgnosFabric extends EmiAgnos {
 		PotionBrewing brewingRegistry = Minecraft.getInstance().level != null ? Minecraft.getInstance().level.potionBrewing() : PotionBrewing.EMPTY;
 		BrewingRecipeRegistryAccessor brewingRegistryAccess = (BrewingRecipeRegistryAccessor)brewingRegistry;
 		for (Ingredient ingredient : brewingRegistryAccess.getPotionTypes()) {
-			for (ItemStack stack : ingredient.getItems()) {
+			for (ItemStack stack : ingredient.items().stream().map(h -> new ItemStack(h.value())).toArray(ItemStack[]::new)) {
 				String pid = EmiUtil.subId(stack.getItem());
 				for (PotionBrewing.Mix<Potion> recipe : brewingRegistryAccess.getPotionRecipes()) {
 					try {
 						Ingredient recipeIngredient = recipe.ingredient();
-						if (recipeIngredient.getItems().length > 0) {
-							ResourceLocation id = EmiPort.id("emi", "/brewing/" + pid
-								+ "/" + EmiUtil.subId(recipeIngredient.getItems()[0].getItem())
-								+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.from().value()))
-								+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.to().value())));
-							registry.addRecipe(new EmiBrewingRecipe(
-								EmiStack.of(EmiPort.setPotion(stack.copy(), recipe.from().value())), EmiIngredient.of(recipeIngredient),
-								EmiStack.of(EmiPort.setPotion(stack.copy(), recipe.to().value())), id));
-						}
+						if (!recipeIngredient.items().isEmpty()) {
+						ResourceLocation id = EmiPort.id("emi", "/brewing/" + pid
+							+ "/" + EmiUtil.subId(recipeIngredient.items().get(0).value())
+							+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.from().value()))
+							+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.to().value())));
+						registry.addRecipe(new EmiBrewingRecipe(
+							EmiStack.of(EmiPort.setPotion(stack.copy(), recipe.from().value())), EmiIngredient.of(recipeIngredient),
+							EmiStack.of(EmiPort.setPotion(stack.copy(), recipe.to().value())), id));
+					}
 					} catch (Exception e) {
 						EmiLog.error("Error registering brewing recipe", e);
 					}
@@ -162,8 +162,8 @@ public class EmiAgnosFabric extends EmiAgnos {
 		for (PotionBrewing.Mix<Item> recipe : brewingRegistryAccess.getItemRecipes()) {
 			try {
 				Ingredient recipeIngredient = recipe.ingredient();
-				if (recipeIngredient.getItems().length > 0) {
-					String gid = EmiUtil.subId(recipeIngredient.getItems()[0].getItem());
+				if (!recipeIngredient.items().isEmpty()) {
+					String gid = EmiUtil.subId(recipeIngredient.items().get(0).value());
 					String iid = EmiUtil.subId(recipe.from().value());
 					String oid = EmiUtil.subId(recipe.to().value());
 					Consumer<Holder<Potion>> potionRecipeGen = entry -> {
@@ -176,7 +176,7 @@ public class EmiAgnosFabric extends EmiAgnos {
 						}
 					};
 					if (recipe.from().value() instanceof PotionItem) {
-						EmiPort.getPotionRegistry().holders().forEach(potionRecipeGen);
+						EmiPort.getPotionRegistry().listElements().forEach(potionRecipeGen);
 					} else {
 						potionRecipeGen.accept(Potions.AWKWARD);
 					}
@@ -237,13 +237,14 @@ public class EmiAgnosFabric extends EmiAgnos {
 	@Override
 	protected Map<Item, Integer> getFuelMapAgnos() {
 		Object2IntMap<Item> fuelMap = new Object2IntOpenHashMap<>();
-		for (Item item : EmiPort.getItemRegistry()) {
-			if (FuelRegistry.INSTANCE.get(item) == null) {
-				continue;
-			}
-			int time = FuelRegistry.INSTANCE.get(item);
-			if (time > 0) {
-				fuelMap.put(item, time);
+		Minecraft client = Minecraft.getInstance();
+		if (client.level != null) {
+			FuelValues fuelValues = client.level.fuelValues();
+			for (Item item : fuelValues.fuelItems()) {
+				int time = fuelValues.burnDuration(new ItemStack(item));
+				if (time > 0) {
+					fuelMap.put(item, time);
+				}
 			}
 		}
 		return fuelMap;

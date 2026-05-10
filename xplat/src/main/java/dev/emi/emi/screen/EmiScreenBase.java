@@ -3,6 +3,7 @@ package dev.emi.emi.screen;
 import com.google.common.collect.Lists;
 import dev.emi.emi.api.EmiScreenBoundsProvider;
 import dev.emi.emi.api.widget.Bounds;
+import dev.emi.emi.mixin.accessor.AbstractRecipeBookScreenAccessor;
 import dev.emi.emi.mixin.accessor.HandledScreenAccessor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +12,7 @@ import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
+import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 
 public class EmiScreenBase {
@@ -86,8 +87,8 @@ public class EmiScreenBase {
 			AbstractContainerMenu sh = hs.getMenu();
 			if (sh.slots != null && !sh.slots.isEmpty()) {
 				int extra = 0;
-				if (hs instanceof RecipeUpdateListener provider) {
-					if (provider.getRecipeBookComponent().isVisible()) {
+				if (hs instanceof AbstractRecipeBookScreenAccessor arbsa) {
+					if (arbsa.getRecipeBookComponent().isVisible()) {
 						extra = 177;
 					}
 				}

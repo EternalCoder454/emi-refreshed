@@ -6,6 +6,7 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -42,18 +43,16 @@ public class EmiDrawContext {
 		drawTexture(texture, x, y, width, height, u, v, width, height, 256, 256);
 	}
 
-	public void drawTexture(ResourceLocation texture, int x, int y, int z, float u, float v, int width, int height) {
-		drawTexture(texture, x, y, z, u, v, width, height, 256, 256);
+	public void drawTexture(ResourceLocation texture, int x, int y, float u, float v, int width, int height) {
+		drawTexture(texture, x, y, u, v, width, height, 256, 256);
 	}
 
-	public void drawTexture(ResourceLocation texture, int x, int y, int z, float u, float v, int width, int height, int textureWidth, int textureHeight) {
-		EmiPort.setPositionTexShader();
-		context.blit(texture, x, y, z, u, v, width, height, textureWidth, textureHeight);
+	public void drawTexture(ResourceLocation texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+		context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
 	}
 
 	public void drawTexture(ResourceLocation texture, int x, int y, int width, int height, float u, float v, int regionWidth, int regionHeight, int textureWidth, int textureHeight) {
-		EmiPort.setPositionTexShader();
-		context.blit(texture, x, y, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
+		context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, regionWidth, regionHeight, textureWidth, textureHeight);
 	}
 
 	public void fill(int x, int y, int width, int height, int color) {
@@ -125,15 +124,15 @@ public class EmiDrawContext {
 	}
 
 	public void setColor(float r, float g, float b, float a) {
-		raw().setColor(r, g, b, a);
+		RenderSystem.setShaderColor(r, g, b, a);
 	}
 
 	public void drawStack(EmiIngredient stack, int x, int y) {
-		stack.render(raw(), x, y, client.getTimer().getGameTimeDeltaPartialTick(false));
+		stack.render(raw(), x, y, client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
 	}
 
 	public void drawStack(EmiIngredient stack, int x, int y, int flags) {
-		drawStack(stack, x, y, client.getTimer().getGameTimeDeltaPartialTick(false), flags);
+		drawStack(stack, x, y, client.getDeltaTracker().getGameTimeDeltaPartialTick(false), flags);
 	}
 
 	public void drawStack(EmiIngredient stack, int x, int y, float delta, int flags) {

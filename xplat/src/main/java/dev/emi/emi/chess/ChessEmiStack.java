@@ -47,7 +47,7 @@ class ChessEmiStack extends EmiStack {
 				context.matrices().translate(0, 0, 10);
 				context.fill(x - 1, y - 1, 18, 18, 0x55000000);
 				context.matrices().translate(0, 0, 90);
-				context.drawTexture(EmiRenderHelper.PIECES, x, y, 100, type.u, chess.pendingPromotion > 31 ? 0 : 16, 16, 16, 256, 256);
+				context.drawTexture(EmiRenderHelper.PIECES, x, y, type.u, chess.pendingPromotion > 31 ? 0 : 16, 16, 16, 256, 256);
 				context.pop();
 				return;
 			}
@@ -69,7 +69,7 @@ class ChessEmiStack extends EmiStack {
 		if (piece != null) {
 			context.push();
 			context.matrices().translate(0, 0, 100);
-			context.drawTexture(EmiRenderHelper.PIECES, x, y, 100, piece.type().u, piece.color() == PieceColor.BLACK ? 0 : 16, 16, 16, 256, 256);
+			context.drawTexture(EmiRenderHelper.PIECES, x, y, piece.type().u, piece.color() == PieceColor.BLACK ? 0 : 16, 16, 16, 256, 256);
 			context.pop();
 		}
 	}

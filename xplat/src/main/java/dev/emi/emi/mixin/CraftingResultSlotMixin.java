@@ -32,7 +32,9 @@ public class CraftingResultSlotMixin {
 	private void onCrafted(ItemStack stack, CallbackInfo info) {
 		Level world = player.level();
 		if (world.isClientSide) {
-			Optional<CraftingRecipe> opt = world.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftSlots.asPositionedCraftInput().input(), world).map(RecipeHolder::value);
+			Optional<CraftingRecipe> opt = EmiPort.getRecipeManager().getRecipes().stream()
+				.filter(h -> h.value() instanceof CraftingRecipe cr && cr.matches(craftSlots.asPositionedCraftInput().input(), world))
+				.findFirst().map(RecipeHolder::value).map(r -> (CraftingRecipe) r);
 			if (opt.isPresent()) {
 				EmiRecipe recipe = EmiApi.getRecipeManager().getRecipe(EmiPort.getId(opt.get()));
 				if (recipe != null) {

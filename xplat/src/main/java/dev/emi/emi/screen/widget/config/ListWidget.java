@@ -15,7 +15,8 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -163,13 +164,13 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 		int j = i + 6;
 		Tesselator tessellator = Tesselator.getInstance();
 		BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-		RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+		RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
 		this.hoveredEntry = this.isMouseOver(mouseX, mouseY) ? this.getEntryAtPosition(mouseX, mouseY) : null;
 
 		{	// Render background
 			RenderSystem.enableBlend();
 			ResourceLocation identifier = this.client.level == null ? MENU_LIST_BACKGROUND_TEXTURE : INWORLD_MENU_LIST_BACKGROUND_TEXTURE;
-			draw.blit(identifier, left, top, right, bottom + (int)scrollAmount, right - left, bottom - top, 32, 32);
+			draw.blit(RenderType::guiTextured, identifier, left, top, 0.0F, (float)scrollAmount, right - left, bottom - top, 32, 32);
 			RenderSystem.disableBlend();
 		}
 
@@ -184,13 +185,13 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 			RenderSystem.enableBlend();
 			ResourceLocation identifier = this.client.level == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
 			ResourceLocation identifier2 = this.client.level == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
-			draw.blit(identifier, left, top - 2, 0.0F, 0.0F, width, 2, 32, 2);
-			draw.blit(identifier2, left, bottom, 0.0F, 0.0F, width, 2, 32, 2);
+			draw.blit(RenderType::guiTextured, identifier, left, top - 2, 0.0F, 0.0F, width, 2, 32, 2);
+			draw.blit(RenderType::guiTextured, identifier2, left, bottom, 0.0F, 0.0F, width, 2, 32, 2);
 			RenderSystem.disableBlend();
 		}
 
 		if ((o = this.getMaxScroll()) > 0) {
-			RenderSystem.setShader(GameRenderer::getPositionColorShader);
+			RenderSystem.setShader(CoreShaders.POSITION_COLOR);
 			m = (int)((float)((this.bottom - this.top) * (this.bottom - this.top)) / (float)this.getMaxPosition());
 			m = Mth.clamp(m, 32, this.bottom - this.top - 8);
 			n = (int)this.getScrollAmount() * (this.bottom - this.top - m) / o + this.top;
@@ -423,7 +424,7 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 			if (this.renderSelection && this.isSelectedEntry(j)) {
 				p = this.left + this.width / 2 - o / 2;
 				int q = this.left + this.width / 2 + o / 2;
-				RenderSystem.setShader(GameRenderer::getPositionShader);
+				RenderSystem.setShader(CoreShaders.POSITION);
 				float f = this.isFocused() ? 1.0f : 0.5f;
 				RenderSystem.setShaderColor(f, f, f, 1.0f);
 				bufferBuilder.addVertex(p, m + n + 2, 0);

@@ -87,6 +87,7 @@ public class EmiRenderHelper {
 		if (sprite == null) {
 			return;
 		}
+		Minecraft.getInstance().renderBuffers().bufferSource().endBatch();
 		EmiPort.setPositionColorTexShader();
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		RenderSystem.setShaderTexture(0, sprite.atlasLocation());
@@ -108,10 +109,10 @@ public class EmiRenderHelper {
 		float uMax = sprite.getU1() - uSpan / 16 * (16 - (width + xOff));
 		float vMax = sprite.getV1() - vSpan / 16 * (16 - (height + yOff));
 		Matrix4f model = matrices.last().pose();
-		bufferBuilder.addVertex(model, xMin, yMax, 1).setColor(r, g, b, 1).setUv(uMin, vMax);
-		bufferBuilder.addVertex(model, xMax, yMax, 1).setColor(r, g, b, 1).setUv(uMax, vMax);
-		bufferBuilder.addVertex(model, xMax, yMin, 1).setColor(r, g, b, 1).setUv(uMax, vMin);
-		bufferBuilder.addVertex(model, xMin, yMin, 1).setColor(r, g, b, 1).setUv(uMin, vMin);
+		bufferBuilder.addVertex(model, xMin, yMax, 1).setUv(uMin, vMax).setColor(r, g, b, 1);
+		bufferBuilder.addVertex(model, xMax, yMax, 1).setUv(uMax, vMax).setColor(r, g, b, 1);
+		bufferBuilder.addVertex(model, xMax, yMin, 1).setUv(uMax, vMin).setColor(r, g, b, 1);
+		bufferBuilder.addVertex(model, xMin, yMin, 1).setUv(uMin, vMin).setColor(r, g, b, 1);
 		EmiPort.draw(bufferBuilder);
 	}
 
@@ -205,14 +206,16 @@ public class EmiRenderHelper {
 		context.enableDepthTest();
 		EmiPort.setPositionTexShader();
 		context.resetColor();
-		((DrawContextAccessor) context.raw()).invokeDrawTooltip(CLIENT.font, mutable, x, y, positioner);
+		((DrawContextAccessor) context.raw()).invokeDrawTooltip(CLIENT.font, mutable, x, y, positioner, null);
 	}
 
 	public static void drawSlotHightlight(EmiDrawContext context, int x, int y, int w, int h, int z) {
 		context.push();
 		context.matrices().translate(0, 0, z);
+		context.raw().flush();
 		RenderSystem.colorMask(true, true, true, false);
 		context.fill(x, y, w, h, -2130706433);
+		context.raw().flush();
 		RenderSystem.colorMask(true, true, true, true);
 		context.pop();
 	}
@@ -258,7 +261,9 @@ public class EmiRenderHelper {
 		context.push();
 		context.matrices().translate(0, 0, 200);
 		int tx = x + 17 - Math.min(14, CLIENT.font.width(amount));
+		context.raw().flush();
 		context.drawTextWithShadow(amount, tx, y + 9, -1);
+		context.raw().flush();
 		context.pop();
 	}
 
@@ -266,8 +271,10 @@ public class EmiRenderHelper {
 		context.enableDepthTest();
 		context.push();
 		context.matrices().translate(0, 0, 200);
+		context.raw().flush();
 		RenderSystem.setShaderTexture(0, EmiRenderHelper.WIDGETS);
 		context.drawTexture(WIDGETS, x, y, 8, 252, 4, 4);
+		context.raw().flush();
 		context.pop();
 	}
 
@@ -276,7 +283,9 @@ public class EmiRenderHelper {
 			context.enableDepthTest();
 			context.push();
 			context.matrices().translate(0, 0, 200);
+			context.raw().flush();
 			context.drawTexture(WIDGETS, x, y + 12, 0, 252, 4, 4);
+			context.raw().flush();
 			context.pop();
 		}
 	}
@@ -291,7 +300,9 @@ public class EmiRenderHelper {
 					context.push();
 					context.matrices().translate(0, 0, 200);
 					context.enableDepthTest();
+					context.raw().flush();
 					context.drawTexture(WIDGETS, x + 12, y, 4, 252, 4, 4);
+					context.raw().flush();
 					context.pop();
 				}
 				return;
@@ -303,7 +314,9 @@ public class EmiRenderHelper {
 		context.enableDepthTest();
 		context.push();
 		context.matrices().translate(0, 0, 200);
+		context.raw().flush();
 		context.drawTexture(WIDGETS, x + 12, y, 12, 252, 4, 4);
+		context.raw().flush();
 		context.pop();
 		return;
 	}
@@ -312,7 +325,9 @@ public class EmiRenderHelper {
 		context.push();
 		context.matrices().translate(0, 0, 200);
 		context.enableDepthTest();
+		context.raw().flush();
 		context.drawTexture(WIDGETS, x + 12, y, 16, 252, 4, 4);
+		context.raw().flush();
 		context.pop();
 		return;
 	}
@@ -348,7 +363,7 @@ public class EmiRenderHelper {
 			context.matrices().translate(x + 4, y + 4, 0);
 
 			recipe.addWidgets(holder);
-			float delta = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
+			float delta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
 			for (Widget widget : widgets) {
 				widget.render(context.raw(), -1000, -1000, delta);
 			}
@@ -369,10 +384,12 @@ public class EmiRenderHelper {
 			context.pop();
 
 			// Force translucency to match that of the recipe background
+			context.raw().flush();
 			context.disableBlend();
 			RenderSystem.colorMask(false, false, false, true);
 			context.disableDepthTest();
 			renderRecipeBackground(recipe, context, x, y);
+			context.raw().flush();
 			context.enableDepthTest();
 			RenderSystem.colorMask(true, true, true, true);
 			// Blend should be off by default

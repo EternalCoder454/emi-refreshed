@@ -23,8 +23,7 @@ public class ClientPlayNetworkHandlerMixin {
 	@Unique
 	private int infoMask = 0;
 
-	@Inject(at = @At(value = "INVOKE", target = "net/minecraft/world/item/crafting/RecipeManager.replaceRecipes(Ljava/lang/Iterable;)V",
-		shift = Shift.AFTER), method = "handleUpdateRecipes")
+	@Inject(at = @At("RETURN"), method = "handleUpdateRecipes")
 	private void onSynchronizeRecipes(ClientboundUpdateRecipesPacket packet, CallbackInfo info) {
 		EmiReloadManager.reloadRecipes();
 	}

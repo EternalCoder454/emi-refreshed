@@ -25,7 +25,6 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.RecipesUpdatedEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -41,7 +40,6 @@ public class EmiClientNeoForge {
 		StackBatcher.EXTRA_RENDER_LAYERS.addAll(Arrays.stream(NeoForgeRenderTypes.values()).map(f -> f.get()).toList());
 		EmiClient.init();
 		EmiNetwork.initClient(packet -> PacketDistributor.sendToServer(EmiPacketHandler.wrap(packet)));
-		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::recipesReloaded);
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::tagsReloaded);
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::renderScreenForeground);
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::postRenderScreen);
@@ -60,11 +58,8 @@ public class EmiClientNeoForge {
 		EmiData.init(reloader -> event.registerReloadListener(reloader));
 	}
 
-	public static void recipesReloaded(RecipesUpdatedEvent event) {
-		EmiReloadManager.reloadRecipes();
-	}
-
 	public static void tagsReloaded(TagsUpdatedEvent event) {
+		EmiReloadManager.reloadRecipes();
 		EmiReloadManager.reloadTags();
 	}
 
@@ -76,8 +71,7 @@ public class EmiClientNeoForge {
 			Minecraft client = Minecraft.getInstance();
 			context.push();
 			context.matrices().translate(-screen.getGuiLeft(), -screen.getGuiTop(), 0.0);
-			EmiPort.setPositionTexShader();
-			EmiScreenManager.render(context, event.getMouseX(), event.getMouseY(), client.getTimer().getGameTimeDeltaPartialTick(false));
+			EmiScreenManager.render(context, event.getMouseX(), event.getMouseY(), client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
 			context.pop();
 		}
 	}
@@ -92,8 +86,7 @@ public class EmiClientNeoForge {
 		if (base != null) {
 			Minecraft client = Minecraft.getInstance();
 			context.push();
-			EmiPort.setPositionTexShader();
-			EmiScreenManager.drawForeground(context, event.getMouseX(), event.getMouseY(), client.getTimer().getGameTimeDeltaPartialTick(false));
+			EmiScreenManager.drawForeground(context, event.getMouseX(), event.getMouseY(), client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
 			context.pop();
 		}
 	}

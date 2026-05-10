@@ -220,7 +220,6 @@ public class RecipeScreen extends Screen {
 			int my = mouseY - group.y();
 			context.push();
 			context.matrices().translate(group.x(), group.y(), 0);
-			EmiPort.applyModelViewMatrix();
 			try {
 				for (Widget widget : group.widgets) {
 					widget.render(context.raw(), mx, my, delta);
@@ -244,7 +243,6 @@ public class RecipeScreen extends Screen {
 				}
 			}
 			context.pop();
-			EmiPort.applyModelViewMatrix();
 		}
 		EmiScreenManager.drawBackground(context, mouseX, mouseY, delta);
 		EmiScreenManager.render(context, mouseX, mouseY, delta);

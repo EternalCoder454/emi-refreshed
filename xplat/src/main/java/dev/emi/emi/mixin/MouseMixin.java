@@ -27,9 +27,9 @@ public class MouseMixin {
 
 	@Shadow private double accumulatedDY;
 
-	@Inject(at = @At(value = "INVOKE", ordinal = 0, target =
-			"net/minecraft/client/gui/screens/Screen.wrapScreenError(Ljava/lang/Runnable;Ljava/lang/String;Ljava/lang/String;)V"),
-		method = "onPress(JIII)V", cancellable = true)
+	@Inject(at = @At(value = "INVOKE", ordinal = 0,
+			target = "Lnet/minecraft/client/gui/screens/Screen;mouseClicked(DDI)Z"),
+			method = "onPress(JIII)V", cancellable = true)
 	private void onMouseDown(long window, int button, int action, int mods, CallbackInfo info) {
 		try {
 			Screen screen = minecraft.screen;
@@ -45,9 +45,9 @@ public class MouseMixin {
 		}
 	}
 
-	@Inject(at = @At(value = "INVOKE", ordinal = 1, target =
-			"net/minecraft/client/gui/screens/Screen.wrapScreenError(Ljava/lang/Runnable;Ljava/lang/String;Ljava/lang/String;)V"),
-		method = "onPress(JIII)V", cancellable = true)
+	@Inject(at = @At(value = "INVOKE", ordinal = 0,
+			target = "Lnet/minecraft/client/gui/screens/Screen;mouseReleased(DDI)Z"),
+			method = "onPress(JIII)V", cancellable = true)
 	private void onMouseUp(long window, int button, int action, int mods, CallbackInfo info) {
 		try {
 			Screen screen = minecraft.screen;
@@ -63,27 +63,27 @@ public class MouseMixin {
 		}
 	}
 
-	@Inject(at = @At(value = "INVOKE", ordinal = 1, target =
-			"net/minecraft/client/gui/screens/Screen.wrapScreenError(Ljava/lang/Runnable;Ljava/lang/String;Ljava/lang/String;)V"),
-		method = "handleAccumulatedMovement", cancellable = true)
+	@Inject(at = @At("HEAD"),
+			method = "handleAccumulatedMovement")
 	private void onMouseDragged(CallbackInfo info) {
 		try {
 			Screen screen = minecraft.screen;
-			if (screen instanceof AbstractContainerScreen<?> hs) {
+			if (screen instanceof AbstractContainerScreen<?> hs && activeButton != -1) {
 				double mx = this.xpos * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
 				double my = this.ypos * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
 				double dx = this.accumulatedDX * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
 				double dy = this.accumulatedDY * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
-				EmiScreenManager.mouseDragged(mx, my, activeButton, dx, dy);
+				if (dx != 0 || dy != 0) {
+					EmiScreenManager.mouseDragged(mx, my, activeButton, dx, dy);
+				}
 			}
 		} catch (Exception e) {
 			EmiLog.error("Error while handling mouse drag", e);
 		}
 	}
 
-	@Inject(at = @At(value = "INVOKE", target =
-			"net/minecraft/client/gui/screens/Screen.mouseScrolled(DDDD)Z"),
-		method = "onScroll(JDD)V", cancellable = true)
+	@Inject(at = @At("HEAD"),
+			method = "onScroll(JDD)V", cancellable = true)
 	private void onMouseScrolled(long window, double horizontal, double vertical, CallbackInfo info) {
 		try {
 			Screen screen = minecraft.screen;

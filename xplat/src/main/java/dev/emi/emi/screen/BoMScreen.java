@@ -215,7 +215,6 @@ public class BoMScreen extends Screen {
 		view.translate(width / 2, height / 2, 0);
 		view.scale(scale, scale, 1);
 		view.translate((float)offX, (float)offY, 0);
-		EmiPort.applyModelViewMatrix();
 		if (BoM.tree != null) {
 			batcher.begin(0, 0, 0);
 			int cy = nodeHeight * NODE_VERTICAL_SPACING * 2;
@@ -236,12 +235,16 @@ public class BoMScreen extends Screen {
 			context.drawTextWithShadow(EmiPort.literal("x" + BoM.tree.batches),
 					batches.x() + 6, batches.y() + batches.height() / 2 - 4, color);
 
+			context.raw().flush();
 			if (mode.contains(mx, my)) {
 				context.setColor(0.5f, 0.6f, 1f, 1f);
 			}
 			context.drawTexture(EmiRenderHelper.WIDGETS, mode.x(), mode.y(), BoM.craftingMode ? 16 : 0, 146, mode.width(), mode.height());
+			context.raw().flush();
 			context.setColor(1f, 1f, 1f, 1f);
+			context.raw().flush();
 			batcher.draw();
+			context.raw().flush();
 		} else {
 			context.drawCenteredText(EmiPort.translatable("emi.tree_welcome", EmiRenderHelper.getEmiText()), 0, -72);
 			context.drawCenteredText(EmiPort.translatable("emi.no_tree"), 0, -48);
@@ -249,13 +252,15 @@ public class BoMScreen extends Screen {
 			context.drawCenteredText(EmiPort.translatable("emi.random_tree_input"), 0, 0);
 		}
 
+		context.raw().flush();
 		view.popMatrix();
-		EmiPort.applyModelViewMatrix();
 
+		context.raw().flush();
 		if (help.contains(mouseX, mouseY)) {
 			context.setColor(0.5f, 0.6f, 1f, 1f);
 		}
 		context.drawTexture(EmiRenderHelper.WIDGETS, help.x(), help.y(), 0, 200, help.width(), help.height());
+		context.raw().flush();
 		context.setColor(1f, 1f, 1f, 1f);
 
 		Hover hover = getHoveredStack(mouseX, mouseY);

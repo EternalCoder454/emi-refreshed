@@ -3,6 +3,7 @@ package dev.emi.emi;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -12,7 +13,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Button.OnPress;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Registry;
@@ -23,6 +24,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -31,11 +33,18 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.item.crafting.SingleItemRecipe;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.TallFlowerBlock;
@@ -49,6 +58,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import dev.emi.emi.api.stack.Comparison;
+import dev.emi.emi.mixin.accessor.SmithingTransformRecipeAccessor;
 import dev.emi.emi.registry.EmiRecipes;
 
 /**
@@ -106,8 +116,8 @@ public final class EmiPort {
 	}
 
 	public static BannerPatternLayers addRandomBanner(BannerPatternLayers patterns, Random random) {
-		var bannerRegistry = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BANNER_PATTERN);
-		return new BannerPatternLayers.Builder().addAll(patterns).add(bannerRegistry.getHolder(random.nextInt(bannerRegistry.size())).get(),
+		var bannerRegistry = Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN);
+		return new BannerPatternLayers.Builder().addAll(patterns).add(bannerRegistry.get(random.nextInt(bannerRegistry.size())).orElseThrow(),
 			DyeColor.values()[random.nextInt(DyeColor.values().length)]).build();
 	}
 
@@ -137,11 +147,11 @@ public final class EmiPort {
 	}
 
 	public static void setPositionTexShader() {
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		RenderSystem.setShader(CoreShaders.POSITION_TEX);
 	}
 
 	public static void setPositionColorTexShader() {
-		RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+		RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
 	}
 
 	public static Registry<Item> getItemRegistry() {
@@ -162,7 +172,7 @@ public final class EmiPort {
 
 	public static Registry<Enchantment> getEnchantmentRegistry() {
 		Minecraft client = Minecraft.getInstance();
-		return client.level.registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+		return client.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
 	}
 
 	public static Button newButton(int x, int y, int w, int h, Component name, OnPress action) {
@@ -171,7 +181,16 @@ public final class EmiPort {
 
 	public static ItemStack getOutput(Recipe<?> recipe) {
 		Minecraft client = Minecraft.getInstance();
-		return recipe.getResultItem(client.level.registryAccess());
+		if (recipe instanceof ShapedRecipe shaped) {
+			return shaped.assemble(CraftingInput.EMPTY, client.level.registryAccess());
+		} else if (recipe instanceof ShapelessRecipe shapeless) {
+			return shapeless.assemble(CraftingInput.EMPTY, client.level.registryAccess());
+		} else if (recipe instanceof SingleItemRecipe single) {
+			return single.assemble(new SingleRecipeInput(ItemStack.EMPTY), client.level.registryAccess());
+		} else if (recipe instanceof SmithingTransformRecipe smithing) {
+			return ((SmithingTransformRecipeAccessor) smithing).getResult();
+		}
+		return ItemStack.EMPTY;
 	}
 
 	public static void focus(EditBox widget, boolean focused) {
@@ -197,12 +216,17 @@ public final class EmiPort {
 	}
 
 	public static @Nullable RecipeHolder<?> getRecipe(ResourceLocation id) {
+		RecipeManager manager = getRecipeManager();
+		if (manager != null && id != null) {
+			return manager.byKey(ResourceKey.create(Registries.RECIPE, id)).orElse(null);
+		}
+		return null;
+	}
+
+	public static @Nullable RecipeManager getRecipeManager() {
 		Minecraft client = Minecraft.getInstance();
-		if (client.level != null && id != null) {
-			RecipeManager manager = client.level.getRecipeManager();
-			if (manager != null) {
-				return manager.byKey(id).orElse(null);
-			}
+		if (client.isSingleplayer() && client.getSingleplayerServer() != null) {
+			return client.getSingleplayerServer().getRecipeManager();
 		}
 		return null;
 	}
@@ -228,7 +252,4 @@ public final class EmiPort {
 		return ResourceLocation.fromNamespaceAndPath(namespace, path);
 	}
 
-	public static void applyModelViewMatrix() {
-		RenderSystem.applyModelViewMatrix();
-	}
 }

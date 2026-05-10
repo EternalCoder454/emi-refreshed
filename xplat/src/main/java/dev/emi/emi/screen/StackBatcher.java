@@ -25,6 +25,7 @@ import org.joml.Matrix4f;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -37,6 +38,7 @@ import com.mojang.blaze3d.vertex.VertexSorting;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.config.EmiConfig;
+import dev.emi.emi.mixin.accessor.ItemRendererAccessor;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiLog;
 
@@ -93,7 +95,7 @@ public class StackBatcher {
 		assign(buffers, RenderType.translucent());
 		assign(buffers, Sheets.solidBlockSheet());
 		assign(buffers, Sheets.cutoutBlockSheet());
-		assign(buffers, Sheets.translucentCullBlockSheet());
+		assign(buffers, Sheets.translucentItemSheet());
 		assign(buffers, RenderType.glint());
 		//assign(buffers, RenderLayer.getDirectGlint());
 		assign(buffers, RenderType.entityGlint());
@@ -152,7 +154,7 @@ public class StackBatcher {
 					if (sodiumSpriteHandle != null && !stack.isEmpty()) {
 						ItemStack is = stack.getEmiStacks().get(0).getItemStack();
 						Minecraft client = Minecraft.getInstance();
-						BakedModel model = client.getItemRenderer().getItemModelShaper().getItemModel(is);
+						BakedModel model = ((ItemRendererAccessor) client.getItemRenderer()).emi$getItemModelShaper().getItemModel(is);
 						if (model != null) {
 							List<BakedQuad> quads = EmiPort.getQuads(model);
 							for (BakedQuad quad : quads) {
@@ -218,7 +220,7 @@ public class StackBatcher {
 		if (builtBuffer == null) {
 			return;
 		}
-		VertexBuffer vb = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
+		VertexBuffer vb = new VertexBuffer(BufferUsage.DYNAMIC_WRITE);
 		vb.bind();
 		vb.upload(builtBuffer);
 		buffers.put(layer, vb);

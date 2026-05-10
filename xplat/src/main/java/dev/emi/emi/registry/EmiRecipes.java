@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Recipe;
@@ -68,14 +67,11 @@ public class EmiRecipes {
 		byWorkstation.clear();
 		decorators.clear();
 		manager = Manager.EMPTY;
-		Minecraft client = Minecraft.getInstance();
-		if (client.level != null) {
-			RecipeManager manager = client.level.getRecipeManager();
-			recipeIds = new Reference2ObjectOpenHashMap<>();
-			if (manager != null) {
-				for (RecipeHolder<?> entry : manager.getRecipes()) {
-					recipeIds.put(entry.value(), entry.id());
-				}
+		RecipeManager manager = EmiPort.getRecipeManager();
+		recipeIds = new Reference2ObjectOpenHashMap<>();
+		if (manager != null) {
+			for (RecipeHolder<?> entry : manager.getRecipes()) {
+				recipeIds.put(entry.value(), entry.id().location());
 			}
 		}
 	}

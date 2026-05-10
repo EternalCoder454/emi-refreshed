@@ -1,11 +1,10 @@
 package dev.emi.emi.platform.fabric;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
-
-import com.google.common.collect.Lists;
 
 import dev.emi.emi.data.EmiData;
 import dev.emi.emi.network.CommandS2CPacket;
@@ -30,7 +29,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
 
 public class EmiClientFabric implements ClientModInitializer {
 
@@ -41,9 +39,9 @@ public class EmiClientFabric implements ClientModInitializer {
 			ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new IdentifiableResourceReloadListener() {
 
 				@Override
-				public CompletableFuture<Void> reload(PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3,
-						ProfilerFiller var4, Executor var5, Executor var6) {
-					return reloader.reload(var1, var2, var3, var4, var5, var6);
+				public CompletableFuture<Void> reload(PreparationBarrier var1, ResourceManager var2,
+						Executor var5, Executor var6) {
+					return reloader.reload(var1, var2, var5, var6);
 				}
 
 				@Override
@@ -60,7 +58,7 @@ public class EmiClientFabric implements ClientModInitializer {
 
 		PreparableModelLoadingPlugin.<List<ResourceLocation>>register((manager, executor) -> {
 			return CompletableFuture.supplyAsync(() -> {
-				List<ResourceLocation> ids = Lists.newArrayList();
+				List<ResourceLocation> ids = new ArrayList<>();
 				EmiTags.registerTagModels(manager, id -> ids.add(id.id()), "");
 				return ids;
 			}, executor);

@@ -1,10 +1,12 @@
 package dev.emi.emi.recipe;
 
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import com.google.common.collect.Lists;
 
@@ -63,7 +65,12 @@ public class EmiShapedRecipe extends EmiCraftingRecipe {
 				if (x >= recipe.getWidth() || y >= recipe.getHeight() || i >= recipe.getIngredients().size()) {
 					list.add(EmiStack.EMPTY);
 				} else {
-					list.add(EmiIngredient.of(recipe.getIngredients().get(i++)));
+					Optional<Ingredient> opt = recipe.getIngredients().get(i++);
+					if (opt.isPresent()) {
+						list.add(EmiIngredient.of(opt.get()));
+					} else {
+						list.add(EmiStack.EMPTY);
+					}
 				}
 			}
 		}

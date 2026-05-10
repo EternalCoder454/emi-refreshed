@@ -160,7 +160,9 @@ public class SlotWidget extends Widget {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
 		context.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 		drawBackground(draw, mouseX, mouseY, delta);
+		draw.flush();
 		drawStack(draw, mouseX, mouseY, delta);
+		draw.flush();
 		context.disableDepthTest();
 		drawOverlay(draw, mouseX, mouseY, delta);
 	}

@@ -107,10 +107,13 @@ public class MicroTextRenderer {
 				x += 1;
 				continue;
 			}
+			context.raw().flush();
 			context.setColor(r, g, b, a);
 			context.drawTexture(TEXTURE, x, y, c.u, c.v, c.width, 7);
+			context.raw().flush();
 			context.resetColor();
 			context.drawTexture(TEXTURE, x, y, c.u, c.v + 7, c.width, 7);
+			context.raw().flush();
 			x += c.width - 1;
 		}
 		context.pop();

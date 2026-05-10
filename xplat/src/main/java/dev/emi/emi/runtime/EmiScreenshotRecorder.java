@@ -12,7 +12,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.blaze3d.ProjectionType;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.EmiConfig;
 import org.joml.Matrix4fStack;
@@ -55,9 +55,9 @@ public class EmiScreenshotRecorder {
 			scale = EmiConfig.recipeScreenshotScale;
 		}
 
-		RenderTarget framebuffer = new TextureTarget(width * scale, height * scale, true, Minecraft.ON_OSX);
+		RenderTarget framebuffer = new TextureTarget(width * scale, height * scale, true);
 		framebuffer.setClearColor(0f, 0f, 0f, 0f);
-		framebuffer.clear(Minecraft.ON_OSX);
+		framebuffer.clear();
 
 		framebuffer.bindWrite(true);
 
@@ -67,16 +67,15 @@ public class EmiScreenshotRecorder {
 		view.translate(-1.0f, 1.0f, 0.0f);
 		view.scale(2f / width, -2f / height, -1f / 1000f);
 		view.translate(0.0f, 0.0f, 10.0f);
-		EmiPort.applyModelViewMatrix();
 
 		Matrix4f backupProj = RenderSystem.getProjectionMatrix();
-		RenderSystem.setProjectionMatrix(new Matrix4f().identity(), VertexSorting.ORTHOGRAPHIC_Z);
+		ProjectionType backupProjType = RenderSystem.getProjectionType();
+		RenderSystem.setProjectionMatrix(new Matrix4f().identity(), ProjectionType.ORTHOGRAPHIC);
 
 		renderer.run();
 
-		RenderSystem.setProjectionMatrix(backupProj, VertexSorting.ORTHOGRAPHIC_Z);
+		RenderSystem.setProjectionMatrix(backupProj, backupProjType);
 		view.popMatrix();
-		EmiPort.applyModelViewMatrix();
 
 		framebuffer.unbindWrite();
 		client.getMainRenderTarget().bindWrite(true);

@@ -19,7 +19,7 @@ public class EmiStonecuttingRecipe implements EmiRecipe {
 	
 	public EmiStonecuttingRecipe(StonecutterRecipe recipe) {
 		this.id = EmiPort.getId(recipe);
-		input = EmiIngredient.of(recipe.getIngredients().get(0));
+		input = EmiIngredient.of(recipe.input());
 		output = EmiStack.of(EmiPort.getOutput(recipe));
 	}
 

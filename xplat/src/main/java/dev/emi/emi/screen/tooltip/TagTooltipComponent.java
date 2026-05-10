@@ -28,7 +28,7 @@ public class TagTooltipComponent implements EmiTooltipComponent {
 	}
 
 	@Override
-	public int getHeight() {
+	public int getHeight(Font textRenderer) {
 		int s = stacks.size();
 		if (s > MAX_DISPLAYED) {
 			s = MAX_DISPLAYED;
@@ -49,7 +49,7 @@ public class TagTooltipComponent implements EmiTooltipComponent {
 		}
 		if (stacks.size() > MAX_DISPLAYED) {
 			context.resetColor();
-			context.drawTexture(TEXTURE, getWidth(render.text) - 14, getHeight() - 8, 0, 192, 9, 3);
+			context.drawTexture(TEXTURE, getWidth(render.text) - 14, getHeight(render.text) - 8, 0, 192, 9, 3);
 		}
 	}
 }

@@ -42,7 +42,7 @@ public class RemainderTooltipComponent implements EmiTooltipComponent {
 	}
 
 	@Override
-	public int getHeight() {
+	public int getHeight(Font var1) {
 		return 18 * remainders.size();
 	}
 

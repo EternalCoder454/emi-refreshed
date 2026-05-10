@@ -243,7 +243,6 @@ public class EmiSearchWidget extends EditBox {
 			view.translate(this.x + this.width / 2, this.y + this.height / 2, 0);
 			view.rotate(Axis.ZN.rotationDegrees(deg));
 			view.translate(-(this.x + this.width / 2), -(this.y + this.height / 2), 0);
-			EmiPort.applyModelViewMatrix();
 		}
 
 		if (lower.contains("jeb_")) {
@@ -264,7 +263,7 @@ public class EmiSearchWidget extends EditBox {
 			}
 		}
 		context.resetColor();
+		context.raw().flush();
 		view.popMatrix();
-		EmiPort.applyModelViewMatrix();
 	}
 }

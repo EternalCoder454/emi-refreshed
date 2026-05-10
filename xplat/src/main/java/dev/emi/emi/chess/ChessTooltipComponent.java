@@ -17,7 +17,7 @@ class ChessTooltipComponent implements EmiTooltipComponent {
 	}
 
 	@Override
-	public int getHeight() {
+	public int getHeight(Font textRenderer) {
 		return 30;
 	}
 
@@ -28,8 +28,8 @@ class ChessTooltipComponent implements EmiTooltipComponent {
 
 	@Override
 	public void drawTooltip(EmiDrawContext context, TooltipRenderData tooltip) {
-		context.drawTexture(EmiRenderHelper.PIECES, 0, 14, 100, dragged.type().u, dragged.color() == PieceColor.BLACK ? 0 : 16, 16, 16);
-		context.drawTexture(EmiRenderHelper.PIECES, 32, 14, 100, hovered.type().u, hovered.color() == PieceColor.BLACK ? 0 : 16, 16, 16);
+		context.drawTexture(EmiRenderHelper.PIECES, 0, 14, dragged.type().u, dragged.color() == PieceColor.BLACK ? 0 : 16, 16, 16);
+		context.drawTexture(EmiRenderHelper.PIECES, 32, 14, hovered.type().u, hovered.color() == PieceColor.BLACK ? 0 : 16, 16, 16);
 	}
 
 	@Override

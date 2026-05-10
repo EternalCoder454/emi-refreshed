@@ -13,6 +13,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.crafting.RecipeManager;
 import com.google.common.collect.Lists;
 
+import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.EmiDragDropHandler;
 import dev.emi.emi.api.EmiExclusionArea;
 import dev.emi.emi.api.EmiRegistry;
@@ -51,7 +52,7 @@ public class EmiRegistryImpl implements EmiRegistry {
 
 	@Override
 	public RecipeManager getRecipeManager() {
-		return client.level.getRecipeManager();
+		return EmiPort.getRecipeManager();
 	}
 
 	@Override

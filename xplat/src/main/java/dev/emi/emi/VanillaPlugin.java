@@ -19,16 +19,20 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import dev.emi.emi.mixin.accessor.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EnchantmentTags;
@@ -39,18 +43,15 @@ import net.minecraft.world.inventory.BlastFurnaceMenu;
 import net.minecraft.world.inventory.FurnaceMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.SmokerMenu;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.ArmorDyeRecipe;
 import net.minecraft.world.item.crafting.BannerDuplicateRecipe;
 import net.minecraft.world.item.crafting.BlastingRecipe;
@@ -70,19 +71,19 @@ import net.minecraft.world.item.crafting.RepairItemRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.ShieldDecorationRecipe;
-import net.minecraft.world.item.crafting.ShulkerBoxColoring;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
-import net.minecraft.world.item.crafting.SuspiciousStewRecipe;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.item.crafting.TippedArrowRecipe;
+import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ComposterBlock;
-import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.TallFlowerBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
@@ -121,12 +122,6 @@ import dev.emi.emi.handler.CookingRecipeHandler;
 import dev.emi.emi.handler.CraftingRecipeHandler;
 import dev.emi.emi.handler.InventoryRecipeHandler;
 import dev.emi.emi.handler.StonecuttingRecipeHandler;
-import dev.emi.emi.mixin.accessor.AxeItemAccessor;
-import dev.emi.emi.mixin.accessor.HandledScreenAccessor;
-import dev.emi.emi.mixin.accessor.HoeItemAccessor;
-import dev.emi.emi.mixin.accessor.ShovelItemAccessor;
-import dev.emi.emi.mixin.accessor.SmithingTransformRecipeAccessor;
-import dev.emi.emi.mixin.accessor.SmithingTrimRecipeAccessor;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.platform.EmiClient;
 import dev.emi.emi.recipe.EmiAnvilRecipe;
@@ -153,7 +148,6 @@ import dev.emi.emi.recipe.special.EmiGrindstoneDisenchantingRecipe;
 import dev.emi.emi.recipe.special.EmiMapCloningRecipe;
 import dev.emi.emi.recipe.special.EmiRepairItemRecipe;
 import dev.emi.emi.recipe.special.EmiSmithingTrimRecipe;
-import dev.emi.emi.recipe.special.EmiSuspiciousStewRecipe;
 import dev.emi.emi.registry.EmiTags;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiLog;
@@ -271,10 +265,11 @@ public class VanillaPlugin implements EmiPlugin {
 		});
 
 		registry.addGenericExclusionArea((screen, consumer) -> {
-			if (EmiConfig.effectLocation != EffectLocation.HIDDEN && screen instanceof EffectRenderingInventoryScreen<?> inv) {
-				Minecraft client = Minecraft.getInstance();
-				Collection<MobEffectInstance> collection = client.player.getActiveEffects();
-				if (!collection.isEmpty()) {
+			if (EmiConfig.effectLocation != EffectLocation.HIDDEN && (screen instanceof InventoryScreen || screen instanceof CreativeModeInventoryScreen)) {
+			Minecraft client = Minecraft.getInstance();
+			Collection<MobEffectInstance> collection = client.player.getActiveEffects();
+			if (!collection.isEmpty()) {
+				AbstractContainerScreen<?> inv = (AbstractContainerScreen<?>) screen;
 					int k = 33;
 					if (collection.size() > 5) {
 						k = 132 / (collection.size() - 1);
@@ -347,9 +342,9 @@ public class VanillaPlugin implements EmiPlugin {
 				), 
 						EmiStack.of(Items.FILLED_MAP),
 						id, false), recipe);
-			} else if (recipe instanceof ShapedRecipe shaped && recipe.canCraftInDimensions(3, 3)) {
+			} else if (recipe instanceof ShapedRecipe shaped && shaped.getWidth() <= 3 && shaped.getHeight() <= 3) {
 				addRecipeSafe(registry, () -> new EmiShapedRecipe(shaped), recipe);
-			} else if (recipe instanceof ShapelessRecipe shapeless && recipe.canCraftInDimensions(3, 3)) {
+			} else if (recipe instanceof ShapelessRecipe shapeless) {
 				addRecipeSafe(registry, () -> new EmiShapelessRecipe(shapeless), recipe);
 			} else if (recipe instanceof ArmorDyeRecipe dye) {
 				for (Item i : dyeableItems) {
@@ -357,22 +352,12 @@ public class VanillaPlugin implements EmiPlugin {
 						addRecipeSafe(registry, () -> new EmiArmorDyeRecipe(i, synthetic("crafting/dying", EmiUtil.subId(i))), recipe);
 					}
 				}
-			} else if (recipe instanceof SuspiciousStewRecipe stew) {
-				addRecipeSafe(registry, () -> new EmiSuspiciousStewRecipe(id), recipe);
-			} else if (recipe instanceof ShulkerBoxColoring shulker) {
-				for (DyeColor dye : DyeColor.values()) {
-					DyeItem dyeItem = DyeItem.byColor(dye);
-					ResourceLocation sid = synthetic("crafting/shulker_box_dying", EmiUtil.subId(dyeItem));
-					addRecipeSafe(registry, () -> new EmiCraftingRecipe(
-						List.of(EmiStack.of(Items.SHULKER_BOX), EmiStack.of(dyeItem)),
-						EmiStack.of(ShulkerBoxBlock.getColoredItemStack(dye)), sid), recipe);
-				}
 			} else if (recipe instanceof ShieldDecorationRecipe shield) {
 				addRecipeSafe(registry, () -> new EmiBannerShieldRecipe(id), recipe);
 			} else if (recipe instanceof BookCloningRecipe book) {
 				addRecipeSafe(registry, () -> new EmiBookCloningRecipe(id), recipe);
 			} else if (recipe instanceof TippedArrowRecipe tipped) {
-				EmiPort.getPotionRegistry().holders().forEach(entry -> {
+				EmiPort.getPotionRegistry().listElements().forEach(entry -> {
 					EmiStack arrow = EmiStack.of(Items.ARROW);
 					addRecipeSafe(registry, () -> new EmiCraftingRecipe(List.of(
 							arrow, arrow, arrow, arrow,
@@ -405,16 +390,17 @@ public class VanillaPlugin implements EmiPlugin {
 				addRecipeSafe(registry, () -> new EmiMapCloningRecipe(id), recipe);
 			} else if (!(recipe instanceof CustomRecipe)) {
 				try {
-					if (!recipe.getIngredients().isEmpty() && !EmiPort.getOutput(recipe).isEmpty() && recipe.canCraftInDimensions(3, 3)) {
-						boolean shapeless = recipe.canCraftInDimensions(1, recipe.getIngredients().size()) && recipe.canCraftInDimensions(recipe.getIngredients().size(), 1);
+					List<Ingredient> ingredients = recipe.placementInfo().ingredients();
+					if (!ingredients.isEmpty() && !EmiPort.getOutput(recipe).isEmpty()) {
+						boolean shapeless = ingredients.size() <= 1 || ingredients.size() <= 3;
 						List<EmiIngredient> input;
 						if (shapeless) {
-							input = recipe.getIngredients().stream().map(EmiIngredient::of).toList();
+							input = ingredients.stream().map(EmiIngredient::of).toList();
 						} else {
-							int width = recipe.canCraftInDimensions(2, 3) ? recipe.canCraftInDimensions(1, 3) ? 1 : 2 : 3;
+							int width = recipe instanceof ShapedRecipe shaped ? shaped.getWidth() : 3;
 							input = Lists.newArrayList();
-							for (int i = 0; i < recipe.getIngredients().size(); i++) {
-								input.add(EmiIngredient.of(recipe.getIngredients().get(i)));
+							for (int i = 0; i < ingredients.size(); i++) {
+								input.add(EmiIngredient.of(ingredients.get(i)));
 								if ((i + 1) % width == 0) {
 									for (int j = width; j < 3; j++) {
 										input.add(EmiStack.EMPTY);
@@ -446,12 +432,12 @@ public class VanillaPlugin implements EmiPlugin {
 		for (SmithingRecipe recipe : getRecipes(registry, RecipeType.SMITHING)) {
 			//addRecipeSafe(registry, () -> new EmiSmithingRecipe(recipe), recipe);
 			Minecraft client = Minecraft.getInstance();
-			if (recipe instanceof SmithingTransformRecipeAccessor stra) {
-				addRecipeSafe(registry, () -> new EmiSmithingRecipe(EmiIngredient.of(stra.getTemplate()), EmiIngredient.of(stra.getBase()),
-					EmiIngredient.of(stra.getAddition()), EmiStack.of(EmiPort.getOutput(recipe)), EmiPort.getId(recipe)), recipe);
-			} else if (recipe instanceof SmithingTrimRecipeAccessor stra) {
-				addRecipeSafe(registry, () -> new EmiSmithingTrimRecipe(EmiIngredient.of(stra.getTemplate()), EmiIngredient.of(stra.getBase()),
-					EmiIngredient.of(stra.getAddition()), EmiStack.of(EmiPort.getOutput(recipe)), recipe), recipe);
+			if (recipe instanceof SmithingTransformRecipe str) {
+				addRecipeSafe(registry, () -> new EmiSmithingRecipe(EmiIngredient.of(str.templateIngredient().get()), EmiIngredient.of(str.baseIngredient().get()),
+					EmiIngredient.of(str.additionIngredient().get()), EmiStack.of(EmiPort.getOutput(recipe)), EmiPort.getId(recipe)), recipe);
+			} else if (recipe instanceof SmithingTransformRecipe str) {
+				addRecipeSafe(registry, () -> new EmiSmithingTrimRecipe(EmiIngredient.of(str.templateIngredient().get()), EmiIngredient.of(str.baseIngredient().get()),
+					EmiIngredient.of(str.additionIngredient().get()), EmiStack.of(EmiPort.getOutput(recipe)), recipe), recipe);
 			}
 		}
 		for (StonecutterRecipe recipe : getRecipes(registry, RecipeType.STONECUTTING)) {
@@ -490,14 +476,16 @@ public class VanillaPlugin implements EmiPlugin {
 			}
 			try {
 				if (i.components().getOrDefault(DataComponents.MAX_DAMAGE, 0) > 0) {
-					if (i instanceof ArmorItem ai && ai.getMaterial() != null && ai.getMaterial().value().repairIngredient().get() != null
-							&& !ai.getMaterial().value().repairIngredient().get().isEmpty()) {
-						ResourceLocation id = synthetic("anvil/repairing/material", EmiUtil.subId(i) + "/" + EmiUtil.subId(ai.getMaterial().value().repairIngredient().get().getItems()[0].getItem()));
-						addRecipeSafe(registry, () -> new EmiAnvilRecipe(EmiStack.of(i), EmiIngredient.of(ai.getMaterial().value().repairIngredient().get()), id));
-					} else if (i instanceof TieredItem ti && ti.getTier().getRepairIngredient() != null
-							&& !ti.getTier().getRepairIngredient().isEmpty()) {
-						ResourceLocation id = synthetic("anvil/repairing/material", EmiUtil.subId(i) + "/" + EmiUtil.subId(ti.getTier().getRepairIngredient().getItems()[0].getItem()));
-						addRecipeSafe(registry, () -> new EmiAnvilRecipe(EmiStack.of(i), EmiIngredient.of(ti.getTier().getRepairIngredient()), id));
+					ItemStack defaultStack = i.getDefaultInstance();
+					Repairable repairable = defaultStack.get(DataComponents.REPAIRABLE);
+					if (repairable != null) {
+						EmiIngredient repairIngredient = EmiIngredient.of(repairable.items().stream()
+							.map(h -> EmiStack.of(h.value())).toList());
+						if (!repairIngredient.isEmpty()) {
+							Item firstItem = repairable.items().iterator().next().value();
+							ResourceLocation id = synthetic("anvil/repairing/material", EmiUtil.subId(i) + "/" + EmiUtil.subId(firstItem));
+							addRecipeSafe(registry, () -> new EmiAnvilRecipe(EmiStack.of(i), repairIngredient, id));
+						}
 					}
 				}
 				// TODO used to be isDamageable, the 20.1 impl of that method appears to just be maxDamage > 0 though
@@ -518,8 +506,7 @@ public class VanillaPlugin implements EmiPlugin {
 				};
 				for (Enchantment e : targetedEnchantments) {
 					if (e.canEnchant(defaultStack) && defaultStack.isEnchantable()
-							&& defaultStack.getItem().isEnchantable(defaultStack)
-							&& EmiAgnos.isEnchantable(defaultStack, e)) {
+						&& EmiAgnos.isEnchantable(defaultStack, e)) {
 						consumer.accept(e);
 						acceptableEnchantments++;
 					}
@@ -711,7 +698,7 @@ public class VanillaPlugin implements EmiPlugin {
 			.output(EmiStack.of(Items.BASALT))
 			.build());
 
-		EmiPort.getFluidRegistry().holders().forEach(entry -> {
+		EmiPort.getFluidRegistry().listElements().forEach(entry -> {
 			Fluid fluid = entry.value();
 			Item bucket = fluid.getBucket();
 			if (fluid.isSource(fluid.defaultFluidState()) && !fluid.defaultFluidState().createLegacyBlock().isAir() && bucket != Items.AIR && fluid instanceof FlowingFluid) {
@@ -820,7 +807,9 @@ public class VanillaPlugin implements EmiPlugin {
 	}
 
 	private static <C extends RecipeInput, T extends Recipe<C>> Iterable<T> getRecipes(EmiRegistry registry, RecipeType<T> type) {
-		return registry.getRecipeManager().getAllRecipesFor(type).stream().map(e -> e.value())::iterator;
+		return registry.getRecipeManager().getRecipes().stream()
+			.filter(holder -> holder.value().getType() == type)
+			.map(e -> (T) e.value())::iterator;
 	}
 
 	private static void safely(String name, Runnable runnable) {

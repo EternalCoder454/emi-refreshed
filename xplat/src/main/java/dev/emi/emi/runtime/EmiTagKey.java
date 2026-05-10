@@ -52,12 +52,12 @@ public class EmiTagKey<T> {
 
 	public Registry<T> registry() {
 		Minecraft client = Minecraft.getInstance();
-		return client.level.registryAccess().registry(raw.registry()).orElse(null);
+		return client.level.registryAccess().lookup(raw.registry()).orElse(null);
 	}
 
 	public Stream<T> stream() {
 		Registry<T> registry = registry();
-		Optional<Named<T>> opt = registry.getTag(raw);
+		Optional<Named<T>> opt = registry.get(raw);
 		if (opt.isEmpty()) {
 			return Stream.of();
 		} else {
@@ -154,7 +154,7 @@ public class EmiTagKey<T> {
 	}
 
 	public static <T> Stream<EmiTagKey<T>> fromRegistry(Registry<T> registry) {
-		return registry.getTagNames().map(EmiTagKey::of);
+		return registry.getTags().map(named -> EmiTagKey.of(named.key()));
 	}
 
 	public static void reload() {

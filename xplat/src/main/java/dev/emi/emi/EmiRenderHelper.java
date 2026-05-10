@@ -377,10 +377,6 @@ public class EmiRenderHelper {
 			}
 
 			context.pop();
-
-			context.raw().flush();
-			renderRecipeBackground(recipe, context, x, y);
-			context.raw().flush();
 		} catch (Throwable e) {
 			EmiLog.error("Error rendering recipe", e);
 		}

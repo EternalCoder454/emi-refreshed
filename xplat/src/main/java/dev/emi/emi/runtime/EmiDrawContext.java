@@ -14,6 +14,7 @@ import net.minecraft.util.FormattedCharSequence;
 public class EmiDrawContext {
 	private final Minecraft client = Minecraft.getInstance();
 	private final GuiGraphics context;
+	private boolean overlay = false;
 	
 	private EmiDrawContext(GuiGraphics context) {
 		this.context = context;
@@ -48,15 +49,15 @@ public class EmiDrawContext {
 	}
 
 	public void drawTexture(ResourceLocation texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
-		context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
+		context.blit(overlay ? RenderType::guiTexturedOverlay : RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
 	}
 
 	public void drawTexture(ResourceLocation texture, int x, int y, int width, int height, float u, float v, int regionWidth, int regionHeight, int textureWidth, int textureHeight) {
-		context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, regionWidth, regionHeight, textureWidth, textureHeight);
+		context.blit(overlay ? RenderType::guiTexturedOverlay : RenderType::guiTextured, texture, x, y, u, v, width, height, regionWidth, regionHeight, textureWidth, textureHeight);
 	}
 
 	public void fill(int x, int y, int width, int height, int color) {
-		context.fill(x, y, x + width, y + height, color);
+		context.fill(overlay ? RenderType.guiOverlay() : RenderType.gui(), x, y, x + width, y + height, color);
 	}
 
 	public void drawText(Component text, int x, int y) {
@@ -109,6 +110,10 @@ public class EmiDrawContext {
 	}
 
 	public void disableBlend() {
+	}
+
+	public void setOverlay(boolean overlay) {
+		this.overlay = overlay;
 	}
 
 	public void resetColor() {

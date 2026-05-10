@@ -33,8 +33,10 @@ public interface EmiTooltipComponent extends ClientTooltipComponent {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		context.push();
 		context.matrices().translate(x, y, 0);
+		context.setOverlay(true);
 		Minecraft client = Minecraft.getInstance();
 		drawTooltip(context, new TooltipRenderData(textRenderer, client.getItemRenderer(), x, y));
+		context.setOverlay(false);
 		context.pop();
 		raw.flush();
 	}

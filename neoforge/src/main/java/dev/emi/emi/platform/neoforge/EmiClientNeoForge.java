@@ -16,7 +16,6 @@ import dev.emi.emi.screen.StackBatcher;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -25,14 +24,14 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-@EventBusSubscriber(modid = "emi", bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = "emi", value = Dist.CLIENT)
 public class EmiClientNeoForge {
 	
 	@SubscribeEvent
@@ -50,12 +49,12 @@ public class EmiClientNeoForge {
 	@SubscribeEvent
 	public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
 		Minecraft client = Minecraft.getInstance();
-		EmiTags.registerTagModels(client.getResourceManager(), event::register, ModelResourceLocation.STANDALONE_VARIANT);
+		EmiTags.registerTagModels(client.getResourceManager(), mrl -> event.register(mrl.id()), "standalone");
 	}
 
 	@SubscribeEvent
-	public static void registerResourceReloaders(RegisterClientReloadListenersEvent event) {
-		EmiData.init(reloader -> event.registerReloadListener(reloader));
+	public static void registerResourceReloaders(AddClientReloadListenersEvent event) {
+		EmiData.init(reloader -> event.addListener(reloader.getEmiId(), reloader));
 	}
 
 	public static void tagsReloaded(TagsUpdatedEvent event) {

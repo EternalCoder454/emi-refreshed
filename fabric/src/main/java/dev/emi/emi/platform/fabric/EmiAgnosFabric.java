@@ -27,7 +27,7 @@ import dev.emi.emi.screen.FakeScreen;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
-import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -138,14 +138,14 @@ public class EmiAgnosFabric extends EmiAgnos {
 		PotionBrewing brewingRegistry = Minecraft.getInstance().level != null ? Minecraft.getInstance().level.potionBrewing() : PotionBrewing.EMPTY;
 		BrewingRecipeRegistryAccessor brewingRegistryAccess = (BrewingRecipeRegistryAccessor)brewingRegistry;
 		for (Ingredient ingredient : brewingRegistryAccess.getPotionTypes()) {
-			for (ItemStack stack : ingredient.items().stream().map(h -> new ItemStack(h.value())).toArray(ItemStack[]::new)) {
+			for (ItemStack stack : ingredient.items().map(h -> new ItemStack(h.value())).toArray(ItemStack[]::new)) {
 				String pid = EmiUtil.subId(stack.getItem());
 				for (PotionBrewing.Mix<Potion> recipe : brewingRegistryAccess.getPotionRecipes()) {
 					try {
 						Ingredient recipeIngredient = recipe.ingredient();
-						if (!recipeIngredient.items().isEmpty()) {
+						if (!recipeIngredient.items().findAny().isEmpty()) {
 						ResourceLocation id = EmiPort.id("emi", "/brewing/" + pid
-							+ "/" + EmiUtil.subId(recipeIngredient.items().get(0).value())
+							+ "/" + EmiUtil.subId(recipeIngredient.items().findFirst().get().value())
 							+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.from().value()))
 							+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.to().value())));
 						registry.addRecipe(new EmiBrewingRecipe(
@@ -162,8 +162,8 @@ public class EmiAgnosFabric extends EmiAgnos {
 		for (PotionBrewing.Mix<Item> recipe : brewingRegistryAccess.getItemRecipes()) {
 			try {
 				Ingredient recipeIngredient = recipe.ingredient();
-				if (!recipeIngredient.items().isEmpty()) {
-					String gid = EmiUtil.subId(recipeIngredient.items().get(0).value());
+				if (!recipeIngredient.items().findAny().isEmpty()) {
+					String gid = EmiUtil.subId(recipeIngredient.items().findFirst().get().value());
 					String iid = EmiUtil.subId(recipe.from().value());
 					String oid = EmiUtil.subId(recipe.to().value());
 					Consumer<Holder<Potion>> potionRecipeGen = entry -> {
@@ -231,7 +231,7 @@ public class EmiAgnosFabric extends EmiAgnos {
 
 	@Override
 	protected boolean canBatchAgnos(ItemStack stack) {
-		return ColorProviderRegistry.ITEM.get(stack.getItem()) == null;
+		return true;
 	}
 
 	@Override

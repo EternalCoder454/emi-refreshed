@@ -19,7 +19,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 
@@ -38,7 +40,8 @@ import com.mojang.blaze3d.vertex.VertexSorting;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.config.EmiConfig;
-import dev.emi.emi.mixin.accessor.ItemRendererAccessor;
+import dev.emi.emi.mixin.accessor.ItemStackRenderStateAccessor;
+import dev.emi.emi.mixin.accessor.LayerRenderStateAccessor;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiLog;
 
@@ -153,8 +156,12 @@ public class StackBatcher {
 					b.renderForBatch(b.isSideLit() ? imm : unlitFacade, draw, x-this.x, y + this.y, z, delta);
 					if (sodiumSpriteHandle != null && !stack.isEmpty()) {
 						ItemStack is = stack.getEmiStacks().get(0).getItemStack();
-						Minecraft client = Minecraft.getInstance();
-						BakedModel model = ((ItemRendererAccessor) client.getItemRenderer()).emi$getItemModelShaper().getItemModel(is);
+					Minecraft client = Minecraft.getInstance();
+					ItemStackRenderState renderState = new ItemStackRenderState();
+					client.getItemModelResolver().updateForTopItem(renderState, is, ItemDisplayContext.GUI, false, client.level, null, 0);
+					if (((ItemStackRenderStateAccessor) renderState).emi$getActiveLayerCount() > 0) {
+						ItemStackRenderState.LayerRenderState layer = ((ItemStackRenderStateAccessor) renderState).emi$getLayers()[0];
+						BakedModel model = ((LayerRenderStateAccessor) layer).emi$getModel();
 						if (model != null) {
 							List<BakedQuad> quads = EmiPort.getQuads(model);
 							for (BakedQuad quad : quads) {
@@ -163,6 +170,7 @@ public class StackBatcher {
 								}
 							}
 						}
+					}
 					}
 				} catch (Throwable t) {
 					if (EmiConfig.devMode) {

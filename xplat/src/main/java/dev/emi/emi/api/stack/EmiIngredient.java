@@ -76,10 +76,10 @@ public interface EmiIngredient extends EmiRenderable {
 	}
 
 	public static EmiIngredient of(Ingredient ingredient) {
-		if (ingredient == null || ingredient.items().isEmpty()) {
+		if (ingredient == null || ingredient.items().findAny().isEmpty()) {
 			return EmiStack.EMPTY;
 		}
-		ItemStack[] stacks = ingredient.items().stream().map(h -> new ItemStack(h.value())).toArray(ItemStack[]::new);
+		ItemStack[] stacks = ingredient.items().map(h -> new ItemStack(h.value())).toArray(ItemStack[]::new);
 		int amount = 1;
 		if (stacks.length != 0) {
 			amount = stacks[0].getCount();
@@ -94,10 +94,10 @@ public interface EmiIngredient extends EmiRenderable {
 	}
 
 	public static EmiIngredient of(Ingredient ingredient, long amount) {
-		if (ingredient == null || ingredient.items().isEmpty()) {
+		if (ingredient == null || ingredient.items().findAny().isEmpty()) {
 			return EmiStack.EMPTY;
 		}
-		return EmiTags.getIngredient(Item.class, Arrays.stream(ingredient.items().stream().map(h -> new ItemStack(h.value())).toArray(ItemStack[]::new)).map(EmiStack::of).toList(), amount);
+		return EmiTags.getIngredient(Item.class, Arrays.stream(ingredient.items().map(h -> new ItemStack(h.value())).toArray(ItemStack[]::new)).map(EmiStack::of).toList(), amount);
 	}
 
 	public static EmiIngredient of(List<? extends EmiIngredient> list) {

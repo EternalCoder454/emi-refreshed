@@ -9,8 +9,8 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
@@ -125,14 +125,15 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	
 	@Override
 	public boolean isSideLit() {
-		return client.getItemRenderer().getModel(getItemStack(), null, null, 0).usesBlockLight();
+		ItemStackRenderState state = new ItemStackRenderState();
+		Minecraft.getInstance().getItemModelResolver().updateForTopItem(state, getItemStack(), ItemDisplayContext.GUI, false, null, null, 0);
+		return state.usesBlockLight();
 	}
 	
 	@Override
 	public boolean isUnbatchable() {
 		ItemStack stack = getItemStack();
-		return unbatchable || stack.hasFoil() || stack.isDamaged() || !EmiAgnos.canBatch(stack)
-			|| client.getItemRenderer().getModel(getItemStack(), null, null, 0).isCustomRenderer();
+		return unbatchable || stack.hasFoil() || stack.isDamaged() || !EmiAgnos.canBatch(stack);
 	}
 	
 	@Override
@@ -145,13 +146,14 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
 		ItemStack stack = getItemStack();
 		ItemRenderer ir = client.getItemRenderer();
-		BakedModel model = ir.getModel(stack, null, null, 0);
+		ItemStackRenderState state = new ItemStackRenderState();
+		Minecraft.getInstance().getItemModelResolver().updateForTopItem(state, stack, ItemDisplayContext.GUI, false, null, null, 0);
 		context.push();
 		try {
-			context.matrices().translate(x, y, 100.0f + z + (model.isGui3d() ? 50 : 0));
+			context.matrices().translate(x, y, 100.0f + z + (state.isGui3d() ? 50 : 0));
 			context.matrices().translate(8.0, 8.0, 0.0);
 			context.matrices().scale(16.0f, -16.0f, 16.0f);
-			ir.render(stack, ItemDisplayContext.GUI, false, context.matrices(), vcp, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, model);
+			ir.renderStatic(stack, ItemDisplayContext.GUI, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, context.matrices(), vcp, null, 0);
 		} finally {
 			context.pop();
 		}

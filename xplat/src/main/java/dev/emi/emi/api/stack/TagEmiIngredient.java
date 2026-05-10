@@ -14,7 +14,6 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 import org.joml.Matrix4f;
 
@@ -140,7 +139,7 @@ public class TagEmiIngredient implements EmiIngredient {
 				
 				((ItemRendererAccessor) client.getItemRenderer())
 					.invokeRenderBakedItemModel(model,
-						ItemStack.EMPTY, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, context.matrices(), 
+						new int[]{-1}, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, context.matrices(), 
 						ItemRenderer.getFoilBuffer(immediate,
 							Sheets.translucentItemSheet(), true, false));
 				immediate.endBatch();

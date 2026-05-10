@@ -10,6 +10,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ModelManager.class)
 public interface BakedModelManagerAccessor {
 	
-	@Accessor("bakedRegistry")
+	@Accessor("bakedBlockStateModels")
     Map<ModelResourceLocation, BakedModel> getModels();
 }

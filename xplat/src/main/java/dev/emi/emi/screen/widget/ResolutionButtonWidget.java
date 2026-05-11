@@ -5,6 +5,8 @@ import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.api.render.EmiTexture;
@@ -46,12 +48,13 @@ public class ResolutionButtonWidget extends Button {
 		context.drawTexture(EmiRenderHelper.WIDGETS, x, y, u, 128, width, height);
 		if (this.isHovered()) {
 			Minecraft client = Minecraft.getInstance();
-			raw.renderComponentTooltip(client.font, List.of(
+			List<ClientTooltipComponent> tooltipComponents = List.of(
 				EmiPort.translatable("tooltip.emi.resolution"),
 				EmiPort.translatable("tooltip.emi.select_resolution"),
 				EmiPort.translatable("tooltip.emi.default_resolution"),
 				EmiPort.translatable("tooltip.emi.clear_resolution")
-			), mouseX, mouseY);
+			).stream().map(c -> ClientTooltipComponent.create(c.getVisualOrderText())).toList();
+			context.deferTooltip(() -> raw.renderTooltip(client.font, tooltipComponents, mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null));
 		}
 		stack.render(raw, x + 1, y + 1, delta);
 	}

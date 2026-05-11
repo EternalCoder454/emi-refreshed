@@ -8,6 +8,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -123,7 +125,11 @@ public abstract class AbstractInventoryScreenMixin {
 		}
 		if (hovered != null && size > 1) {
 			List<Component> list = List.of(this.getEffectName(hovered), MobEffectUtil.formatDuration(hovered, 1.0f, minecraft.level.tickRateManager().tickrate()));
-			context.raw().renderTooltip(minecraft.font, list, Optional.empty(), mouseX, Math.max(mouseY, 16));
+			List<ClientTooltipComponent> components = list.stream()
+					.map(Component::getVisualOrderText)
+					.map(ClientTooltipComponent::create)
+					.toList();
+			context.deferTooltip(() -> context.raw().renderTooltip(minecraft.font, components, mouseX, Math.max(mouseY, 16), DefaultTooltipPositioner.INSTANCE, null));
 		}
 	}
 

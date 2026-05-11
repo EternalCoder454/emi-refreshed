@@ -3,13 +3,14 @@ package dev.emi.emi;
 import java.text.DecimalFormat;
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -17,16 +18,9 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.material.Fluid;
-import org.joml.Matrix4f;
 import org.joml.Vector2i;
-
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat.Mode;
+import dev.emi.emi.mixin.accessor.GuiGraphicsAccessor;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.handler.EmiCraftContext;
@@ -37,7 +31,6 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.config.EmiConfig;
-import dev.emi.emi.mixin.accessor.DrawContextAccessor;
 import dev.emi.emi.mixin.accessor.OrderedTextTooltipComponentAccessor;
 import dev.emi.emi.registry.EmiRecipeFiller;
 import dev.emi.emi.runtime.EmiDrawContext;
@@ -64,54 +57,23 @@ public class EmiRenderHelper {
 		int innerHeight = h - cornerLength * 2;
 		int coriw = cor + innerWidth;
 		int corih = cor + innerHeight;
-		// TL
 		context.drawTexture(texture, x,         y,         cor,        cor,         u,          v,          cor, cor, 256, 256);
-		// T
 		context.drawTexture(texture, x + cor,   y,         innerWidth, cor,         u + cor,    v,          cen, cor, 256, 256);
-		// TR
 		context.drawTexture(texture, x + coriw, y,         cor,        cor,         u + corcen, v,          cor, cor, 256, 256);
-		// L
 		context.drawTexture(texture, x,         y + cor,   cor,        innerHeight, u,          v + cor,    cor, cen, 256, 256);
-		// C
 		context.drawTexture(texture, x + cor,   y + cor,   innerWidth, innerHeight, u + cor,    v + cor,    cen, cen, 256, 256);
-		// R
 		context.drawTexture(texture, x + coriw, y + cor,   cor,        innerHeight, u + corcen, v + cor,    cor, cen, 256, 256);
-		// BL
 		context.drawTexture(texture, x,         y + corih, cor,        cor,         u,          v + corcen, cor, cor, 256, 256);
-		// B
 		context.drawTexture(texture, x + cor,   y + corih, innerWidth, cor,         u + cor,    v + corcen, cen, cor, 256, 256);
-		// BR
 		context.drawTexture(texture, x + coriw, y + corih, cor,        cor,         u + corcen, v + corcen, cor, cor, 256, 256);
 	}
 
-	public static void drawTintedSprite(PoseStack matrices, TextureAtlasSprite sprite, int color, int x, int y, int xOff, int yOff, int width, int height) {
+	public static void drawTintedSprite(GuiGraphics draw, TextureAtlasSprite sprite, int color, int x, int y, int xOff, int yOff, int width, int height) {
 		if (sprite == null) {
 			return;
 		}
-		Minecraft.getInstance().renderBuffers().bufferSource().endBatch();
-		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-		
-		float r = ((color >> 16) & 255) / 256f;
-		float g = ((color >> 8) & 255) / 256f;
-		float b = (color & 255) / 256f;
-		
-		BufferBuilder bufferBuilder = Tesselator.getInstance().begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-		float xMin = (float) x;
-		float yMin = (float) y;
-		float xMax = xMin + width;
-		float yMax = yMin + height;
-		float uSpan = sprite.getU1() - sprite.getU0();
-		float vSpan = sprite.getV1() - sprite.getV0();
-		float uMin = sprite.getU0() + uSpan / 16 * xOff;
-		float vMin = sprite.getV0() + vSpan / 16 * yOff;
-		float uMax = sprite.getU1() - uSpan / 16 * (16 - (width + xOff));
-		float vMax = sprite.getV1() - vSpan / 16 * (16 - (height + yOff));
-		Matrix4f model = matrices.last().pose();
-		bufferBuilder.addVertex(model, xMin, yMax, 1).setUv(uMin, vMax).setColor(r, g, b, 1);
-		bufferBuilder.addVertex(model, xMax, yMax, 1).setUv(uMax, vMax).setColor(r, g, b, 1);
-		bufferBuilder.addVertex(model, xMax, yMin, 1).setUv(uMax, vMin).setColor(r, g, b, 1);
-		bufferBuilder.addVertex(model, xMin, yMin, 1).setUv(uMin, vMin).setColor(r, g, b, 1);
-		EmiPort.draw(bufferBuilder, RenderType.guiTextured(sprite.atlasLocation()));
+		int tint = color == -1 ? -1 : (0xFF000000 | color);
+		((GuiGraphicsAccessor) draw).invokeBlitSprite(RenderPipelines.GUI_TEXTURED, sprite, 16, 16, xOff, yOff, x, y, width, height, tint);
 	}
 
 	public static void drawScroll(EmiDrawContext context, int x, int y, int width, int height, int progress, int total, int color) {
@@ -174,8 +136,7 @@ public class EmiRenderHelper {
 		if (components.isEmpty()) {
 			return;
 		}
-		y = Math.max(16, y);
-		// Some mods assume this list will be mutable, oblige them
+		int finalY = Math.max(16, y);
 		List<ClientTooltipComponent> mutable = Lists.newArrayList();
 		int wrapWidth = Math.max(components.stream()
 			.map(c -> c instanceof ClientTextTooltip ? 0 : c.getWidth(CLIENT.font))
@@ -185,7 +146,6 @@ public class EmiRenderHelper {
 				try {
 					FormattedCharSequence ordered = ((OrderedTextTooltipComponentAccessor) ottc).getText();
 					MutableComponent text = Component.empty();
-					// Mojang, what is this??? Please give me some other way to wrap
 					ordered.accept(((var1, style, codepoint) -> {
 						text.append(EmiPort.literal(String.valueOf(Character.toChars(codepoint)), style));
 						return true;
@@ -203,15 +163,13 @@ public class EmiRenderHelper {
 		}
 		context.enableDepthTest();
 		context.resetColor();
-		((DrawContextAccessor) context.raw()).invokeDrawTooltip(CLIENT.font, mutable, x, y, positioner, null);
+		List<ClientTooltipComponent> finalMutable = mutable;
+		context.deferTooltip(() -> context.raw().renderTooltip(CLIENT.font, finalMutable, x, finalY, positioner, null));
 	}
 
 	public static void drawSlotHightlight(EmiDrawContext context, int x, int y, int w, int h, int z) {
 		context.push();
-		context.matrices().translate(0, 0, z);
-		context.raw().flush();
 		context.fill(x, y, w, h, -2130706433);
-		context.raw().flush();
 		context.pop();
 	}
 
@@ -254,21 +212,15 @@ public class EmiRenderHelper {
 
 	public static void renderAmount(EmiDrawContext context, int x, int y, Component amount) {
 		context.push();
-		context.matrices().translate(0, 0, 200);
 		int tx = x + 17 - Math.min(14, CLIENT.font.width(amount));
-		context.raw().flush();
 		context.drawTextWithShadow(amount, tx, y + 9, -1);
-		context.raw().flush();
 		context.pop();
 	}
 
 	public static void renderIngredient(EmiIngredient ingredient, EmiDrawContext context, int x, int y) {
 		context.enableDepthTest();
 		context.push();
-		context.matrices().translate(0, 0, 200);
-		context.raw().flush();
 		context.drawTexture(WIDGETS, x, y, 8, 252, 4, 4);
-		context.raw().flush();
 		context.pop();
 	}
 
@@ -276,10 +228,7 @@ public class EmiRenderHelper {
 		if (ingredient.getEmiStacks().size() > 1) {
 			context.enableDepthTest();
 			context.push();
-			context.matrices().translate(0, 0, 200);
-			context.raw().flush();
 			context.drawTexture(WIDGETS, x, y + 12, 0, 252, 4, 4);
-			context.raw().flush();
 			context.pop();
 		}
 	}
@@ -292,11 +241,8 @@ public class EmiRenderHelper {
 					renderCatalyst(ingredient, context, x, y);
 				} else {
 					context.push();
-					context.matrices().translate(0, 0, 200);
 					context.enableDepthTest();
-					context.raw().flush();
 					context.drawTexture(WIDGETS, x + 12, y, 4, 252, 4, 4);
-					context.raw().flush();
 					context.pop();
 				}
 				return;
@@ -307,21 +253,15 @@ public class EmiRenderHelper {
 	public static void renderCatalyst(EmiIngredient ingredient, EmiDrawContext context, int x, int y) {
 		context.enableDepthTest();
 		context.push();
-		context.matrices().translate(0, 0, 200);
-		context.raw().flush();
 		context.drawTexture(WIDGETS, x + 12, y, 12, 252, 4, 4);
-		context.raw().flush();
 		context.pop();
 		return;
 	}
 
 	public static void renderRecipeFavorite(EmiIngredient ingredient, EmiDrawContext context, int x, int y) {
 		context.push();
-		context.matrices().translate(0, 0, 200);
 		context.enableDepthTest();
-		context.raw().flush();
 		context.drawTexture(WIDGETS, x + 12, y, 16, 252, 4, 4);
-		context.raw().flush();
 		context.pop();
 		return;
 	}
@@ -335,7 +275,6 @@ public class EmiRenderHelper {
 	public static void renderRecipe(EmiRecipe recipe, EmiDrawContext context, int x, int y, boolean showMissing, int overlayColor) {
 		try {
 			renderRecipeBackground(recipe, context, x, y);
-			context.raw().flush();
 
 			List<Widget> widgets = Lists.newArrayList();
 			WidgetHolder holder = new WidgetHolder() {
@@ -355,7 +294,7 @@ public class EmiRenderHelper {
 			};
 
 			context.push();
-			context.matrices().translate(x + 4, y + 4, 0);
+			context.matrices().translate(x + 4, y + 4);
 
 			recipe.addWidgets(holder);
 			float delta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);

@@ -17,12 +17,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.lwjgl.glfw.GLFW;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiRenderHelper;
@@ -210,11 +207,10 @@ public class BoMScreen extends Screen {
 		int mx = (int) ((mouseX - width / 2) / scale - offX);
 		int my = (int) ((mouseY - height / 2) / scale - offY);
 
-		Matrix4fStack view = RenderSystem.getModelViewStack();
-		view.pushMatrix();
-		view.translate(width / 2, height / 2, 0);
-		view.scale(scale, scale, 1);
-		view.translate((float)offX, (float)offY, 0);
+		context.push();
+		context.matrices().translate(width / 2, height / 2);
+		context.matrices().scale(scale, scale);
+		context.matrices().translate((float)offX, (float)offY);
 		if (BoM.tree != null) {
 			batcher.begin(0, 0, 0);
 			int cy = nodeHeight * NODE_VERTICAL_SPACING * 2;
@@ -235,16 +231,12 @@ public class BoMScreen extends Screen {
 			context.drawTextWithShadow(EmiPort.literal("x" + BoM.tree.batches),
 					batches.x() + 6, batches.y() + batches.height() / 2 - 4, color);
 
-			context.raw().flush();
 			if (mode.contains(mx, my)) {
 				context.setColor(0.5f, 0.6f, 1f, 1f);
 			}
 			context.drawTexture(EmiRenderHelper.WIDGETS, mode.x(), mode.y(), BoM.craftingMode ? 16 : 0, 146, mode.width(), mode.height());
-			context.raw().flush();
 			context.setColor(1f, 1f, 1f, 1f);
-			context.raw().flush();
 			batcher.draw();
-			context.raw().flush();
 		} else {
 			context.drawCenteredText(EmiPort.translatable("emi.tree_welcome", EmiRenderHelper.getEmiText()), 0, -72);
 			context.drawCenteredText(EmiPort.translatable("emi.no_tree"), 0, -48);
@@ -252,15 +244,12 @@ public class BoMScreen extends Screen {
 			context.drawCenteredText(EmiPort.translatable("emi.random_tree_input"), 0, 0);
 		}
 
-		context.raw().flush();
-		view.popMatrix();
+		context.pop();
 
-		context.raw().flush();
 		if (help.contains(mouseX, mouseY)) {
 			context.setColor(0.5f, 0.6f, 1f, 1f);
 		}
 		context.drawTexture(EmiRenderHelper.WIDGETS, help.x(), help.y(), 0, 200, help.width(), help.height());
-		context.raw().flush();
 		context.setColor(1f, 1f, 1f, 1f);
 
 		Hover hover = getHoveredStack(mouseX, mouseY);
@@ -279,6 +268,7 @@ public class BoMScreen extends Screen {
 			List<ClientTooltipComponent> list =  EmiTooltip.splitTranslate("tooltip.emi.bom.help");
 			EmiRenderHelper.drawTooltip(this, context, list, width - 18, height - 18, width);
 		}
+		context.flushDeferredTooltips();
 	}
 
 	public Hover getHoveredStack(int mx, int my) {
@@ -351,7 +341,7 @@ public class BoMScreen extends Screen {
 			drawLine(context, x1, y2, x2, y1);
 			return;
 		}
-		context.fill(x1, y1, x2 - x1 + 1, y2 - y1 + 1, 0xFFFFFFFF);
+		context.fill(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
 	}
 
 	public float getScale() {

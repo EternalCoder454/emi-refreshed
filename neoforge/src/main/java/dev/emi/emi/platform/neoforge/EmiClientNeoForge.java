@@ -61,7 +61,7 @@ public class EmiClientNeoForge {
 		if (base != null) {
 			Minecraft client = Minecraft.getInstance();
 			context.push();
-			context.matrices().translate(-screen.getGuiLeft(), -screen.getGuiTop(), 0.0);
+			context.matrices().translate(-screen.getGuiLeft(), -screen.getGuiTop());
 			EmiScreenManager.render(context, event.getMouseX(), event.getMouseY(), client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
 			context.pop();
 		}
@@ -80,5 +80,6 @@ public class EmiClientNeoForge {
 			EmiScreenManager.drawForeground(context, event.getMouseX(), event.getMouseY(), client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
 			context.pop();
 		}
+		context.flushDeferredTooltips();
 	}
 }

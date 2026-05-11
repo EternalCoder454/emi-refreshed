@@ -5,8 +5,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import dev.emi.emi.platform.EmiAgnos;
+import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 
@@ -24,6 +27,14 @@ public class ScreenMixin {
 	private void resize(Minecraft client, int width, int height, CallbackInfo info) {
 		if ((Object) this instanceof AbstractContainerScreen hs && client.screen == hs) {
 			EmiScreenManager.addWidgets(hs);
+		}
+	}
+
+	@Inject(at = @At("TAIL"), method = "renderWithTooltip(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")
+	private void renderWithTooltipTail(GuiGraphics raw, int mouseX, int mouseY, float delta, CallbackInfo info) {
+		if ((Object) this instanceof AbstractContainerScreen && !EmiAgnos.isForge()) {
+			EmiDrawContext context = EmiDrawContext.wrap(raw);
+			context.flushDeferredTooltips();
 		}
 	}
 }

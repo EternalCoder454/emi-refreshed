@@ -24,6 +24,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.vertex.PoseStack;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.api.render.EmiRender;
@@ -107,7 +108,7 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
 		ItemStack stack = getItemStack();
 		if ((flags & RENDER_ICON) != 0) {
-			Lighting.setupFor3DItems();
+			Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
 			draw.renderFakeItem(stack, x, y);
 			draw.renderItemDecorations(client.font, stack, x, y, "");
 		}
@@ -143,20 +144,15 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	
 	@Override
 	public void renderForBatch(MultiBufferSource vcp, GuiGraphics draw, int x, int y, int z, float delta) {
-		EmiDrawContext context = EmiDrawContext.wrap(draw);
 		ItemStack stack = getItemStack();
 		ItemRenderer ir = client.getItemRenderer();
 		ItemStackRenderState state = new ItemStackRenderState();
 		Minecraft.getInstance().getItemModelResolver().updateForTopItem(state, stack, ItemDisplayContext.GUI, null, null, 0);
-		context.push();
-		try {
-			context.matrices().translate(x, y, 100.0f + z + (state.usesBlockLight() ? 50 : 0));
-			context.matrices().translate(8.0, 8.0, 0.0);
-			context.matrices().scale(16.0f, -16.0f, 16.0f);
-			ir.renderStatic(stack, ItemDisplayContext.GUI, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, context.matrices(), vcp, null, 0);
-		} finally {
-			context.pop();
-		}
+		PoseStack matrices = new PoseStack();
+		matrices.translate(x, y, 100.0f + z + (state.usesBlockLight() ? 50 : 0));
+		matrices.translate(8.0, 8.0, 0.0);
+		matrices.scale(16.0f, -16.0f, 16.0f);
+		ir.renderStatic(stack, ItemDisplayContext.GUI, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, matrices, vcp, null, 0);
 	}
 
 	@Override

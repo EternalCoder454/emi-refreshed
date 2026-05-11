@@ -68,7 +68,6 @@ public class RemainderTooltipComponent implements EmiTooltipComponent {
 				Component t = remainder.damage > 0 ? EmiPort.literal("+" + remainder.damage, ChatFormatting.GREEN) : EmiPort.literal("" + remainder.damage, ChatFormatting.RED);
 				int width = render.text.width(t);
 				context.push();
-				context.matrices().translate(0, 0, 200);
 				context.drawText(t, 42 - width, i * 18);
 				context.pop();
 			}
@@ -80,7 +79,7 @@ public class RemainderTooltipComponent implements EmiTooltipComponent {
 		for (int i = 0; i < remainders.size(); i++) {
 			Remainder remainder = remainders.get(i);
 			boolean chanced = remainder.chance != 1;
-			text.draw(EmiPort.literal("->"), 20, 5 + i * 18 - (chanced ? 4 : 0), 0xffffff, true);
+			text.draw(EmiPort.literal("->"), 20, 5 + i * 18 - (chanced ? 4 : 0), 0xffffffff, true);
 			if (chanced) {
 				Component t = EmiPort.literal(EmiTooltip.TEXT_FORMAT.format(remainder.chance * 100) + "%");
 				int tx = text.renderer.width(t);

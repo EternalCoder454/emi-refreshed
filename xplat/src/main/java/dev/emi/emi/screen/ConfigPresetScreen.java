@@ -81,6 +81,7 @@ public class ConfigPresetScreen extends Screen {
 				EmiRenderHelper.drawTooltip(this, context, widget.tooltip, mouseX, mouseY);
 			}
 		}
+		context.flushDeferredTooltips();
 	}
 
 	@Override

@@ -39,7 +39,7 @@ public class DrawableWidget extends Widget implements WidgetTooltipHolder<Drawab
 	public void render(GuiGraphics draw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
 		context.push();
-		context.matrices().translate(x, y, 0);
+		context.matrices().translate(x, y);
 		consumer.render(context.raw(), mouseX, mouseY, delta);
 		context.pop();
 	}

@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -187,7 +188,7 @@ public class RecipeScreen extends Screen {
 		//EmiRenderHelper.drawScroll(context, x + 19 + buttonOff, y + 19 + 10, minimumWidth - 38, 2, page, tabs.get(tab).getPageCount(), -1);
 		
 		boolean categoryHovered = mouseX >= x + 19 + buttonOff && mouseY >= y + 5 && mouseX < x + minimumWidth + buttonOff - 19 && mouseY < y + 5 + 12;
-		int categoryNameColor = categoryHovered ? 0x22ffff : 0xffffff;
+		int categoryNameColor = categoryHovered ? 0xff22ffff : 0xffffffff;
 
 		RecipeTab tab = tabs.get(this.tab);
 		Component text = tab.category.getName();
@@ -197,7 +198,7 @@ public class RecipeScreen extends Screen {
 		}
 		context.drawCenteredTextWithShadow(text, x + backgroundWidth / 2, y + 7, categoryNameColor);
 		context.drawCenteredTextWithShadow(EmiRenderHelper.getPageText(this.page + 1, tab.getPageCount(), minimumWidth - 40),
-			x + backgroundWidth / 2, y + 21, 0xffffff);
+			x + backgroundWidth / 2, y + 21, 0xffffffff);
 
 		List<EmiIngredient> workstations = EmiApi.getRecipeManager().getWorkstations(tab.category);
 		int workstationAmount = Math.min(workstations.size(), getMaxWorkstations());
@@ -219,7 +220,7 @@ public class RecipeScreen extends Screen {
 			int mx = mouseX - group.x();
 			int my = mouseY - group.y();
 			context.push();
-			context.matrices().translate(group.x(), group.y(), 0);
+			context.matrices().translate(group.x(), group.y());
 			try {
 				for (Widget widget : group.widgets) {
 					widget.render(context.raw(), mx, my, delta);
@@ -249,10 +250,11 @@ public class RecipeScreen extends Screen {
 		EmiScreenManager.drawForeground(context, mouseX, mouseY, delta);
 		super.render(context.raw(), mouseX, mouseY, delta);
 		if (categoryHovered) {
-			context.raw().renderComponentTooltip(minecraft.font, List.of(
+			List<ClientTooltipComponent> tooltipComponents = List.of(
 				tab.category.getName(),
 				EmiPort.translatable("emi.view_all_recipes")
-			), mouseX, mouseY);
+			).stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).toList();
+			context.deferTooltip(() -> context.raw().renderTooltip(minecraft.font, tooltipComponents, mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null));
 		}
 		hoveredWidget = null;
 		outer:
@@ -280,6 +282,7 @@ public class RecipeScreen extends Screen {
 		if (rTab != null) {
 			EmiRenderHelper.drawTooltip(this, context, rTab.category.getTooltip(), mouseX, mouseY);
 		}
+		context.flushDeferredTooltips();
 	}
 
 	@Override

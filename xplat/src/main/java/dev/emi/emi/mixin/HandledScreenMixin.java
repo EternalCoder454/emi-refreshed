@@ -35,16 +35,26 @@ public abstract class HandledScreenMixin extends Screen {
 	@Inject(at = @At(value = "INVOKE",
 			target = "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen.renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V",
 			shift = Shift.AFTER),
-		method = "render")
+		method = "renderContents(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")
 	private void renderForeground(GuiGraphics raw, int mouseX, int mouseY, float delta, CallbackInfo info) {
 		if (EmiAgnos.isForge()) {
 			return;
 		}
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		context.push();
-		context.matrices().translate(-leftPos, -topPos, 0.0);
+		context.matrices().translate(-leftPos, -topPos);
 		EmiScreenManager.render(context, mouseX, mouseY, delta);
 		EmiScreenManager.drawForeground(context, mouseX, mouseY, delta);
 		context.pop();
+	}
+
+	@Inject(at = @At("TAIL"),
+		method = "render(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")
+	private void renderTail(GuiGraphics raw, int mouseX, int mouseY, float delta, CallbackInfo info) {
+		if (EmiAgnos.isForge()) {
+			return;
+		}
+		EmiDrawContext context = EmiDrawContext.wrap(raw);
+		context.flushDeferredTooltips();
 	}
 }

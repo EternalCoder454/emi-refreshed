@@ -86,7 +86,6 @@ public class StackBatcher {
 		Map<RenderType, ByteBufferBuilder> buffers = new HashMap<>();
 		assign(buffers, RenderType.solid());
 		assign(buffers, RenderType.cutout());
-		assign(buffers, RenderType.translucent());
 		assign(buffers, Sheets.solidBlockSheet());
 		assign(buffers, Sheets.cutoutBlockSheet());
 		assign(buffers, Sheets.translucentItemSheet());
@@ -188,7 +187,7 @@ public class StackBatcher {
 			bake();
 			populated = true;
 		}
-		Lighting.setupFor3DItems();
+		Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
 		Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
 		modelViewStack.pushMatrix();
 		modelViewStack.translate(x, y, 0);

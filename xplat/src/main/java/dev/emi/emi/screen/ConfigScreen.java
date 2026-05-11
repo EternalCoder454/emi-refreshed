@@ -370,6 +370,7 @@ public class ConfigScreen extends Screen {
 		if (list.getHoveredEntry() != null) {
 			EmiRenderHelper.drawTooltip(this, context, list.getHoveredEntry().getTooltip(mouseX, mouseY), mouseX, mouseY, Math.min(width / 2 - 16, maxWidth));
 		}
+		context.flushDeferredTooltips();
 	}
 
 	@Override

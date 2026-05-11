@@ -3,6 +3,7 @@ package dev.emi.emi.widget;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.resources.ResourceLocation;
 import dev.emi.emi.EmiPort;
@@ -38,7 +39,7 @@ public class RecipeScreenshotButtonWidget extends RecipeButtonWidget {
 		int width = recipe.getDisplayWidth() + 8;
 		int height = recipe.getDisplayHeight() + 8;
 		Minecraft client = Minecraft.getInstance();
-		GuiGraphics context = new GuiGraphics(client, client.renderBuffers().bufferSource());
+		GuiGraphics context = new GuiGraphics(client, new GuiRenderState());
 		EmiScreenshotRecorder.saveScreenshot("emi/recipes/" + path, width, height,
 			() -> EmiRenderHelper.renderRecipe(recipe, EmiDrawContext.wrap(context), 0, 0, false, -1));
 

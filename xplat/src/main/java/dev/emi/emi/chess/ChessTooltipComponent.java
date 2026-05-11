@@ -34,7 +34,7 @@ class ChessTooltipComponent implements EmiTooltipComponent {
 
 	@Override
 	public void drawTooltipText(TextRenderData text) {
-		text.draw(description, 0, 4, 0xffffff, true);
-		text.draw("->", 18, 19, 0xffffff, true);
+		text.draw(description, 0, 4, 0xffffffff, true);
+		text.draw("->", 18, 19, 0xffffffff, true);
 	}
 }

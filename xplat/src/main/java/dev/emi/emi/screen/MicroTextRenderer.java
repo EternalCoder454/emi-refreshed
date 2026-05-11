@@ -99,7 +99,6 @@ public class MicroTextRenderer {
 		float g = (((color & 0x0000FF00) >>  8) & 0xFF) / 255f;
 		float b = (((color & 0x000000FF) >>  0) & 0xFF) / 255f;
 		context.push();
-		context.matrices().translate(0, 0, 300);
 		context.disableBlend();
 		for (int i = 0; i < string.length(); i++) {
 			MicroChar c = MICRO_CHARS.get(string.charAt(i));
@@ -107,13 +106,10 @@ public class MicroTextRenderer {
 				x += 1;
 				continue;
 			}
-			context.raw().flush();
 			context.setColor(r, g, b, a);
 			context.drawTexture(TEXTURE, x, y, c.u, c.v, c.width, 7);
-			context.raw().flush();
 			context.resetColor();
 			context.drawTexture(TEXTURE, x, y, c.u, c.v + 7, c.width, 7);
-			context.raw().flush();
 			x += c.width - 1;
 		}
 		context.pop();

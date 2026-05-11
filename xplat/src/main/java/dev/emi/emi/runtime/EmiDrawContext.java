@@ -1,20 +1,24 @@
 package dev.emi.emi.runtime;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.stack.EmiIngredient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.joml.Matrix3x2fStack;
 
 public class EmiDrawContext {
 	private final Minecraft client = Minecraft.getInstance();
 	private final GuiGraphics context;
 	private boolean overlay = false;
+	private int color = -1;
+	private static final List<Runnable> DEFERRED_TOOLTIPS = new ArrayList<>();
 	
 	private EmiDrawContext(GuiGraphics context) {
 		this.context = context;
@@ -28,16 +32,20 @@ public class EmiDrawContext {
 		return context;
 	}
 
-	public PoseStack matrices() {
+	public Matrix3x2fStack matrices() {
 		return context.pose();
 	}
 
 	public void push() {
-		matrices().pushPose();
+		matrices().pushMatrix();
 	}
 
 	public void pop() {
-		matrices().popPose();
+		matrices().popMatrix();
+	}
+
+	public void scale(float x, float y) {
+		matrices().scale(x, y);
 	}
 
 	public void drawTexture(ResourceLocation texture, int x, int y, int u, int v, int width, int height) {
@@ -49,15 +57,19 @@ public class EmiDrawContext {
 	}
 
 	public void drawTexture(ResourceLocation texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
-		context.blit(overlay ? RenderType::guiTexturedOverlay : RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
+		context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
 	}
 
 	public void drawTexture(ResourceLocation texture, int x, int y, int width, int height, float u, float v, int regionWidth, int regionHeight, int textureWidth, int textureHeight) {
-		context.blit(overlay ? RenderType::guiTexturedOverlay : RenderType::guiTextured, texture, x, y, u, v, width, height, regionWidth, regionHeight, textureWidth, textureHeight);
+		context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, regionWidth, regionHeight, textureWidth, textureHeight, color);
 	}
 
 	public void fill(int x, int y, int width, int height, int color) {
-		context.fill(overlay ? RenderType.guiOverlay() : RenderType.gui(), x, y, x + width, y + height, color);
+		context.fill(RenderPipelines.GUI, x, y, x + width, y + height, color);
+	}
+
+	public void fill(int x, int y, int width, int height) {
+		context.fill(RenderPipelines.GUI, x, y, x + width, y + height, color);
 	}
 
 	public void drawText(Component text, int x, int y) {
@@ -65,11 +77,11 @@ public class EmiDrawContext {
 	}
 
 	public void drawText(Component text, int x, int y, int color) {
-		context.drawString(client.font, text, x, y, color, false);
+		context.drawString(client.font, text, x, y, opaqueColor(color), false);
 	}
 
 	public void drawText(FormattedCharSequence text, int x, int y, int color) {
-		context.drawString(client.font, text, x, y, color, false);
+		context.drawString(client.font, text, x, y, opaqueColor(color), false);
 	}
 
 	public void drawTextWithShadow(Component text, int x, int y) {
@@ -77,11 +89,11 @@ public class EmiDrawContext {
 	}
 
 	public void drawTextWithShadow(Component text, int x, int y, int color) {
-		context.drawString(client.font, text, x, y, color, true);
+		context.drawString(client.font, text, x, y, opaqueColor(color), true);
 	}
 
 	public void drawTextWithShadow(FormattedCharSequence text, int x, int y, int color) {
-		context.drawString(client.font, text, x, y, color, true);
+		context.drawString(client.font, text, x, y, opaqueColor(color), true);
 	}
 
 	public void drawCenteredText(Component text, int x, int y) {
@@ -89,7 +101,7 @@ public class EmiDrawContext {
 	}
 
 	public void drawCenteredText(Component text, int x, int y, int color) {
-		context.drawString(client.font, text, x - client.font.width(text) / 2, y, color, false);
+		context.drawString(client.font, text, x - client.font.width(text) / 2, y, opaqueColor(color), false);
 	}
 
 	public void drawCenteredTextWithShadow(Component text, int x, int y) {
@@ -97,7 +109,11 @@ public class EmiDrawContext {
 	}
 
 	public void drawCenteredTextWithShadow(Component text, int x, int y, int color) {
-		context.drawCenteredString(client.font, text.getVisualOrderText(), x, y, color);
+		context.drawCenteredString(client.font, text.getVisualOrderText(), x, y, opaqueColor(color));
+	}
+
+	private static int opaqueColor(int color) {
+		return color | 0xFF000000;
 	}
 
 	public void enableDepthTest() {
@@ -125,7 +141,18 @@ public class EmiDrawContext {
 	}
 
 	public void setColor(float r, float g, float b, float a) {
-		RenderSystem.setShaderColor(r, g, b, a);
+		int ri = (int)(r * 255) & 0xFF;
+		int gi = (int)(g * 255) & 0xFF;
+		int bi = (int)(b * 255) & 0xFF;
+		int ai = (int)(a * 255) & 0xFF;
+		this.color = (ai << 24) | (ri << 16) | (gi << 8) | bi;
+		if (ai == 255 && ri == 255 && gi == 255 && bi == 255) {
+			this.color = -1;
+		}
+	}
+
+	public int getColor() {
+		return color;
 	}
 
 	public void drawStack(EmiIngredient stack, int x, int y) {
@@ -138,5 +165,19 @@ public class EmiDrawContext {
 
 	public void drawStack(EmiIngredient stack, int x, int y, float delta, int flags) {
 		stack.render(raw(), x, y, delta, flags);
+	}
+
+	public void deferTooltip(Runnable tooltipRenderer) {
+		DEFERRED_TOOLTIPS.add(tooltipRenderer);
+	}
+
+	public void flushDeferredTooltips() {
+		if (!DEFERRED_TOOLTIPS.isEmpty()) {
+			context.nextStratum();
+			for (Runnable r : DEFERRED_TOOLTIPS) {
+				r.run();
+			}
+			DEFERRED_TOOLTIPS.clear();
+		}
 	}
 }

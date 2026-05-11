@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import org.apache.commons.lang3.text.WordUtils;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.EmiUtil;
@@ -27,6 +27,7 @@ import dev.emi.emi.screen.FakeScreen;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
+import net.minecraft.client.gui.GuiGraphics;
 
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
@@ -208,7 +209,7 @@ public class EmiAgnosFabric extends EmiAgnos {
 	}
 
 	@Override
-	protected void renderFluidAgnos(FluidEmiStack stack, PoseStack matrices, int x, int y, float delta, int xOff, int yOff, int width, int height) {
+	protected void renderFluidAgnos(FluidEmiStack stack, GuiGraphics draw, int x, int y, float delta, int xOff, int yOff, int width, int height) {
 		FluidVariant fluid = FluidVariant.of(stack.getKeyOfType(Fluid.class), stack.getComponentChanges());
 		TextureAtlasSprite[] sprites = FluidVariantRendering.getSprites(fluid);
 		if (sprites == null || sprites.length < 1 || sprites[0] == null) {
@@ -217,7 +218,7 @@ public class EmiAgnosFabric extends EmiAgnos {
 		TextureAtlasSprite sprite = sprites[0];
 		int color = FluidVariantRendering.getColor(fluid);
 		
-		EmiRenderHelper.drawTintedSprite(matrices, sprite, color, x, y, xOff, yOff, width, height);
+		EmiRenderHelper.drawTintedSprite(draw, sprite, color, x, y, xOff, yOff, width, height);
 	}
 
 	@Override

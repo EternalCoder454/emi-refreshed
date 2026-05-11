@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.network.chat.Component;
@@ -677,7 +678,6 @@ public class EmiScreenManager {
 
 	private static void renderWidgets(EmiDrawContext context, int mouseX, int mouseY, float delta, EmiScreenBase base) {
 		context.push();
-		context.matrices().translate(0, 0, 100);
 		emi.render(context.raw(), mouseX, mouseY, delta);
 		tree.render(context.raw(), mouseX, mouseY, delta);
 		search.render(context.raw(), mouseX, mouseY, delta);
@@ -690,16 +690,11 @@ public class EmiScreenManager {
 			if (cur.getRecipeContext() != lastHoveredCraftable.getRecipeContext()) {
 				ScreenSpace space = getHoveredSpace(mouseX, mouseY);
 				if (space != null && (space.getType() == SidebarType.CRAFTABLES || space.getType() == SidebarType.CRAFT_HISTORY)) {
-					Matrix4fStack view = RenderSystem.getModelViewStack();
-					view.pushMatrix();
-					view.translate(0, 0, 200);
 					int lhx = space.getRawX(lastHoveredCraftableOffset);
 					int lhy = space.getRawY(lastHoveredCraftableOffset);
 					context.fill(lhx, lhy, 18, 18, 0x44AA00FF);
 					lastHoveredCraftable.getStack().render(context.raw(), lhx + 1, lhy + 1, delta,
 							EmiIngredient.RENDER_ICON);
-					context.raw().flush();
-					view.popMatrix();
 				}
 			}
 		}
@@ -722,7 +717,6 @@ public class EmiScreenManager {
 					}
 					if (index >= 0) {
 						context.push();
-						context.matrices().translate(0, 0, 200);
 						int dx = space.getEdgeX(index);
 						int dy = space.getEdgeY(index);
 						context.fill(dx - 1, dy, 2, 18, 0xFF00FFFF);
@@ -731,7 +725,6 @@ public class EmiScreenManager {
 				}
 			}
 			context.push();
-			context.matrices().translate(0, 0, 400);
 			EmiDragDropHandlers.render(base.screen(), draggedStack, context.raw(), mouseX, mouseY, delta);
 			draggedStack.render(context.raw(), mouseX - 8, mouseY - 8, delta, EmiIngredient.RENDER_ICON);
 			context.pop();
@@ -816,7 +809,7 @@ public class EmiScreenManager {
 				context.drawTextWithShadow(EmiPort.literal(warnCount), devTextX, screen.height - 21, color);
 				int width = Math.max(client.font.width(title), client.font.width(warnCount));
 				if (mouseX >= devTextX && mouseX < width + devTextX && mouseY > screen.height - 28) {
-					context.raw().renderComponentTooltip(client.font, Stream.concat(Stream.of(" EMI detected some issues, see log for full details"),
+					List<Component> tooltipLines = Stream.concat(Stream.of(" EMI detected some issues, see log for full details"),
 							EmiReloadLog.warnings.stream()).map(s -> {
 								String a = s;
 								if (a.length() > 10 && client.font.width(a) > screen.width - 20) {
@@ -824,7 +817,12 @@ public class EmiScreenManager {
 								}
 								return EmiPort.literal(a);
 							})
-							.collect(Collectors.toList()), 0, 20);
+							.collect(Collectors.toList());
+					List<ClientTooltipComponent> tooltipComponents = tooltipLines.stream()
+							.map(Component::getVisualOrderText)
+							.map(ClientTooltipComponent::create)
+							.toList();
+					context.deferTooltip(() -> context.raw().renderTooltip(client.font, tooltipComponents, 0, 20, DefaultTooltipPositioner.INSTANCE, null));
 				}
 			}
 			context.drawTextWithShadow(title, devTextX, screen.height + off, color);
@@ -878,14 +876,13 @@ public class EmiScreenManager {
 		}
 		if (base.screen() instanceof AbstractContainerScreen<?> hs && hs instanceof HandledScreenAccessor hsa) {
 			context.push();
-			context.matrices().translate(hsa.getX(), hsa.getY(), 0);
+			context.matrices().translate(hsa.getX(), hsa.getY());
 			for (Slot slot : hs.getMenu().slots) {
 				if (!slot.isActive()) {
 					continue;
 				}
 				EmiStack stack = EmiStack.of(slot.getItem());
 				context.push();
-				context.matrices().translate(0, 0, 300);
 				if (query != null) {
 					if (!query.test(stack)) {
 						context.fill(slot.x - 1, slot.y - 1, 18, 18, 0x77000000);
@@ -1495,7 +1492,6 @@ public class EmiScreenManager {
 				if (isVisible()) {
 					EmiProfiler.swap(side.getName());
 					context.push();
-					context.matrices().translate(0, 0, 100);
 					pageLeft.render(context.raw(), mouseX, mouseY, delta);
 					cycle.render(context.raw(), mouseX, mouseY, delta);
 					pageRight.render(context.raw(), mouseX, mouseY, delta);
@@ -1784,9 +1780,7 @@ public class EmiScreenManager {
 						}
 					}
 				}
-				context.raw().flush();
 				batcher.draw();
-				context.raw().flush();
 				context.pop();
 			}
 		}

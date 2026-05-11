@@ -12,12 +12,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Tuple;
-import org.joml.Matrix4fStack;
 import org.lwjgl.glfw.GLFW;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.math.Axis;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.runtime.EmiDrawContext;
@@ -237,12 +234,13 @@ public class EmiSearchWidget extends EditBox {
 		}
 		lastRender = System.currentTimeMillis();
 		long deg = accumulatedSpin * -180 / 500;
-		Matrix4fStack view = RenderSystem.getModelViewStack();
-		view.pushMatrix();
+		context.push();
 		if (deg != 0) {
-			view.translate(this.x + this.width / 2, this.y + this.height / 2, 0);
-			view.rotate(Axis.ZN.rotationDegrees(deg));
-			view.translate(-(this.x + this.width / 2), -(this.y + this.height / 2), 0);
+			float cx = this.x + this.width / 2f;
+			float cy = this.y + this.height / 2f;
+			context.matrices().translate(cx, cy);
+			context.matrices().rotate((float) Math.toRadians(deg));
+			context.matrices().translate(-cx, -cy);
 		}
 
 		if (lower.contains("jeb_")) {
@@ -263,7 +261,6 @@ public class EmiSearchWidget extends EditBox {
 			}
 		}
 		context.resetColor();
-		context.raw().flush();
-		view.popMatrix();
+		context.pop();
 	}
 }

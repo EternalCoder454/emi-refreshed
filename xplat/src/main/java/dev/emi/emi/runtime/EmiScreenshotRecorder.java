@@ -3,7 +3,7 @@ package dev.emi.emi.runtime;
 import java.io.File;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;

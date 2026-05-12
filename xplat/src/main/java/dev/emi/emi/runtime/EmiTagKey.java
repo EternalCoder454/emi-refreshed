@@ -93,7 +93,7 @@ public class EmiTagKey<T> {
 	}
 
 	private @Nullable String getTagTranslationKey() {
-		Identifier registry = raw.registry().location();
+		Identifier registry = raw.registry().identifier();
 		if (registry.getNamespace().equals("minecraft")) {
 			String s = translatePrefix("tag." + registry.getPath().replace("/", ".") + ".", this.id());
 			if (s != null) {

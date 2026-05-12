@@ -22,7 +22,7 @@ public class CommandS2CPacket implements EmiPacket {
 	public CommandS2CPacket(FriendlyByteBuf buf) {
 		type = buf.readByte();
 		if (type == EmiCommands.VIEW_RECIPE || type == EmiCommands.TREE_GOAL || type == EmiCommands.TREE_RESOLUTION) {
-			id = buf.readResourceLocation();
+			id = buf.readIdentifier();
 		} else {
 			id = null;
 		}
@@ -32,7 +32,7 @@ public class CommandS2CPacket implements EmiPacket {
 	public void write(RegistryFriendlyByteBuf buf) {
 		buf.writeByte(type);
 		if (type == EmiCommands.VIEW_RECIPE || type == EmiCommands.TREE_GOAL || type == EmiCommands.TREE_RESOLUTION) {
-			buf.writeResourceLocation(id);
+			buf.writeIdentifier(id);
 		}
 	}
 

@@ -62,7 +62,7 @@ public class SizedButtonWidget extends Button {
 	}
 	
 	@Override
-	public void renderWidget(GuiGraphics raw, int mouseX, int mouseY, float delta) {
+	public void renderContents(GuiGraphics raw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		context.enableDepthTest();
 		context.drawTexture(texture, this.x, this.y, getU(mouseX, mouseY), getV(mouseX, mouseY), this.width, this.height);

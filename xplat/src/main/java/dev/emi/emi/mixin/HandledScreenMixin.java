@@ -20,7 +20,7 @@ public abstract class HandledScreenMixin extends Screen {
 	@Shadow
 	protected int imageWidth, imageHeight, leftPos, topPos;
 
-	private HandledScreenMixin() { super(null); }
+	private HandledScreenMixin() { super(null, null, null); }
 
 	@Dynamic
 	@Inject(at = @At(value = "INVOKE",

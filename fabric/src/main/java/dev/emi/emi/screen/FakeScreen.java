@@ -15,9 +15,7 @@ public class FakeScreen extends Screen {
 	public static final FakeScreen INSTANCE = new FakeScreen();
 
 	protected FakeScreen() {
-		super(EmiPort.literal(""));
-		this.minecraft = Minecraft.getInstance();
-		this.font = minecraft.font;
+		super(Minecraft.getInstance(), Minecraft.getInstance().font, EmiPort.literal(""));
 		this.width = Integer.MAX_VALUE;
 		this.height = Integer.MAX_VALUE;
 	}

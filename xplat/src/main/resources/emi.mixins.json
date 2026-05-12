@@ -9,6 +9,7 @@
     "accessor.AbstractRecipeBookScreenAccessor",
     "accessor.BrewingRecipeRegistryAccessor",
     "accessor.CraftingResultSlotAccessor",
+    "accessor.EffectsInInventoryInvoker",
     "accessor.GuiGraphicsAccessor",
     "accessor.HandledScreenAccessor",
     "accessor.HoeItemAccessor",

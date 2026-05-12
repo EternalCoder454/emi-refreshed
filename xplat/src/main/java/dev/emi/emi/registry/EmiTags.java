@@ -139,7 +139,7 @@ public class EmiTags {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	public static <T> List<EmiTagKey<T>> getTags(Registry<T> registry) {
-		return (List<EmiTagKey<T>>) (List) SORTED_TAGS.getOrDefault(registry.key().location(), List.of());
+		return (List<EmiTagKey<T>>) (List) SORTED_TAGS.getOrDefault(registry.key().identifier(), List.of());
 	}
 
 	public static void registerTagModels(ResourceManager manager, Consumer<Identifier> consumer) {
@@ -184,7 +184,7 @@ public class EmiTags {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	private static <T> void reloadTags(Registry<T> registry) {
 		Set<T> hidden = EmiTagKey.of(registry, HIDDEN_FROM_RECIPE_VIEWERS).getSet();
-		Identifier rid = registry.key().location();
+		Identifier rid = registry.key().identifier();
 		List<EmiTagKey<T>> tags = EmiTagKey.fromRegistry(registry)
 			.filter(key -> !exclusions.contains(rid, key.id()) && !hidden.containsAll(key.getList()))
 			.toList();
@@ -202,7 +202,7 @@ public class EmiTags {
 		tags = tags.stream()
 			.sorted((a, b) -> Long.compare(b.stream().count(), a.stream().count()))
 			.toList();
-		EmiTags.SORTED_TAGS.put(registry.key().location(), (List) tags);
+		EmiTags.SORTED_TAGS.put(registry.key().identifier(), (List) tags);
 	}
 
 	@SuppressWarnings("unchecked")

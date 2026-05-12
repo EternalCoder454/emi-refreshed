@@ -53,7 +53,7 @@ public class TagEmiIngredientSerializer implements EmiIngredientSerializer<TagEm
 	@Override
 	public JsonElement serialize(TagEmiIngredient stack) {
 		if (stack.getAmount() == 1 && stack.getChance() == 1) {
-			String type = switch(stack.key.registry().location().toString()) {
+			String type = switch(stack.key.registry().identifier().toString()) {
 				case "minecraft:item" -> "item";
 				case "minecraft:fluid" -> "fluid";
 				default -> null;
@@ -62,7 +62,7 @@ public class TagEmiIngredientSerializer implements EmiIngredientSerializer<TagEm
 		} else {
 			JsonObject json = new JsonObject();
 			json.addProperty("type", "tag");
-			json.addProperty("registry", stack.key.registry().location().toString());
+			json.addProperty("registry", stack.key.registry().identifier().toString());
 			json.addProperty("id", stack.key.location().toString());
 			if (stack.getAmount() != 1) {
 				json.addProperty("amount", stack.getAmount());

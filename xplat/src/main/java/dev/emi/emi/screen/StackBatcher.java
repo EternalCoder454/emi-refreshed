@@ -15,9 +15,10 @@ import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -84,13 +85,11 @@ public class StackBatcher {
 
 	public StackBatcher() {
 		Map<RenderType, ByteBufferBuilder> buffers = new HashMap<>();
-		assign(buffers, RenderType.solid());
-		assign(buffers, RenderType.cutout());
 		assign(buffers, Sheets.solidBlockSheet());
 		assign(buffers, Sheets.cutoutBlockSheet());
 		assign(buffers, Sheets.translucentItemSheet());
-		assign(buffers, RenderType.glint());
-		assign(buffers, RenderType.entityGlint());
+		assign(buffers, RenderTypes.glint());
+		assign(buffers, RenderTypes.entityGlint());
 		for (RenderType layer : EXTRA_RENDER_LAYERS) {
 			assign(buffers, layer);
 		}
@@ -377,6 +376,18 @@ public class StackBatcher {
 			@Override
 			public VertexConsumer setColor(int r, int g, int b, int a) {
 				delegate.setColor(r, g, b, a);
+				return this;
+			}
+
+			@Override
+			public VertexConsumer setColor(int color) {
+				delegate.setColor(color);
+				return this;
+			}
+
+			@Override
+			public VertexConsumer setLineWidth(float width) {
+				delegate.setLineWidth(width);
 				return this;
 			}
 			

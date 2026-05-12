@@ -71,7 +71,7 @@ public class EmiRecipes {
 		recipeIds = new Reference2ObjectOpenHashMap<>();
 		if (manager != null) {
 			for (RecipeHolder<?> entry : manager.getRecipes()) {
-				recipeIds.put(entry.value(), entry.id().location());
+				recipeIds.put(entry.value(), entry.id().identifier());
 			}
 		}
 	}

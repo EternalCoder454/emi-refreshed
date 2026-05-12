@@ -6,7 +6,6 @@ import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -25,6 +24,7 @@ import com.google.common.collect.Ordering;
 
 import dev.emi.emi.config.EffectLocation;
 import dev.emi.emi.config.EmiConfig;
+import dev.emi.emi.mixin.accessor.EffectsInInventoryInvoker;
 import dev.emi.emi.mixin.accessor.HandledScreenAccessor;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiDrawContext;
@@ -45,37 +45,14 @@ public abstract class AbstractInventoryScreenMixin {
 		throw new UnsupportedOperationException();
 	}
 
-	@Shadow
-	private void renderBackgrounds(GuiGraphics draw, int x, int height, Iterable<MobEffectInstance> statusEffects, boolean wide) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Shadow
-	private void renderIcons(GuiGraphics draw, int x, int height, Iterable<MobEffectInstance> statusEffects, boolean wide) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Shadow
-	private void renderLabels(GuiGraphics draw, int x, int height, Iterable<MobEffectInstance> statusEffects) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Inject(at = @At(value = "INVOKE",
-			target = "net/minecraft/client/gui/screens/inventory/EffectsInInventory.renderBackgrounds(Lnet/minecraft/client/gui/GuiGraphics;IILjava/lang/Iterable;Z)V"),
-			method = "renderEffects")
+	@Inject(at = @At("HEAD"), method = "render(Lnet/minecraft/client/gui/GuiGraphics;II)V", cancellable = true)
 	private void drawStatusEffects(GuiGraphics draw, int mouseX, int mouseY, CallbackInfo info) {
 		if (EmiConfig.effectLocation == EffectLocation.TOP) {
 			emi$drawCenteredEffects(draw, mouseX, mouseY);
+			info.cancel();
+		} else if (EmiConfig.effectLocation == EffectLocation.HIDDEN) {
+			info.cancel();
 		}
-	}
-
-	@ModifyVariable(at = @At(value = "INVOKE", target = "java/util/Collection.size()I", ordinal = 0),
-			method = "renderEffects", ordinal = 0)
-	private Collection<MobEffectInstance> drawStatusEffects(Collection<MobEffectInstance> original) {
-		if (EmiConfig.effectLocation == EffectLocation.TOP || EmiConfig.effectLocation == EffectLocation.HIDDEN) {
-			return List.of();
-		}
-		return original;
 	}
 
 	private void emi$drawCenteredEffects(GuiGraphics raw, int mouseX, int mouseY) {
@@ -89,9 +66,9 @@ public abstract class AbstractInventoryScreenMixin {
 		boolean wide = size == 1;
 		HandledScreenAccessor acc = (HandledScreenAccessor) this.screen;
 		int y = acc.getY() - 34;
-		if (this.screen instanceof CreativeModeInventoryScreen || hasInventoryTabs) {
+		if (this.screen instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen || hasInventoryTabs) {
 			y -= 28;
-			if (this.screen instanceof CreativeModeInventoryScreen && EmiAgnos.isForge()) {
+			if (this.screen instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen && EmiAgnos.isForge()) {
 				y -= 22;
 			}
 		}
@@ -110,11 +87,9 @@ public abstract class AbstractInventoryScreenMixin {
 			for (MobEffectInstance inst : effects) {
 				int ew = wide ? 120 : 32;
 				List<MobEffectInstance> single = List.of(inst);
-				this.renderBackgrounds(context.raw(), x, 32, single, wide);
-				this.renderIcons(context.raw(), x, 32, single, wide);
-				if (wide) {
-					this.renderLabels(context.raw(), x, 32, single);
-				}
+				((EffectsInInventoryInvoker) (Object) this).emi$invokeRenderBackground(context.raw(), this.screen.getFont(), this.getEffectName(inst), MobEffectUtil.formatDuration(inst, 1.0f, minecraft.level.tickRateManager().tickrate()), x, 32, inst.isAmbient(), ew);
+				((EffectsInInventoryInvoker) (Object) this).emi$invokeRenderText(context.raw(), this.getEffectName(inst), MobEffectUtil.formatDuration(inst, 1.0f, minecraft.level.tickRateManager().tickrate()), this.screen.getFont(), x, 32, ew, 33, mouseX, mouseY);
+				context.raw().blitSprite(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, net.minecraft.client.gui.Gui.getMobEffectSprite(inst.getEffect()), x + 7, 32 + 7, 18, 18);
 				if (mouseX >= x && mouseX < x + ew && mouseY >= y && mouseY < y + 32) {
 					hovered = inst;
 				}
@@ -131,22 +106,5 @@ public abstract class AbstractInventoryScreenMixin {
 					.toList();
 			context.deferTooltip(() -> context.raw().renderTooltip(minecraft.font, components, mouseX, Math.max(mouseY, 16), DefaultTooltipPositioner.INSTANCE, null));
 		}
-	}
-
-	@ModifyVariable(at = @At(value = "STORE", ordinal = 0),
-			method = "renderEffects", ordinal = 0)
-	private boolean squishEffects(boolean original) {
-		return !EmiConfig.effectLocation.compressed;
-	}
-
-	@ModifyVariable(at = @At(value = "STORE", ordinal = 0),
-			method = "renderEffects", ordinal = 2)
-	private int changeEffectSpace(int original) {
-		return switch (EmiConfig.effectLocation) {
-			case RIGHT, RIGHT_COMPRESSED, HIDDEN -> original;
-			case TOP -> ((HandledScreenAccessor) this.screen).getX();
-			case LEFT_COMPRESSED -> ((HandledScreenAccessor) this.screen).getX() - 2 - 32;
-			case LEFT -> ((HandledScreenAccessor) this.screen).getX() - 2 - 120;
-		};
 	}
 }

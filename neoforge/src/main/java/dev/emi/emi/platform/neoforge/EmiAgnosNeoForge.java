@@ -186,7 +186,7 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 						Potion potion = entry.value();
 						if (brewingRegistry.isBrewablePotion(entry)) {
 							Identifier id = EmiPort.id("emi", "/brewing/item/"
-								+ EmiUtil.subId(entry.unwrapKey().get().location()) + "/" + gid + "/" + iid + "/" + oid);
+								+ EmiUtil.subId(entry.unwrapKey().get().identifier()) + "/" + gid + "/" + iid + "/" + oid);
 							registry.addRecipe(new EmiBrewingRecipe(
 								EmiStack.of(EmiPort.setPotion(new ItemStack(recipe.from().value()), potion)), EmiIngredient.of(recipe.ingredient()),
 								EmiStack.of(EmiPort.setPotion(new ItemStack(recipe.to().value()), potion)), id));

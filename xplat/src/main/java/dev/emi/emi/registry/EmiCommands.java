@@ -1,6 +1,6 @@
 package dev.emi.emi.registry;
 
-import static net.minecraft.commands.arguments.ResourceLocationArgument.id;
+import static net.minecraft.commands.arguments.IdentifierArgument.id;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
@@ -23,7 +23,7 @@ public class EmiCommands {
 	
 	public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(literal("emi")
-			.requires(source -> source.hasPermission(2))
+			.requires(source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER))
 			.then(
 				literal("view")
 				.then(

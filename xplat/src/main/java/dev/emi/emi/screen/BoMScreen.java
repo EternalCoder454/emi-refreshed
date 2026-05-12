@@ -462,7 +462,7 @@ public class BoMScreen extends Screen {
 						EmiApi.displayRecipes(hover.stack);
 						RecipeScreen.resolve = hover.stack;
 						Minecraft client = Minecraft.getInstance();
-						client.screen.init(client, client.screen.width, client.screen.height);
+						client.screen.init(client.screen.width, client.screen.height);
 						if (hover.node != null) {
 							if (hover.node.recipe != null) {
 								EmiApi.focusRecipe(hover.node.recipe);

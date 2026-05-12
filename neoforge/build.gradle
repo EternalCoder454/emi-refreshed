@@ -1,6 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.fabricmc.loom.task.RemapJarTask
-import net.fabricmc.loom.task.RemapSourcesJarTask
 
 buildscript {
 	repositories {
@@ -14,8 +12,8 @@ buildscript {
 }
 
 plugins {
-	id "dev.architectury.loom"
-	id "com.github.johnrengelman.shadow" version "7.1.2"
+	id "dev.architectury.loom-no-remap"
+	id "com.gradleup.shadow" version "9.4.1"
 }
 if (System.getenv("MODRINTH_TOKEN")) {
 	apply plugin: "com.modrinth.minotaur"
@@ -60,11 +58,10 @@ configurations {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-	mappings loom.officialMojangMappings()
 
 	neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
 
-	common(project(path: ":xplat", configuration: "namedElements")) { transitive = false }
+	common(project(path: ":xplat")) { transitive = false }
 	shadowCommon(project(path: ":xplat", configuration: "transformProductionNeoForge")) { transitive = false }
 }
 
@@ -86,13 +83,6 @@ shadowJar.configure { ShadowJar jar ->
 	jar.archiveClassifier = "dev-shadow"
 }
 
-def remapJar = tasks.named('remapJar', RemapJarTask)
-
-remapJar.configure { RemapJarTask jar ->
-	dependsOn shadowJar
-	jar.inputFile.convention(shadowJar.flatMap {it.archiveFile })
-}
-
 def sourcesJar = tasks.named('sourcesJar', Jar)
 
 sourcesJar.configure { Jar jar ->
@@ -105,16 +95,15 @@ sourcesJar.configure { Jar jar ->
 
 def filteredSourcesJar = tasks.register('filteredSourcesJar', Jar, {
 	archiveClassifier = 'filtered-sources'
-	def remapSourcesJar = tasks.named('remapSourcesJar', RemapSourcesJarTask)
-	dependsOn remapSourcesJar
-	from zipTree(remapSourcesJar.flatMap { it.archiveFile })
+	dependsOn sourcesJar
+	from zipTree(sourcesJar.flatMap { it.archiveFile })
 	exclude 'dev/emi/emi/jemi/**'
 })
 
 def apiJar = tasks.register('apiJar', Jar, {
 	archiveClassifier = 'api'
-	dependsOn remapJar
-	from zipTree(remapJar.flatMap { it.archiveFile })
+	dependsOn jar
+	from zipTree(jar.flatMap { it.archiveFile })
 	include 'emi.mixins.json'
 	include 'emi-neoforge.mixins.json'
 	include 'emi.accesswidener'
@@ -142,8 +131,8 @@ publishing {
 		register('maven', MavenPublication) {
 			artifactId = "${rootProject.name}-${project.name}"
 			version = project.ext.mavenVersion
-			artifact(remapJar) {
-				builtBy remapJar
+			artifact(jar) {
+				builtBy jar
 				classifier ''
 			}
 			artifact(filteredSourcesJar) {
@@ -178,7 +167,7 @@ if (System.getenv("MODRINTH_TOKEN")) {
 		versionNumber = project.version
 		versionName = project.version
 		versionType = 'release'
-		uploadFile = remapJar
+		uploadFile = jar
 		gameVersions = [rootProject.minecraft_version]
 		loaders = ['neoforge']
 		detectLoaders = false
@@ -198,7 +187,7 @@ if (System.getenv("CURSEFORGE_TOKEN")) {
 			addGameVersion rootProject.minecraft_version
 			addGameVersion 'NeoForge'
 
-			mainArtifact(remapJar.get().archiveFile) {
+			mainArtifact(jar.get().archiveFile) {
 				displayName = 'emi-' + project.version
 			}
 		}

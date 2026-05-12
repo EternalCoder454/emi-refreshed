@@ -4,6 +4,7 @@ import dev.emi.emi.EmiPort;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 
@@ -39,13 +40,13 @@ public class ConfigSearch {
 		}
 
 		@Override
-		public boolean mouseClicked(double mouseX, double mouseY, int button) {
-			if (button == 1 && isMouseOver(mouseX, mouseY)) {
+		public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+			if (event.button() == 1 && isMouseOver(event.x(), event.y())) {
 				this.setValue("");
 				EmiPort.focus(this, true);
 				return true;
 			}
-			return super.mouseClicked(mouseX, mouseY, button);
+			return super.mouseClicked(event, doubleClick);
 		}
 	}
 }

@@ -13,6 +13,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 
 @Mixin(MouseHandler.class)
 public class MouseMixin {
@@ -21,22 +23,22 @@ public class MouseMixin {
 	@Shadow
 	private double xpos, ypos;
 	@Shadow
-	private int activeButton = -1;
+	private MouseButtonInfo activeButton;
 
 	@Shadow private double accumulatedDX;
 
 	@Shadow private double accumulatedDY;
 
 	@Inject(at = @At(value = "INVOKE", ordinal = 0,
-			target = "Lnet/minecraft/client/gui/screens/Screen;mouseClicked(DDI)Z"),
-			method = "onPress(JIII)V", cancellable = true)
-	private void onMouseDown(long window, int button, int action, int mods, CallbackInfo info) {
+			target = "Lnet/minecraft/client/gui/screens/Screen;mouseClicked(Lnet/minecraft/client/input/MouseButtonEvent;Z)Z"),
+			method = "onButton(JLnet/minecraft/client/input/MouseButtonInfo;I)V", cancellable = true)
+	private void onMouseDown(long window, MouseButtonInfo buttonInfo, int action, CallbackInfo info) {
 		try {
 			Screen screen = minecraft.screen;
 			if (screen instanceof AbstractContainerScreen<?> hs) {
 				double mx = this.xpos * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
 				double my = this.ypos * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
-				if (EmiScreenManager.mouseClicked(mx, my, button)) {
+				if (EmiScreenManager.mouseClicked(new MouseButtonEvent(mx, my, buttonInfo))) {
 					info.cancel();
 				}
 			}
@@ -46,15 +48,15 @@ public class MouseMixin {
 	}
 
 	@Inject(at = @At(value = "INVOKE", ordinal = 0,
-			target = "Lnet/minecraft/client/gui/screens/Screen;mouseReleased(DDI)Z"),
-			method = "onPress(JIII)V", cancellable = true)
-	private void onMouseUp(long window, int button, int action, int mods, CallbackInfo info) {
+			target = "Lnet/minecraft/client/gui/screens/Screen;mouseReleased(Lnet/minecraft/client/input/MouseButtonEvent;)Z"),
+			method = "onButton(JLnet/minecraft/client/input/MouseButtonInfo;I)V", cancellable = true)
+	private void onMouseUp(long window, MouseButtonInfo buttonInfo, int action, CallbackInfo info) {
 		try {
 			Screen screen = minecraft.screen;
 			if (screen instanceof AbstractContainerScreen<?> hs) {
 				double mx = this.xpos * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
 				double my = this.ypos * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
-				if (EmiScreenManager.mouseReleased(mx, my, button)) {
+				if (EmiScreenManager.mouseReleased(new MouseButtonEvent(mx, my, buttonInfo))) {
 					info.cancel();
 				}
 			}
@@ -68,13 +70,13 @@ public class MouseMixin {
 	private void onMouseDragged(CallbackInfo info) {
 		try {
 			Screen screen = minecraft.screen;
-			if (screen instanceof AbstractContainerScreen<?> hs && activeButton != -1) {
+			if (screen instanceof AbstractContainerScreen<?> hs && activeButton != null) {
 				double mx = this.xpos * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
 				double my = this.ypos * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
 				double dx = this.accumulatedDX * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
 				double dy = this.accumulatedDY * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
 				if (dx != 0 || dy != 0) {
-					EmiScreenManager.mouseDragged(mx, my, activeButton, dx, dy);
+					EmiScreenManager.mouseDragged(new MouseButtonEvent(mx, my, activeButton), dx, dy);
 				}
 			}
 		} catch (Exception e) {

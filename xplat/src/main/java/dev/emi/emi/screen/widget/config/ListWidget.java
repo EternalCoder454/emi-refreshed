@@ -15,23 +15,21 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.emi.emi.EmiPort;
 
 public class ListWidget extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
-	private static final ResourceLocation MENU_LIST_BACKGROUND_TEXTURE = EmiPort.id("minecraft", "textures/gui/menu_list_background.png");
-	private static final ResourceLocation INWORLD_MENU_LIST_BACKGROUND_TEXTURE = EmiPort.id("minecraft", "textures/gui/inworld_menu_list_background.png");
+	private static final Identifier MENU_LIST_BACKGROUND_TEXTURE = EmiPort.id("minecraft", "textures/gui/menu_list_background.png");
+	private static final Identifier INWORLD_MENU_LIST_BACKGROUND_TEXTURE = EmiPort.id("minecraft", "textures/gui/inworld_menu_list_background.png");
 
 	protected final Minecraft client;
 	private final List<Entry> children = Lists.newArrayList();
@@ -159,7 +157,7 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 		this.hoveredEntry = this.isMouseOver(mouseX, mouseY) ? this.getEntryAtPosition(mouseX, mouseY) : null;
 
 		{
-			ResourceLocation identifier = this.client.level == null ? MENU_LIST_BACKGROUND_TEXTURE : INWORLD_MENU_LIST_BACKGROUND_TEXTURE;
+			Identifier identifier = this.client.level == null ? MENU_LIST_BACKGROUND_TEXTURE : INWORLD_MENU_LIST_BACKGROUND_TEXTURE;
 			draw.blit(RenderPipelines.GUI_TEXTURED, identifier, left, top, 0.0F, (float)scrollAmount, right - left, bottom - top, 32, 32);
 		}
 
@@ -171,8 +169,8 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 
 
 		{
-			ResourceLocation identifier = this.client.level == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
-			ResourceLocation identifier2 = this.client.level == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
+			Identifier identifier = this.client.level == null ? Screen.HEADER_SEPARATOR : Screen.INWORLD_HEADER_SEPARATOR;
+			Identifier identifier2 = this.client.level == null ? Screen.FOOTER_SEPARATOR : Screen.INWORLD_FOOTER_SEPARATOR;
 			draw.blit(RenderPipelines.GUI_TEXTURED, identifier, left, top - 2, 0.0F, 0.0F, width, 2, 32, 2);
 			draw.blit(RenderPipelines.GUI_TEXTURED, identifier2, left, bottom, 0.0F, 0.0F, width, 2, 32, 2);
 		}
@@ -229,8 +227,8 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 		return Math.max(0, this.getMaxPosition() - (this.bottom - this.top - 4) + 40);
 	}
 
-	protected void updateScrollingState(double mouseX, double mouseY, int button) {
-		this.scrolling = button == 0 && mouseX >= (double)this.getScrollbarPositionX() && mouseX < (double)(this.getScrollbarPositionX() + 6);
+	protected void updateScrollingState(MouseButtonEvent event) {
+		this.scrolling = event.button() == 0 && event.x() >= (double)this.getScrollbarPositionX() && event.x() < (double)(this.getScrollbarPositionX() + 6);
 	}
 
 	protected int getScrollbarPositionX() {
@@ -261,15 +259,15 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		this.updateScrollingState(mouseX, mouseY, button);
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		this.updateScrollingState(event);
 		unfocusTextField();
-		if (!this.isMouseOver(mouseX, mouseY)) {
+		if (!this.isMouseOver(event.x(), event.y())) {
 			return false;
 		}
-		Entry entry = this.getEntryAtPosition(mouseX, mouseY);
+		Entry entry = this.getEntryAtPosition(event.x(), event.y());
 		if (entry != null) {
-			if (entry.mouseClicked(mouseX, mouseY, button)) {
+			if (entry.mouseClicked(event, doubleClick)) {
 				this.setFocused((GuiEventListener)entry);
 				this.setDragging(true);
 				return true;
@@ -279,24 +277,24 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 	}
 
 	@Override
-	public boolean mouseReleased(double mouseX, double mouseY, int button) {
+	public boolean mouseReleased(MouseButtonEvent event) {
 		if (this.getFocused() != null) {
-			this.getFocused().mouseReleased(mouseX, mouseY, button);
+			this.getFocused().mouseReleased(event);
 		}
 		return false;
 	}
 
 	@Override
-	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-		if (super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+	public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
+		if (super.mouseDragged(event, deltaX, deltaY)) {
 			return true;
 		}
-		if (button != 0 || !this.scrolling) {
+		if (event.button() != 0 || !this.scrolling) {
 			return false;
 		}
-		if (mouseY < (double)this.top) {
+		if (event.y() < (double)this.top) {
 			this.setScrollAmount(0.0);
-		} else if (mouseY > (double)this.bottom) {
+		} else if (event.y() > (double)this.bottom) {
 			this.setScrollAmount(this.getMaxScroll());
 		} else {
 			double d = Math.max(1, this.getMaxScroll());
@@ -315,8 +313,8 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 	}
 
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (super.keyPressed(keyCode, scanCode, modifiers)) {
+	public boolean keyPressed(KeyEvent event) {
+		if (super.keyPressed(event)) {
 			return true;
 		}
 		return false;

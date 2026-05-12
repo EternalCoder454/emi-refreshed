@@ -4,9 +4,8 @@ import java.util.function.BooleanSupplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.runtime.EmiDrawContext;
@@ -15,13 +14,13 @@ public class ButtonWidget extends Widget {
 	protected final int x, y, width, height, u, v;
 	protected final BooleanSupplier isActive;
 	protected final ClickAction action;
-	protected final ResourceLocation texture;
+	protected final Identifier texture;
 
 	public ButtonWidget(int x, int y, int width, int height, int u, int v, BooleanSupplier isActive, ClickAction action) {
 		this(x, y, width, height, u, v, EmiRenderHelper.BUTTONS, isActive, action);
 	}
 
-	public ButtonWidget(int x, int y, int width, int height, int u, int v, ResourceLocation texture, BooleanSupplier isActive, ClickAction action) {
+	public ButtonWidget(int x, int y, int width, int height, int u, int v, Identifier texture, BooleanSupplier isActive, ClickAction action) {
 		this.x = x;
 		this.y = y;
 		this.width = width;

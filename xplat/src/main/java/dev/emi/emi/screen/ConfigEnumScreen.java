@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
@@ -67,17 +68,17 @@ public class ConfigEnumScreen<T> extends Screen {
 	}
 	
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+	public boolean keyPressed(KeyEvent event) {
+		if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
 			this.onClose();
 			return true;
-		} else if (this.minecraft.options.keyInventory.matches(keyCode, scanCode)) {
+		} else if (this.minecraft.options.keyInventory.matches(event)) {
 			this.onClose();
 			return true;
-		} else if (keyCode == GLFW.GLFW_KEY_TAB) {
+		} else if (event.key() == GLFW.GLFW_KEY_TAB) {
 			return false;
 		}
-		return super.keyPressed(keyCode, scanCode, modifiers);
+		return super.keyPressed(event);
 	}
 
 	public static record Entry<T>(T value, Component name, List<ClientTooltipComponent> tooltip) {

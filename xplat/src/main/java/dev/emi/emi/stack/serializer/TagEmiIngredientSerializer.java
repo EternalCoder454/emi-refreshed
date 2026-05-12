@@ -2,8 +2,9 @@ package dev.emi.emi.stack.serializer;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
 import com.google.gson.JsonElement;
@@ -30,14 +31,14 @@ public class TagEmiIngredientSerializer implements EmiIngredientSerializer<TagEm
 			String s = element.getAsString();
 			Matcher m = STACK_REGEX.matcher(s);
 			if (m.matches()) {
-				ResourceLocation registry = EmiPort.id(m.group(1));
-				ResourceLocation id = EmiPort.id(m.group(2), m.group(3));
+				Identifier registry = EmiPort.id(m.group(1));
+				Identifier id = EmiPort.id(m.group(2), m.group(3));
 				return EmiIngredient.of(TagKey.create(ResourceKey.createRegistryKey(registry), id), 1);
 			}
 		} else if (element.isJsonObject()) {
 			JsonObject json = element.getAsJsonObject();
-			ResourceLocation registry = EmiPort.id(json.get("registry").getAsString());
-			ResourceLocation id = EmiPort.id(json.get("id").getAsString());
+			Identifier registry = EmiPort.id(json.get("registry").getAsString());
+			Identifier id = EmiPort.id(json.get("id").getAsString());
 			long amount = GsonHelper.getAsLong(json, "amount", 1);
 			float chance = GsonHelper.getAsFloat(json, "chance", 1);
 			EmiIngredient stack = EmiIngredient.of(TagKey.create(ResourceKey.createRegistryKey(registry), id), amount);

@@ -4,6 +4,7 @@ import static net.minecraft.commands.arguments.ResourceLocationArgument.id;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.brigadier.Command;
@@ -12,7 +13,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import dev.emi.emi.network.CommandS2CPacket;
 import dev.emi.emi.network.EmiNetwork;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 public class EmiCommands {
@@ -31,7 +31,7 @@ public class EmiCommands {
 					.then(
 						argument("id", id())
 						.executes(context -> {
-							send(context.getSource().getPlayer(), VIEW_RECIPE, context.getArgument("id", ResourceLocation.class));
+							send(context.getSource().getPlayer(), VIEW_RECIPE, context.getArgument("id", Identifier.class));
 							return Command.SINGLE_SUCCESS;
 						})
 					)
@@ -51,7 +51,7 @@ public class EmiCommands {
 					.then(
 						argument("id", id())
 						.executes(context -> {
-							send(context.getSource().getPlayer(), TREE_GOAL, context.getArgument("id", ResourceLocation.class));
+							send(context.getSource().getPlayer(), TREE_GOAL, context.getArgument("id", Identifier.class));
 							return Command.SINGLE_SUCCESS;
 						})
 					)
@@ -61,7 +61,7 @@ public class EmiCommands {
 					.then(
 						argument("id", id())
 						.executes(context -> {
-							send(context.getSource().getPlayer(), TREE_RESOLUTION, context.getArgument("id", ResourceLocation.class));
+							send(context.getSource().getPlayer(), TREE_RESOLUTION, context.getArgument("id", Identifier.class));
 							return Command.SINGLE_SUCCESS;
 						})
 					)
@@ -70,7 +70,7 @@ public class EmiCommands {
 		);
 	}
 
-	private static void send(ServerPlayer player, byte type, @Nullable ResourceLocation id) {
+	private static void send(ServerPlayer player, byte type, @Nullable Identifier id) {
 		EmiNetwork.sendToClient(player, new CommandS2CPacket(type, id));
 	}
 }

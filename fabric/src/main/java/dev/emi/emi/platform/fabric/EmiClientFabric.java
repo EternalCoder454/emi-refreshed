@@ -1,10 +1,7 @@
 package dev.emi.emi.platform.fabric;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
 
 import dev.emi.emi.data.EmiData;
 import dev.emi.emi.network.CommandS2CPacket;
@@ -13,20 +10,16 @@ import dev.emi.emi.network.EmiNetwork;
 import dev.emi.emi.network.EmiPacket;
 import dev.emi.emi.network.PingS2CPacket;
 import dev.emi.emi.platform.EmiClient;
-import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import net.fabricmc.fabric.api.client.model.loading.v1.ModelModifier;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamDecoder;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 
 public class EmiClientFabric implements ClientModInitializer {
 
@@ -37,9 +30,9 @@ public class EmiClientFabric implements ClientModInitializer {
 			ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new IdentifiableResourceReloadListener() {
 
 				@Override
-				public CompletableFuture<Void> reload(PreparationBarrier var1, ResourceManager var2,
-						Executor var5, Executor var6) {
-					return reloader.reload(var1, var2, var5, var6);
+				public CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1,
+						Executor var5, PreparableReloadListener.PreparationBarrier var7, Executor var6) {
+					return reloader.reload(var1, var5, var7, var6);
 				}
 
 				@Override
@@ -48,7 +41,7 @@ public class EmiClientFabric implements ClientModInitializer {
 				}
 
 				@Override
-				public ResourceLocation getFabricId() {
+				public Identifier getFabricId() {
 					return reloader.getEmiId();
 				}
 			});

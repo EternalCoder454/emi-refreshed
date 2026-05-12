@@ -2,8 +2,6 @@ package dev.emi.emi;
 
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -12,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Button.OnPress;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
@@ -22,8 +19,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.FormattedCharSequence;
@@ -32,7 +29,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -51,7 +47,6 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.Nullable;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import dev.emi.emi.api.stack.Comparison;
@@ -97,7 +92,7 @@ public final class EmiPort {
 		return text.getVisualOrderText();
 	}
 
-	public static Collection<ResourceLocation> findResources(ResourceManager manager, String prefix, Predicate<String> pred) {
+	public static Collection<Identifier> findResources(ResourceManager manager, String prefix, Predicate<String> pred) {
 		return manager.listResources(prefix, i -> pred.test(i.toString())).keySet();
 	}
 
@@ -189,11 +184,11 @@ public final class EmiPort {
 		return getItemRegistry().stream().filter(i -> !i.isEnabled(fs));
 	}
 
-	public static ResourceLocation getId(Recipe<?> recipe) {
+	public static Identifier getId(Recipe<?> recipe) {
 		return EmiRecipes.recipeIds.get(recipe);
 	}
 
-	public static @Nullable RecipeHolder<?> getRecipe(ResourceLocation id) {
+	public static @Nullable RecipeHolder<?> getRecipe(Identifier id) {
 		RecipeManager manager = getRecipeManager();
 		if (manager != null && id != null) {
 			return manager.byKey(ResourceKey.create(Registries.RECIPE, id)).orElse(null);
@@ -222,12 +217,12 @@ public final class EmiPort {
 		return DataComponentPatch.EMPTY;
 	}
 
-	public static ResourceLocation id(String id) {
-		return ResourceLocation.parse(id);
+	public static Identifier id(String id) {
+		return Identifier.parse(id);
 	}
 
-	public static ResourceLocation id(String namespace, String path) {
-		return ResourceLocation.fromNamespaceAndPath(namespace, path);
+	public static Identifier id(String namespace, String path) {
+		return Identifier.fromNamespaceAndPath(namespace, path);
 	}
 
 }

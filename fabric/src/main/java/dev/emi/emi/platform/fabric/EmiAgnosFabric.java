@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+
+import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.text.WordUtils;
 
 import com.google.common.collect.Lists;
@@ -27,7 +29,6 @@ import dev.emi.emi.screen.FakeScreen;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
-import net.minecraft.client.gui.GuiGraphics;
 
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
@@ -42,7 +43,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PotionItem;
@@ -144,7 +144,7 @@ public class EmiAgnosFabric extends EmiAgnos {
 					try {
 						Ingredient recipeIngredient = recipe.ingredient();
 						if (!recipeIngredient.items().findAny().isEmpty()) {
-						ResourceLocation id = EmiPort.id("emi", "/brewing/" + pid
+						Identifier id = EmiPort.id("emi", "/brewing/" + pid
 							+ "/" + EmiUtil.subId(recipeIngredient.items().findFirst().get().value())
 							+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.from().value()))
 							+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.to().value())));
@@ -168,7 +168,7 @@ public class EmiAgnosFabric extends EmiAgnos {
 					String oid = EmiUtil.subId(recipe.to().value());
 					Consumer<Holder<Potion>> potionRecipeGen = entry -> {
 						if (brewingRegistry.isBrewablePotion(entry)) {
-							ResourceLocation id = EmiPort.id("emi", "/brewing/item/"
+							Identifier id = EmiPort.id("emi", "/brewing/item/"
 								+ EmiUtil.subId(entry.unwrapKey().get().location()) + "/" + gid + "/" + iid + "/" + oid);
 							registry.addRecipe(new EmiBrewingRecipe(
 								EmiStack.of(EmiPort.setPotion(new ItemStack(recipe.from().value()), entry.value())), EmiIngredient.of(recipeIngredient),

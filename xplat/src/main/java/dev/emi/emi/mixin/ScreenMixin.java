@@ -30,7 +30,7 @@ public class ScreenMixin {
 		}
 	}
 
-	@Inject(at = @At("TAIL"), method = "renderWithTooltip(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")
+	@Inject(at = @At("TAIL"), method = "renderWithTooltipAndSubtitles(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")
 	private void renderWithTooltipTail(GuiGraphics raw, int mouseX, int mouseY, float delta, CallbackInfo info) {
 		if ((Object) this instanceof AbstractContainerScreen && !EmiAgnos.isForge()) {
 			EmiDrawContext context = EmiDrawContext.wrap(raw);

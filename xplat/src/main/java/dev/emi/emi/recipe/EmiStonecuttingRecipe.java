@@ -1,7 +1,8 @@
 package dev.emi.emi.recipe;
 
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.recipe.EmiRecipe;
@@ -13,7 +14,7 @@ import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.WidgetHolder;
 
 public class EmiStonecuttingRecipe implements EmiRecipe {
-	private final ResourceLocation id;
+	private final Identifier id;
 	private final EmiIngredient input;
 	private final EmiStack output;
 	
@@ -29,7 +30,7 @@ public class EmiStonecuttingRecipe implements EmiRecipe {
 	}
 
 	@Override
-	public ResourceLocation getId() {
+	public Identifier getId() {
 		return id;
 	}
 

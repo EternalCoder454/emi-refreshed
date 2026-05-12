@@ -1,13 +1,12 @@
 package dev.emi.emi.api.stack;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.FlowingFluid;
@@ -105,7 +104,7 @@ public abstract class EmiStack implements EmiIngredient {
 		return null;
 	}
 
-	public abstract ResourceLocation getId();
+	public abstract Identifier getId();
 
 	public ItemStack getItemStack() {
 		return ItemStack.EMPTY;

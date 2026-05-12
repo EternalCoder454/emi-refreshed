@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -34,7 +33,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -332,7 +331,7 @@ public class VanillaPlugin implements EmiPlugin {
 		List<Item> dyeableItems = EmiTagKey.of(ItemTags.DYEABLE).getList();
 
 		for (CraftingRecipe recipe : getRecipes(registry, RecipeType.CRAFTING)) {
-			ResourceLocation id = EmiPort.getId(recipe);
+			Identifier id = EmiPort.getId(recipe);
 			if (recipe instanceof MapExtendingRecipe map) {
 				EmiStack paper = EmiStack.of(Items.PAPER);
 				addRecipeSafe(registry, () -> new EmiCraftingRecipe(List.of(
@@ -489,7 +488,7 @@ public class VanillaPlugin implements EmiPlugin {
 							.map(h -> EmiStack.of(h.value())).toList());
 						if (!repairIngredient.isEmpty()) {
 							Item firstItem = repairable.items().iterator().next().value();
-							ResourceLocation id = synthetic("anvil/repairing/material", EmiUtil.subId(i) + "/" + EmiUtil.subId(firstItem));
+							Identifier id = synthetic("anvil/repairing/material", EmiUtil.subId(i) + "/" + EmiUtil.subId(firstItem));
 							addRecipeSafe(registry, () -> new EmiAnvilRecipe(EmiStack.of(i), repairIngredient, id));
 						}
 					}
@@ -577,15 +576,15 @@ public class VanillaPlugin implements EmiPlugin {
 				"minecraft:axes", "c:axes", "c:tools/axes", "fabric:axes", "forge:tools/axes"
 			), EmiStack.of(Items.IRON_AXE)), 1);
 		for (Map.Entry<Block, Block> entry : AxeItemAccessor.getStrippedBlocks().entrySet()) {
-			ResourceLocation id = synthetic("world/stripping", EmiUtil.subId(entry.getKey()));
+			Identifier id = synthetic("world/stripping", EmiUtil.subId(entry.getKey()));
 			addRecipeSafe(registry, () -> basicWorld(EmiStack.of(entry.getKey()), axes, EmiStack.of(entry.getValue()), id));
 		}
 		for (Map.Entry<Block, Block> entry : WeatheringCopper.PREVIOUS_BY_BLOCK.get().entrySet()) {
-			ResourceLocation id = synthetic("world/stripping", EmiUtil.subId(entry.getKey()));
+			Identifier id = synthetic("world/stripping", EmiUtil.subId(entry.getKey()));
 			addRecipeSafe(registry, () -> basicWorld(EmiStack.of(entry.getKey()), axes, EmiStack.of(entry.getValue()), id));
 		}
 		for (Map.Entry<Block, Block> entry : HoneycombItem.WAX_OFF_BY_BLOCK.get().entrySet()) {
-			ResourceLocation id = synthetic("world/stripping", EmiUtil.subId(entry.getKey()));
+			Identifier id = synthetic("world/stripping", EmiUtil.subId(entry.getKey()));
 			addRecipeSafe(registry, () -> basicWorld(EmiStack.of(entry.getKey()), axes, EmiStack.of(entry.getValue()), id));
 		}
 		
@@ -605,7 +604,7 @@ public class VanillaPlugin implements EmiPlugin {
 			Consumer<UseOnContext> consumer = entry.getValue().getSecond();
 			if (EmiClient.HOE_ACTIONS.containsKey(consumer)) {
 				Block b = entry.getKey();
-				ResourceLocation id = synthetic("world/tilling", EmiUtil.subId(b));
+				Identifier id = synthetic("world/tilling", EmiUtil.subId(b));
 				List<EmiStack> list = EmiClient.HOE_ACTIONS.get(consumer).stream().map(EmiStack::of).toList();
 				if (list.size() == 1) {
 					addRecipeSafe(registry, () -> basicWorld(EmiStack.of(b), hoes, list.get(0), id));
@@ -628,13 +627,13 @@ public class VanillaPlugin implements EmiPlugin {
 			), EmiStack.of(Items.IRON_SHOVEL)), 1);
 		for (Map.Entry<Block, BlockState> entry : ShovelItemAccessor.getPathStates().entrySet()) {
 			Block result = entry.getValue().getBlock();
-			ResourceLocation id = synthetic("world/flattening", EmiUtil.subId(entry.getKey()));
+			Identifier id = synthetic("world/flattening", EmiUtil.subId(entry.getKey()));
 			addRecipeSafe(registry, () -> basicWorld(EmiStack.of(entry.getKey()), shovels, EmiStack.of(result), id));
 		}
 
 		EmiIngredient honeycomb = EmiStack.of(Items.HONEYCOMB);
 		for (Map.Entry<Block, Block> entry : HoneycombItem.WAXABLES.get().entrySet()) {
-			ResourceLocation id = synthetic("world/waxing", EmiUtil.subId(entry.getKey()));
+			Identifier id = synthetic("world/waxing", EmiUtil.subId(entry.getKey()));
 			addRecipeSafe(registry, () -> basicWorld(EmiStack.of(entry.getKey()), honeycomb, EmiStack.of(entry.getValue()), id, false));
 		}
 
@@ -808,7 +807,7 @@ public class VanillaPlugin implements EmiPlugin {
 		}
 	}
 
-	private static ResourceLocation synthetic(String type, String name) {
+	private static Identifier synthetic(String type, String name) {
 		return EmiPort.id("emi", "/" + type + "/" + name);
 	}
 
@@ -854,11 +853,11 @@ public class VanillaPlugin implements EmiPlugin {
 			synthetic("world/concrete", EmiUtil.subId(result))));
 	}
 
-	private static EmiRecipe basicWorld(EmiIngredient left, EmiIngredient right, EmiStack output, ResourceLocation id) {
+	private static EmiRecipe basicWorld(EmiIngredient left, EmiIngredient right, EmiStack output, Identifier id) {
 		return basicWorld(left, right, output, id, true);
 	}
 
-	private static EmiRecipe basicWorld(EmiIngredient left, EmiIngredient right, EmiStack output, ResourceLocation id, boolean catalyst) {
+	private static EmiRecipe basicWorld(EmiIngredient left, EmiIngredient right, EmiStack output, Identifier id, boolean catalyst) {
 		return EmiWorldInteractionRecipe.builder()
 			.id(id)
 			.leftInput(left)

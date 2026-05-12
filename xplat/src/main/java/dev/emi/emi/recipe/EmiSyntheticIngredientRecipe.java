@@ -1,7 +1,8 @@
 package dev.emi.emi.recipe;
 
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+
+import net.minecraft.resources.Identifier;
 import dev.emi.emi.VanillaPlugin;
 import dev.emi.emi.api.recipe.EmiIngredientRecipe;
 import dev.emi.emi.api.recipe.EmiRecipe;
@@ -38,7 +39,7 @@ public class EmiSyntheticIngredientRecipe extends EmiIngredientRecipe {
 	}
 
 	@Override
-	public ResourceLocation getId() {
+	public Identifier getId() {
 		return null;
 	}
 }

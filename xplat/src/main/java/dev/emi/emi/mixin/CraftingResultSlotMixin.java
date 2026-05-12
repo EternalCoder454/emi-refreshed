@@ -31,7 +31,7 @@ public class CraftingResultSlotMixin {
 	@Inject(at = @At("HEAD"), method = "checkTakeAchievements(Lnet/minecraft/world/item/ItemStack;)V")
 	private void onCrafted(ItemStack stack, CallbackInfo info) {
 		Level world = player.level();
-		if (world.isClientSide) {
+		if (world.isClientSide()) {
 			Optional<CraftingRecipe> opt = EmiPort.getRecipeManager().getRecipes().stream()
 				.filter(h -> h.value() instanceof CraftingRecipe cr && cr.matches(craftSlots.asPositionedCraftInput().input(), world))
 				.findFirst().map(RecipeHolder::value).map(r -> (CraftingRecipe) r);

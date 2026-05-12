@@ -12,6 +12,8 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -374,14 +376,14 @@ public class ConfigScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
 		if (activeBind != null) {
 			pushModifier(0);
-			activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.MOUSE.getOrCreate(button), activeModifiers));
+			activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.MOUSE.getOrCreate(event.button()), activeModifiers));
 			activeBind = null;
 			return true;
 		}
-		return super.mouseClicked(mouseX, mouseY, button);
+		return super.mouseClicked(event, doubleClick);
 	}
 
 	private void pushModifier(int lastModifier) {
@@ -391,39 +393,38 @@ public class ConfigScreen extends Screen {
 	}
 
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+	public boolean keyPressed(KeyEvent event) {
 		if (activeBind != null) {
-			if (EmiInput.maskFromCode(keyCode) != 0) {
-				pushModifier(keyCode);
+			if (EmiInput.maskFromCode(event.key()) != 0) {
+				pushModifier(event.key());
 			} else {
 				pushModifier(0);
-				if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+				if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
 					activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.UNKNOWN, 0));
 				} else {
-					activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.KEYSYM.getOrCreate(keyCode), activeModifiers));
+					activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.KEYSYM.getOrCreate(event.key()), activeModifiers));
 				}
 				activeBind = null;
 				updateChanges();
 			}
 			return true;
 		} else {
-			// Element nesting causes crashing for cycling, for some reason
-			if (keyCode == GLFW.GLFW_KEY_TAB) {
+			if (event.key() == GLFW.GLFW_KEY_TAB) {
 				return false;
 			}
-			if (super.keyPressed(keyCode, scanCode, modifiers)) {
+			if (super.keyPressed(event)) {
 				return true;
 			}
 			if (this.getFocused() instanceof EditBox tfw && tfw.isFocused()) {
-				if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+				if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
 					EmiPort.focus(tfw, false);
 					return true;
 				}
 			} else {
-				if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+				if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
 					this.onClose();
 					return true;
-				} else if (this.minecraft.options.keyInventory.matches(keyCode, scanCode)) {
+				} else if (this.minecraft.options.keyInventory.matches(event)) {
 					this.onClose();
 					return true;
 				}
@@ -433,16 +434,16 @@ public class ConfigScreen extends Screen {
 	}
 
 	@Override
-	public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+	public boolean keyReleased(KeyEvent event) {
 		if (activeBind != null) {
-			activeModifiers &= ~EmiInput.maskFromCode(keyCode);
-			if (keyCode == lastModifier) {
-				activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.KEYSYM.getOrCreate(keyCode), activeModifiers));
+			activeModifiers &= ~EmiInput.maskFromCode(event.key());
+			if (event.key() == lastModifier) {
+				activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.KEYSYM.getOrCreate(event.key()), activeModifiers));
 				activeBind = null;
 			}
 			return true;
 		}
-		return super.keyReleased(keyCode, scanCode, modifiers);
+		return super.keyReleased(event);
 	}
 
 	@Override

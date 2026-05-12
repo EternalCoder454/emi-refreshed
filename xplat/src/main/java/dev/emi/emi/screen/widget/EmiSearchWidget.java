@@ -7,6 +7,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -41,7 +43,7 @@ public class EmiSearchWidget extends EditBox {
 		this.setTextColor(-1);
 		this.setTextColorUneditable(-1);
 		this.setMaxLength(256);
-		this.setFormatter((string, stringStart) -> {
+		this.addFormatter((string, stringStart) -> {
 			MutableComponent text = null;
 			int s = 0;
 			int last = 0;
@@ -167,12 +169,15 @@ public class EmiSearchWidget extends EditBox {
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		double mouseX = event.x();
+		double mouseY = event.y();
+		int button = event.button();
 		if (!isMouseOver(mouseX, mouseY) || !EmiConfig.enabled) {
 			EmiPort.focus(this, false);
 			return false;
 		} else {
-			boolean b = super.mouseClicked(mouseX, mouseY, button == 1 ? 0 : button);
+			boolean b = super.mouseClicked(event, button == 1 ? false : doubleClick);
 			if (isMouseOver(mouseX, mouseY)) {
 				EmiPort.focus(this, true);
 			}
@@ -194,19 +199,19 @@ public class EmiSearchWidget extends EditBox {
 	}
 
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+	public boolean keyPressed(KeyEvent event) {
 		if (this.isFocused()) {
-			if (EmiConfig.clearSearch.matchesKey(keyCode, scanCode)) {
+			if (EmiConfig.clearSearch.matchesKey(event.key(), event.scancode())) {
 				setValue("");
 				return true;
 			}
-			if ((EmiConfig.focusSearch.matchesKey(keyCode, scanCode)
-					|| keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE)) {
+			if ((EmiConfig.focusSearch.matchesKey(event.key(), event.scancode())
+					|| event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_ESCAPE)) {
 				EmiPort.focus(this, false);
 				return true;
 			}
-			if (keyCode == GLFW.GLFW_KEY_UP || keyCode == GLFW.GLFW_KEY_DOWN) {
-				int offset = keyCode == GLFW.GLFW_KEY_UP ? 1 : -1;
+			if (event.key() == GLFW.GLFW_KEY_UP || event.key() == GLFW.GLFW_KEY_DOWN) {
+				int offset = event.key() == GLFW.GLFW_KEY_UP ? 1 : -1;
 				if (searchHistoryIndex + offset >= 0 && searchHistoryIndex + offset < searchHistory.size()) {
 					if (searchHistoryIndex >= 0 && searchHistoryIndex < searchHistory.size()) {
 						searchHistory.set(searchHistoryIndex, getValue());
@@ -216,7 +221,7 @@ public class EmiSearchWidget extends EditBox {
 				}
 			}
 		}
-		return super.keyPressed(keyCode, scanCode, modifiers);
+		return super.keyPressed(event);
 	}
 
 	@Override

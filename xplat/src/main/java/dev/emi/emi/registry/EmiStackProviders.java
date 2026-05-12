@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
@@ -12,7 +12,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -66,7 +65,7 @@ public class EmiStackProviders {
 									.filter(h -> h.value() instanceof CraftingRecipe cr && cr.matches(input, client.level))
 									.map(RecipeHolder::value).map(r -> (CraftingRecipe) r).toList();
 							if (!list.isEmpty()) {
-								ResourceLocation id = EmiPort.getId(list.get(0));
+								Identifier id = EmiPort.getId(list.get(0));
 								EmiRecipe recipe = EmiApi.getRecipeManager().getRecipe(id);
 								if (recipe != null) {
 									return new EmiStackInteraction(EmiStack.of(stack), recipe, false);

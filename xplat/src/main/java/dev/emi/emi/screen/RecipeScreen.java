@@ -8,15 +8,17 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiRenderHelper;
@@ -44,7 +46,7 @@ import dev.emi.emi.screen.widget.ResolutionButtonWidget;
 import dev.emi.emi.screen.widget.SizedButtonWidget;
 
 public class RecipeScreen extends Screen {
-	private static final ResourceLocation TEXTURE = EmiPort.id("emi", "textures/gui/background.png");
+	private static final Identifier TEXTURE = EmiPort.id("emi", "textures/gui/background.png");
 	public static @Nullable EmiIngredient resolve = null;
 	private Map<EmiRecipeCategory, List<EmiRecipe>> recipes;
 	public AbstractContainerScreen<?> old;
@@ -413,7 +415,10 @@ public class RecipeScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		double mouseX = event.x();
+		double mouseY = event.y();
+		int button = event.button();
 		int mx = (int) mouseX;
 		int my = (int) mouseY;
 		pressedSlot = null;
@@ -449,7 +454,7 @@ public class RecipeScreen extends Screen {
 				group.error(e);
 			}
 		}
-		if (EmiScreenManager.mouseClicked(mouseX, mouseY, button)) {
+		if (EmiScreenManager.mouseClicked(event)) {
 			return true;
 		}
 		RecipeTab rTab = getTabAt(mx, my);
@@ -458,12 +463,15 @@ public class RecipeScreen extends Screen {
 			focusCategory(rTab.category);
 			return true;
 		}
-		return super.mouseClicked(mouseX, mouseY, button);
+		return super.mouseClicked(event, doubleClick);
 	}
 
 	@Override
-	public boolean mouseReleased(double mouseX, double mouseY, int button) {
-		if (EmiScreenManager.mouseReleased(mouseX, mouseY, button)) {
+	public boolean mouseReleased(MouseButtonEvent event) {
+		double mouseX = event.x();
+		double mouseY = event.y();
+		int button = event.button();
+		if (EmiScreenManager.mouseReleased(event)) {
 			return true;
 		}
 		if (pressedSlot instanceof SlotWidget slot) {
@@ -484,12 +492,15 @@ public class RecipeScreen extends Screen {
 			}
 			pressedSlot = null;
 		}
-		return super.mouseReleased(mouseX, mouseY, button);
+		return super.mouseReleased(event);
 	}
 
 	@Override
-	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-		if (EmiScreenManager.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+	public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
+		double mouseX = event.x();
+		double mouseY = event.y();
+		int button = event.button();
+		if (EmiScreenManager.mouseDragged(event, deltaX, deltaY)) {
 			return true;
 		}
 		if (pressedSlot instanceof SlotWidget slot) {
@@ -508,7 +519,7 @@ public class RecipeScreen extends Screen {
 				}
 			}
 		}
-		return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+		return super.mouseDragged(event, deltaX, deltaY);
 	}
 
 	@Override
@@ -529,21 +540,21 @@ public class RecipeScreen extends Screen {
 	}
 
 	@Override
-	public boolean charTyped(char chr, int modifiers) {
-		if (EmiScreenManager.search.charTyped(chr, modifiers)) {
+	public boolean charTyped(CharacterEvent event) {
+		if (EmiScreenManager.search.charTyped(event)) {
 			return true;
 		}
-		return super.charTyped(chr, modifiers);
+		return super.charTyped(event);
 	}
 
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+	public boolean keyPressed(KeyEvent event) {
+		if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
 			this.onClose();
 			return true;
-		} else if (EmiScreenManager.keyPressed(keyCode, scanCode, modifiers)) {
+		} else if (EmiScreenManager.keyPressed(event)) {
 			return true;
-		} else if (this.minecraft.options.keyInventory.matches(keyCode, scanCode)) {
+		} else if (this.minecraft.options.keyInventory.matches(event)) {
 			this.onClose();
 			return true;
 		}
@@ -555,13 +566,13 @@ public class RecipeScreen extends Screen {
 				boolean groupHovered = new Bounds(group.x(), group.y(), group.getWidth(), group.getHeight()).contains(EmiScreenManager.lastMouseX, EmiScreenManager.lastMouseY);
 				for (Widget widget : group.widgets) {
 					if (widget.getBounds().contains(mx, my)) {
-						if (widget.keyPressed(keyCode, scanCode, modifiers)) {
+						if (widget.keyPressed(event.key(), event.scancode(), event.modifiers())) {
 							return true;
 						}
 						groupHovered = true;
 					}
 				}
-				if (groupHovered && EmiScreenManager.recipeInteraction(group.recipe, bind -> bind.matchesKey(keyCode, scanCode))) {
+				if (groupHovered && EmiScreenManager.recipeInteraction(group.recipe, bind -> bind.matchesKey(event.key(), event.scancode()))) {
 					return true;
 				}
 			} catch (Throwable e) {
@@ -569,12 +580,12 @@ public class RecipeScreen extends Screen {
 				group.error(e);
 			}
 		}
-		if (keyCode == GLFW.GLFW_KEY_LEFT) {
+		if (event.key() == GLFW.GLFW_KEY_LEFT) {
 			setPage(tabPage, tab - 1, 0);
-		} else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
+		} else if (event.key() == GLFW.GLFW_KEY_RIGHT) {
 			setPage(tabPage, tab + 1, 0);
 		}
-		return super.keyPressed(keyCode, scanCode, modifiers);
+		return super.keyPressed(event);
 	}
 
 	public WidgetGroup getGroup(Widget widget) {

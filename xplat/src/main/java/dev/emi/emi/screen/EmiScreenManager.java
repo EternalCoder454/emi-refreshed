@@ -16,6 +16,8 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.network.chat.Component;
@@ -969,24 +971,27 @@ public class EmiScreenManager {
 		return false;
 	}
 
-	public static boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public static boolean mouseClicked(MouseButtonEvent event) {
+		double mouseX = event.x();
+		double mouseY = event.y();
+		int button = event.button();
 		EmiScreenBase base = EmiScreenBase.getCurrent();
 		if (base.isEmpty()) {
 			return false;
 		}
-		if (search.mouseClicked(mouseX, mouseY, button)) {
+		if (search.mouseClicked(event, false)) {
 			return true;
-		} else if (emi.mouseClicked(mouseX, mouseY, button)) {
+		} else if (emi.mouseClicked(event, false)) {
 			return true;
-		} else if (tree.mouseClicked(mouseX, mouseY, button)) {
+		} else if (tree.mouseClicked(event, false)) {
 			return true;
 		}
 		for (SidebarPanel panel : panels) {
-			if (panel.cycle.mouseClicked(mouseX, mouseY, button)) {
+			if (panel.cycle.mouseClicked(event, false)) {
 				return true;
-			} else if (panel.pageLeft.mouseClicked(mouseX, mouseY, button)) {
+			} else if (panel.pageLeft.mouseClicked(event, false)) {
 				return true;
-			} else if (panel.pageRight.mouseClicked(mouseX, mouseY, button)) {
+			} else if (panel.pageRight.mouseClicked(event, false)) {
 				return true;
 			}
 		}
@@ -1001,7 +1006,6 @@ public class EmiScreenManager {
 		EmiIngredient ingredient = getHoveredStack((int) mouseX, (int) mouseY, !isClickClicky(button)).getStack();
 		pressedStack = ingredient;
 		if (!ingredient.isEmpty()) {
-			// Don't cancel the event for extra mouse buttons
 			ingredient = getHoveredStack((int) mouseX, (int) mouseY, false).getStack();
 			if (!ingredient.isEmpty()) {
 				return true;
@@ -1014,7 +1018,10 @@ public class EmiScreenManager {
 		return false;
 	}
 
-	public static boolean mouseReleased(double mouseX, double mouseY, int button) {
+	public static boolean mouseReleased(MouseButtonEvent event) {
+		double mouseX = event.x();
+		double mouseY = event.y();
+		int button = event.button();
 		EmiScreenBase base = EmiScreenBase.getCurrent();
 		if (base.isEmpty()) {
 			return false;
@@ -1028,7 +1035,6 @@ public class EmiScreenManager {
 			recalculate();
 			if (EmiApi.isCheatMode() && EmiConfig.deleteCursorStack.matchesMouse(button)) {
 				if (deleteCursor(mx, my)) {
-					// Returning false here makes the handled screen do something and removes a bug, oh well.
 					return false;
 				}
 			}
@@ -1078,7 +1084,10 @@ public class EmiScreenManager {
 		}
 	}
 
-	public static boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+	public static boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
+		double mouseX = event.x();
+		double mouseY = event.y();
+		int button = event.button();
 		EmiScreenBase base = EmiScreenBase.getCurrent();
 		if (base.isEmpty()) {
 			return false;
@@ -1101,39 +1110,39 @@ public class EmiScreenManager {
 		return false;
 	}
 
-	public static boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+	public static boolean keyPressed(KeyEvent event) {
 		EmiScreenBase base = EmiScreenBase.getCurrent();
 		if (base.isEmpty()) {
 			return false;
 		}
 		if (isDisabled()) {
-			if (EmiConfig.toggleVisibility.matchesKey(keyCode, scanCode)) {
+			if (EmiConfig.toggleVisibility.matchesKey(event.key(), event.scancode())) {
 				toggleVisibility(true);
 				return true;
 			}
 			return false;
 		}
-		if (EmiScreenManager.search.keyPressed(keyCode, scanCode, modifiers) || EmiScreenManager.search.canConsumeInput()) {
+		if (EmiScreenManager.search.keyPressed(event) || EmiScreenManager.search.canConsumeInput()) {
 			return true;
 		}
 		if (hasFocusedTextField(client.screen, 10)) {
 			return false;
 		}
-		if (EmiApi.isCheatMode() && EmiConfig.deleteCursorStack.matchesKey(keyCode, scanCode)) {
+		if (EmiApi.isCheatMode() && EmiConfig.deleteCursorStack.matchesKey(event.key(), event.scancode())) {
 			if (deleteCursor(lastMouseX, lastMouseY)) {
 				return true;
 			}
 		}
-		if (EmiInput.isControlDown() && keyCode == GLFW.GLFW_KEY_Y) {
+		if (EmiInput.isControlDown() && event.key() == GLFW.GLFW_KEY_Y) {
 			EmiApi.displayAllRecipes();
 			return true;
 		} else {
 			recalculate();
 			if (stackInteraction(getHoveredStack(lastMouseX, lastMouseY, true),
-					bind -> bind.matchesKey(keyCode, scanCode))) {
+					bind -> bind.matchesKey(event.key(), event.scancode()))) {
 				return true;
 			}
-			if (genericInteraction(bind -> bind.matchesKey(keyCode, scanCode))) {
+			if (genericInteraction(bind -> bind.matchesKey(event.key(), event.scancode()))) {
 				return true;
 			}
 		}

@@ -1,8 +1,7 @@
 package dev.emi.emi.screen;
 
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.resources.Identifier;
 
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.EmiConfig;
@@ -12,7 +11,7 @@ import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 
 public class MicroTextRenderer {
-	private static final ResourceLocation TEXTURE = EmiPort.id("emi", "textures/gui/microfont.png");
+	private static final Identifier TEXTURE = EmiPort.id("emi", "textures/gui/microfont.png");
 	private static final Char2ObjectMap<MicroChar> MICRO_CHARS = new Char2ObjectOpenHashMap<>();
 	private static final List<UnitScale> QUANTITY_SCALES = List.of(
 		new UnitScale("", 0),

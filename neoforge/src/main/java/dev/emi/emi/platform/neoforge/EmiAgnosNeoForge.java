@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import dev.emi.emi.mixin.accessor.BrewingRecipeRegistryAccessor;
-import dev.emi.emi.mixin.accessor.ItemStackRenderStateAccessor;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.ClientHooks;
 import org.apache.commons.lang3.text.WordUtils;
 import org.objectweb.asm.Type;
@@ -38,16 +38,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
@@ -56,7 +53,6 @@ import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
@@ -97,7 +93,7 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 
 	@Override
 	protected boolean isDevelopmentEnvironmentAgnos() {
-		return !FMLLoader.isProduction();
+		return !FMLLoader.getCurrent().isProduction();
 	}
 
 	@Override
@@ -165,7 +161,7 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 				for (PotionBrewing.Mix<Potion> recipe : brewingRegistryAccess.getPotionRecipes()) {
 					try {
 						if (!recipe.ingredient().items().findAny().isEmpty()) {
-						ResourceLocation id = EmiPort.id("emi", "/brewing/" + pid
+						Identifier id = EmiPort.id("emi", "/brewing/" + pid
 							+ "/" + EmiUtil.subId(recipe.ingredient().items().findFirst().get().value())
 								+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.from().value()))
 								+ "/" + EmiUtil.subId(EmiPort.getPotionRegistry().getKey(recipe.to().value())));
@@ -189,7 +185,7 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 					Consumer<Holder<Potion>> potionRecipeGen = entry -> {
 						Potion potion = entry.value();
 						if (brewingRegistry.isBrewablePotion(entry)) {
-							ResourceLocation id = EmiPort.id("emi", "/brewing/item/"
+							Identifier id = EmiPort.id("emi", "/brewing/item/"
 								+ EmiUtil.subId(entry.unwrapKey().get().location()) + "/" + gid + "/" + iid + "/" + oid);
 							registry.addRecipe(new EmiBrewingRecipe(
 								EmiStack.of(EmiPort.setPotion(new ItemStack(recipe.from().value()), potion)), EmiIngredient.of(recipe.ingredient()),
@@ -214,7 +210,7 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 						EmiStack input = EmiStack.of(is);
 						EmiIngredient ingredient = EmiIngredient.of(recipe.getIngredient());
 						EmiStack output = EmiStack.of(recipe.getOutput(is, new ItemStack(recipe.getIngredient().items().findFirst().get().value())));
-						ResourceLocation id = EmiPort.id("emi", "/brewing/neoforge/"
+						Identifier id = EmiPort.id("emi", "/brewing/neoforge/"
 							+ EmiUtil.subId(input.getId()) + "/"
 							+ EmiUtil.subId(ingredient.getEmiStacks().get(0).getId()) + "/"
 							+ EmiUtil.subId(output.getId()));
@@ -279,13 +275,14 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 	protected void renderFluidAgnos(FluidEmiStack stack, GuiGraphics draw, int x, int y, float delta, int xOff, int yOff, int width, int height) {
 		FluidStack fs = new FluidStack(stack.getKeyOfType(Fluid.class).builtInRegistryHolder(), 1000, stack.getComponentChanges());
 		IClientFluidTypeExtensions ext = IClientFluidTypeExtensions.of(fs.getFluid());
-		ResourceLocation texture = ext.getStillTexture(fs);
+		Identifier texture = ext.getStillTexture(fs);
 		if (texture == null) {
 			return;
 		}
 		int color = ext.getTintColor(fs);
 		Minecraft client = Minecraft.getInstance();
-		TextureAtlasSprite sprite = client.getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
+		TextureAtlas atlas = (TextureAtlas) client.getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS);
+		TextureAtlasSprite sprite = atlas.getSprite(texture);
 		EmiRenderHelper.drawTintedSprite(draw, sprite, color, x, y, xOff, yOff, width, height);
 	}
 

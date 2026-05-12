@@ -1,23 +1,42 @@
 package dev.emi.emi.api.stack;
 
 import java.util.List;
-import java.util.Optional;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.model.Model;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.MovingBlockRenderState;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HitboxesRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import org.jetbrains.annotations.ApiStatus;
@@ -32,7 +51,6 @@ import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.StackBatcher.Batchable;
 import dev.emi.emi.screen.tooltip.EmiTextTooltipWrapper;
-import org.jetbrains.annotations.Nullable;
 
 @ApiStatus.Internal
 public class ItemEmiStack extends EmiStack implements Batchable {
@@ -99,7 +117,7 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	}
 
 	@Override
-	public ResourceLocation getId() {
+	public Identifier getId() {
 		return EmiPort.getItemRegistry().getKey(item);
 	}
 
@@ -145,14 +163,77 @@ public class ItemEmiStack extends EmiStack implements Batchable {
 	@Override
 	public void renderForBatch(MultiBufferSource vcp, GuiGraphics draw, int x, int y, int z, float delta) {
 		ItemStack stack = getItemStack();
-		ItemRenderer ir = client.getItemRenderer();
 		ItemStackRenderState state = new ItemStackRenderState();
 		Minecraft.getInstance().getItemModelResolver().updateForTopItem(state, stack, ItemDisplayContext.GUI, null, null, 0);
 		PoseStack matrices = new PoseStack();
 		matrices.translate(x, y, 100.0f + z + (state.usesBlockLight() ? 50 : 0));
 		matrices.translate(8.0, 8.0, 0.0);
 		matrices.scale(16.0f, -16.0f, 16.0f);
-		ir.renderStatic(stack, ItemDisplayContext.GUI, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, matrices, vcp, null, 0);
+		MultiBufferSource finalVcp = vcp;
+		state.submit(matrices, new SubmitNodeCollector() {
+			@Override
+			public OrderedSubmitNodeCollector order(int i) {
+				return this;
+			}
+
+			@Override
+			public void submitItem(PoseStack posestack, ItemDisplayContext itemdisplaycontext, int i, int j, int k, int[] aint, List<BakedQuad> list, RenderType rendertype, ItemStackRenderState.FoilType foiltype) {
+				ItemRenderer.renderItem(itemdisplaycontext, posestack, finalVcp, i, j, aint, list, rendertype, foiltype);
+			}
+
+			@Override
+			public void submitCustomGeometry(PoseStack posestack, RenderType rendertype, SubmitNodeCollector.CustomGeometryRenderer customgeometryrenderer) {
+				customgeometryrenderer.render(posestack.last(), finalVcp.getBuffer(rendertype));
+			}
+
+			@Override
+			public void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer particlegrouprenderer) {
+			}
+
+			@Override
+			public void submitBlockModel(PoseStack posestack, RenderType rendertype, BlockStateModel blockstatemodel, float f, float f1, float f2, int i, int j, int k) {
+			}
+
+			@Override
+			public void submitMovingBlock(PoseStack posestack, MovingBlockRenderState movingblockrenderstate) {
+			}
+
+			@Override
+			public void submitHitbox(PoseStack posestack, EntityRenderState entityrenderstate, HitboxesRenderState hitboxesrenderstate) {
+			}
+
+			@Override
+			public void submitShadow(PoseStack posestack, float f, List<EntityRenderState.ShadowPiece> list) {
+			}
+
+			@Override
+			public void submitNameTag(PoseStack posestack, Vec3 vec3, int i, Component component, boolean flag, int j, double d, CameraRenderState camerarenderstate) {
+			}
+
+			@Override
+			public void submitText(PoseStack posestack, float f, float f1, FormattedCharSequence formattedcharsequence, boolean flag, Font.DisplayMode displaymode, int i, int j, int k, int l) {
+			}
+
+			@Override
+			public void submitFlame(PoseStack posestack, EntityRenderState entityrenderstate, Quaternionf quaternionf) {
+			}
+
+			@Override
+			public void submitLeash(PoseStack posestack, EntityRenderState.LeashState leashstate) {
+			}
+
+			@Override
+			public <S> void submitModel(Model<? super S> model, S s, PoseStack posestack, RenderType rendertype, int i, int j, int k, TextureAtlasSprite textureatlassprite, int l, ModelFeatureRenderer.CrumblingOverlay crumblingoverlay) {
+			}
+
+			@Override
+			public void submitModelPart(ModelPart modelpart, PoseStack posestack, RenderType rendertype, int i, int j, TextureAtlasSprite textureatlassprite, boolean flag, boolean flag1, int k, ModelFeatureRenderer.CrumblingOverlay crumblingoverlay, int l) {
+			}
+
+			@Override
+			public void submitBlock(PoseStack posestack, BlockState blockstate, int i, int j, int k) {
+			}
+		}, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
 	}
 
 	@Override

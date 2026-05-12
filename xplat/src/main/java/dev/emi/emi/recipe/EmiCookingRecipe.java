@@ -2,7 +2,7 @@ package dev.emi.emi.recipe;
 
 import java.util.List;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.level.material.Fluids;
@@ -16,7 +16,7 @@ import dev.emi.emi.api.widget.WidgetHolder;
 import dev.emi.emi.config.FluidUnit;
 
 public class EmiCookingRecipe implements EmiRecipe {
-	private final ResourceLocation id;
+	private final Identifier id;
 	private final EmiRecipeCategory category;
 	private final EmiIngredient input;
 	private final EmiStack output;
@@ -43,7 +43,7 @@ public class EmiCookingRecipe implements EmiRecipe {
 	}
 
 	@Override
-	public ResourceLocation getId() {
+	public Identifier getId() {
 		return id;
 	}
 

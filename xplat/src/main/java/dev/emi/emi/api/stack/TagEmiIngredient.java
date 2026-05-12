@@ -2,10 +2,9 @@ package dev.emi.emi.api.stack;
 
 import java.util.List;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -15,7 +14,6 @@ import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.EmiUtil;
 import dev.emi.emi.api.render.EmiRender;
 import dev.emi.emi.config.EmiConfig;
-import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.registry.EmiTags;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiTagKey;
@@ -25,7 +23,7 @@ import dev.emi.emi.screen.tooltip.TagTooltipComponent;
 
 @ApiStatus.Internal
 public class TagEmiIngredient implements EmiIngredient {
-	private final ResourceLocation id;
+	private final Identifier id;
 	private List<EmiStack> stacks;
 	public final TagKey<?> key;
 	private final EmiTagKey<?> tagKey;

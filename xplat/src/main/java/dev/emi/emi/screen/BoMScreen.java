@@ -12,6 +12,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -356,15 +358,15 @@ public class BoMScreen extends Screen {
 	}
 
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+	public boolean keyPressed(KeyEvent event) {
+		if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
 			this.onClose();
 			return true;
-		} else if (this.minecraft.options.keyInventory.matches(keyCode, scanCode)) {
+		} else if (this.minecraft.options.keyInventory.matches(event)) {
 			this.onClose();
 			return true;
 		}
-		Function<EmiBind, Boolean> function = bind -> bind.matchesKey(keyCode, scanCode);
+		Function<EmiBind, Boolean> function = bind -> bind.matchesKey(event.key(), event.scancode());
 		if (function.apply(EmiConfig.back)) {
 			EmiHistory.pop();
 			return true;
@@ -375,7 +377,7 @@ public class BoMScreen extends Screen {
 				EmiFavorites.addFavorite(hover.stack, hover.node == null ? null : hover.node.recipe);
 			}
 		}
-		if (EmiInput.isControlDown() && keyCode == GLFW.GLFW_KEY_R) {
+		if (EmiInput.isControlDown() && event.key() == GLFW.GLFW_KEY_R) {
 			List<EmiRecipe> recipes = EmiApi.getRecipeManager().getRecipes();
 			if (recipes.size() > 0) {
 				for (int i = 0; i < 100_000; i++) {
@@ -387,11 +389,11 @@ public class BoMScreen extends Screen {
 					}
 				}
 			}
-		} else if (EmiInput.isControlDown() && keyCode == GLFW.GLFW_KEY_C) {
+		} else if (EmiInput.isControlDown() && event.key() == GLFW.GLFW_KEY_C) {
 			BoM.tree = null;
 			init();
 		}
-		return super.keyPressed(keyCode, scanCode, modifiers);
+		return super.keyPressed(event);
 	}
 
 	private boolean getAutoResolutions(Hover hover, BiConsumer<EmiIngredient, EmiRecipe> consumer) {
@@ -427,7 +429,10 @@ public class BoMScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		double mouseX = event.x();
+		double mouseY = event.y();
+		int button = event.button();
 		Hover hover = getHoveredStack((int) mouseX, (int) mouseY);
 		float scale = getScale();
 		int mx = (int) ((mouseX - width / 2) / scale - offX);
@@ -457,8 +462,6 @@ public class BoMScreen extends Screen {
 						EmiApi.displayRecipes(hover.stack);
 						RecipeScreen.resolve = hover.stack;
 						Minecraft client = Minecraft.getInstance();
-						// The first init doesn't realize a resolution exists so we do it again. What
-						// could go wrong.
 						client.screen.init(client, client.screen.width, client.screen.height);
 						if (hover.node != null) {
 							if (hover.node.recipe != null) {
@@ -486,7 +489,7 @@ public class BoMScreen extends Screen {
 			EmiHistory.pop();
 			return true;
 		}
-		return super.mouseClicked(mouseX, mouseY, button);
+		return super.mouseClicked(event, doubleClick);
 	}
 
 	@Override
@@ -522,14 +525,15 @@ public class BoMScreen extends Screen {
 	}
 
 	@Override
-	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+	public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
+		int button = event.button();
 		if (button == 0 || button == 2) {
 			float scale = getScale();
 			offX += deltaX / scale;
 			offY += deltaY / scale;
 			return true;
 		}
-		return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+		return super.mouseDragged(event, deltaX, deltaY);
 	}
 
 	@Override

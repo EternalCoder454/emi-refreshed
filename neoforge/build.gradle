@@ -80,7 +80,11 @@ shadowJar.configure { ShadowJar jar ->
 	jar.exclude "architectury.common.json"
 
 	jar.configurations = [project.configurations.shadowCommon]
-	jar.archiveClassifier = "dev-shadow"
+	jar.archiveClassifier = ""
+}
+
+tasks.named('jar', Jar).configure {
+	archiveClassifier = "dev"
 }
 
 def sourcesJar = tasks.named('sourcesJar', Jar)
@@ -88,7 +92,7 @@ def sourcesJar = tasks.named('sourcesJar', Jar)
 sourcesJar.configure { Jar jar ->
 	def commonSources = project(":xplat").tasks.named("sourcesJar", Jar)
 	dependsOn commonSources
-	jar.from zipTree(commonSources.flatMap { it.archiveFile })
+	jar.from zipTree(commonSources.get().archiveFile)
 	//TODO: Fix this in a better way that doesn't lead to stripping out the jemi sources
 	jar.exclude 'dev/emi/emi/jemi/**'
 }
@@ -96,14 +100,14 @@ sourcesJar.configure { Jar jar ->
 def filteredSourcesJar = tasks.register('filteredSourcesJar', Jar, {
 	archiveClassifier = 'filtered-sources'
 	dependsOn sourcesJar
-	from zipTree(project.tasks.named('sourcesJar', Jar).flatMap { it.archiveFile })
+	from zipTree(sourcesJar.get().archiveFile)
 	exclude 'dev/emi/emi/jemi/**'
 })
 
 def apiJar = tasks.register('apiJar', Jar, {
 	archiveClassifier = 'api'
-	dependsOn jar
-	from zipTree(project.tasks.named('jar', Jar).flatMap { it.archiveFile })
+	dependsOn shadowJar
+	from zipTree(shadowJar.get().archiveFile)
 	include 'emi.mixins.json'
 	include 'emi-neoforge.mixins.json'
 	include 'emi.accesswidener'
@@ -131,8 +135,8 @@ publishing {
 		register('maven', MavenPublication) {
 			artifactId = "${rootProject.name}-${project.name}"
 			version = project.ext.mavenVersion
-			artifact(jar) {
-				builtBy jar
+			artifact(shadowJar) {
+				builtBy shadowJar
 				classifier ''
 			}
 			artifact(filteredSourcesJar) {
@@ -167,7 +171,7 @@ if (System.getenv("MODRINTH_TOKEN")) {
 		versionNumber = project.version
 		versionName = project.version
 		versionType = 'release'
-		uploadFile = jar
+		uploadFile = shadowJar
 		gameVersions = [rootProject.minecraft_version]
 		loaders = ['neoforge']
 		detectLoaders = false
@@ -187,7 +191,7 @@ if (System.getenv("CURSEFORGE_TOKEN")) {
 			addGameVersion rootProject.minecraft_version
 			addGameVersion 'NeoForge'
 
-			mainArtifact(jar.get().archiveFile) {
+			mainArtifact(shadowJar.get().archiveFile) {
 				displayName = 'emi-' + project.version
 			}
 		}

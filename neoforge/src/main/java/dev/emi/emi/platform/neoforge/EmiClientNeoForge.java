@@ -62,7 +62,7 @@ public class EmiClientNeoForge {
 		if (base != null) {
 			Minecraft client = Minecraft.getInstance();
 			context.push();
-			context.matrices().translate(-screen.getGuiLeft(), -screen.getGuiTop());
+			context.matrices().translate(-screen.getLeftPos(), -screen.getTopPos());
 			EmiScreenManager.render(context, event.getMouseX(), event.getMouseY(), client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
 			context.pop();
 		}

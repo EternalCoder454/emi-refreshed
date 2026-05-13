@@ -2,7 +2,7 @@ package dev.emi.emi.api.stack;
 
 import java.util.List;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -98,7 +98,7 @@ public class TagEmiIngredient implements EmiIngredient {
 	}
 
 	@Override
-	public void render(GuiGraphics draw, int x, int y, float delta, int flags) {
+	public void render(GuiGraphicsExtractor draw, int x, int y, float delta, int flags) {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
 
 		if ((flags & RENDER_ICON) != 0) {

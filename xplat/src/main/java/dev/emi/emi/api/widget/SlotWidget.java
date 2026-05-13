@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -154,7 +154,7 @@ public class SlotWidget extends Widget {
 	}
 
 	@Override
-	public void render(GuiGraphics draw, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor draw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
 		context.setColor(1.0f, 1.0f, 1.0f, 1.0f);
 		drawBackground(draw, mouseX, mouseY, delta);
@@ -163,7 +163,7 @@ public class SlotWidget extends Widget {
 		drawOverlay(draw, mouseX, mouseY, delta);
 	}
 
-	public void drawBackground(GuiGraphics draw, int mouseX, int mouseY, float delta) {
+	public void drawBackground(GuiGraphicsExtractor draw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
 		Bounds bounds = getBounds();
 		int width = bounds.width();
@@ -182,14 +182,14 @@ public class SlotWidget extends Widget {
 		}
 	}
 
-	public void drawStack(GuiGraphics draw, int mouseX, int mouseY, float delta) {
+	public void drawStack(GuiGraphicsExtractor draw, int mouseX, int mouseY, float delta) {
 		Bounds bounds = getBounds();
 		int xOff = (bounds.width() - 16) / 2;
 		int yOff = (bounds.height() - 16) / 2;
 		getStack().render(draw, bounds.x() + xOff, bounds.y() + yOff, delta);
 	}
 
-	public void drawOverlay(GuiGraphics draw, int mouseX, int mouseY, float delta) {
+	public void drawOverlay(GuiGraphicsExtractor draw, int mouseX, int mouseY, float delta) {
 		Bounds bounds = getBounds();
 		int width = bounds.width();
 		int height = bounds.height();
@@ -208,7 +208,7 @@ public class SlotWidget extends Widget {
 		return getBounds().contains(mouseX, mouseY) && EmiConfig.showHoverOverlay;
 	}
 
-	public void drawSlotHighlight(GuiGraphics draw, Bounds bounds) {
+	public void drawSlotHighlight(GuiGraphicsExtractor draw, Bounds bounds) {
 		EmiRenderHelper.drawSlotHightlight(EmiDrawContext.wrap(draw), bounds.x() + 1, bounds.y() + 1, bounds.width() - 2, bounds.height() - 2, 200);
 	}
 	

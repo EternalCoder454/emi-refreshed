@@ -36,9 +36,9 @@ public class EmiMainFabric implements ModInitializer {
 		registerPacketReader(EmiNetwork.CREATE_ITEM, CreateItemC2SPacket::new);
 		registerPacketReader(EmiNetwork.CHESS, EmiChessPacket.C2S::new);
 
-		PayloadTypeRegistry.playS2C().register(EmiNetwork.PING, StreamCodec.of((buf, v) -> v.write(buf), PingS2CPacket::new));
-		PayloadTypeRegistry.playS2C().register(EmiNetwork.COMMAND, StreamCodec.of((buf, v) -> v.write(buf), CommandS2CPacket::new));
-		PayloadTypeRegistry.playS2C().register(EmiNetwork.CHESS, StreamCodec.of((buf, v) -> v.write(buf), EmiChessPacket.S2C::new));
+		PayloadTypeRegistry.clientboundPlay().register(EmiNetwork.PING, StreamCodec.<RegistryFriendlyByteBuf, PingS2CPacket>of((buf, v) -> v.write(buf), PingS2CPacket::new));
+		PayloadTypeRegistry.clientboundPlay().register(EmiNetwork.COMMAND, StreamCodec.<RegistryFriendlyByteBuf, CommandS2CPacket>of((buf, v) -> v.write(buf), CommandS2CPacket::new));
+		PayloadTypeRegistry.clientboundPlay().register(EmiNetwork.CHESS, StreamCodec.<RegistryFriendlyByteBuf, EmiChessPacket>of((buf, v) -> v.write(buf), buf -> new EmiChessPacket.S2C(buf)));
 
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			EmiNetwork.sendToClient(handler.player, new PingS2CPacket());
@@ -46,7 +46,7 @@ public class EmiMainFabric implements ModInitializer {
 	}
 
 	private <T extends EmiPacket> void registerPacketReader(CustomPacketPayload.Type<T> id, StreamDecoder<RegistryFriendlyByteBuf, T> decode) {
-		PayloadTypeRegistry.playC2S().register(id, StreamCodec.of((buf, v) -> v.write(buf), decode));
+		PayloadTypeRegistry.serverboundPlay().register(id, StreamCodec.of((buf, v) -> v.write(buf), decode));
 		ServerPlayNetworking.registerGlobalReceiver(id, (payload, context) -> {
 			context.player().level().getServer().execute(() -> {
 				((EmiPacket)payload).apply(context.player());

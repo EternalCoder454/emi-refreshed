@@ -4,7 +4,7 @@ import dev.emi.emi.EmiPort;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.runtime.EmiDrawContext;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -15,7 +15,7 @@ public class DisabledToast implements Toast {
 	private boolean hide;
 
 	@Override
-	public void render(GuiGraphics raw, Font font, long time) {
+	public void extractRenderState(GuiGraphicsExtractor raw, Font font, long time) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		context.resetColor();
 		raw.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE, 0, 0, this.width(), this.height());

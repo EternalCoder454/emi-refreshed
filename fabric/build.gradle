@@ -94,14 +94,14 @@ tasks.named('sourcesJar', Jar).configure { Jar jar ->
 def filteredSourcesJar = tasks.register('filteredSourcesJar', Jar, {
 	archiveClassifier = 'filtered-sources'
 	dependsOn sourcesJar
-	from zipTree(sourcesJar.flatMap { it.archiveFile })
+	from zipTree(project.tasks.named('sourcesJar', Jar).flatMap { it.archiveFile })
 	exclude 'dev/emi/emi/jemi/**'
 })
 
 def apiJar = tasks.register('apiJar', Jar, {
 	archiveClassifier = 'api'
 	dependsOn jar
-	from zipTree(jar.flatMap { it.archiveFile })
+	from zipTree(project.tasks.named('jar', Jar).flatMap { it.archiveFile })
 	include 'fabric.mod.json'
 	include 'emi.mixins.json'
 	include 'emi-fabric.mixins.json'

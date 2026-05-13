@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -45,8 +45,8 @@ public abstract class AbstractInventoryScreenMixin {
 		throw new UnsupportedOperationException();
 	}
 
-	@Inject(at = @At("HEAD"), method = "render(Lnet/minecraft/client/gui/GuiGraphics;II)V", cancellable = true)
-	private void drawStatusEffects(GuiGraphics draw, int mouseX, int mouseY, CallbackInfo info) {
+	@Inject(at = @At("HEAD"), method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V", cancellable = true)
+	private void drawStatusEffects(GuiGraphicsExtractor draw, int mouseX, int mouseY, CallbackInfo info) {
 		if (EmiConfig.effectLocation == EffectLocation.TOP) {
 			emi$drawCenteredEffects(draw, mouseX, mouseY);
 			info.cancel();
@@ -55,7 +55,7 @@ public abstract class AbstractInventoryScreenMixin {
 		}
 	}
 
-	private void emi$drawCenteredEffects(GuiGraphics raw, int mouseX, int mouseY) {
+	private void emi$drawCenteredEffects(GuiGraphicsExtractor raw, int mouseX, int mouseY) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		context.resetColor();
 		Collection<MobEffectInstance> effects = Ordering.natural().sortedCopy(this.minecraft.player.getActiveEffects());
@@ -104,7 +104,7 @@ public abstract class AbstractInventoryScreenMixin {
 					.map(Component::getVisualOrderText)
 					.map(ClientTooltipComponent::create)
 					.toList();
-			context.deferTooltip(() -> context.raw().renderTooltip(minecraft.font, components, mouseX, Math.max(mouseY, 16), DefaultTooltipPositioner.INSTANCE, null));
+			context.deferTooltip(() -> context.raw().tooltip(minecraft.font, components, mouseX, Math.max(mouseY, 16), DefaultTooltipPositioner.INSTANCE, null));
 		}
 	}
 }

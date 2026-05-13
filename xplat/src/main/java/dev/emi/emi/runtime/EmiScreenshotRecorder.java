@@ -75,7 +75,7 @@ public class EmiScreenshotRecorder {
 		}
 
 		saveScreenshotInner(client.gameDirectory, path, framebuffer,
-			message -> client.execute(() -> client.gui.getChat().addMessage(message)));
+			message -> client.execute(() -> client.gui.getChat().addClientSystemMessage(message)));
 	}
 
 	private static void saveScreenshotInner(File gameDirectory, String suggestedPath, RenderTarget framebuffer, Consumer<Component> messageReceiver) {

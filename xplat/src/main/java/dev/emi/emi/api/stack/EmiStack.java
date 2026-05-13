@@ -3,6 +3,7 @@ package dev.emi.emi.api.stack;
 import java.util.List;
 import java.util.function.Function;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
@@ -83,9 +84,7 @@ public abstract class EmiStack implements EmiIngredient {
 	public abstract DataComponentPatch getComponentChanges();
 
 	public <T> @Nullable T get(DataComponentType<? extends T> type) {
-		var opt = getComponentChanges().get(type);
-		//noinspection OptionalAssignedToNull
-		return opt != null ? opt.orElse(null) : null;
+		return getComponentChanges().get(DataComponentMap.EMPTY, type);
 	}
 
 	public <T> T getOrDefault(DataComponentType<? extends T> type, T fallback) {

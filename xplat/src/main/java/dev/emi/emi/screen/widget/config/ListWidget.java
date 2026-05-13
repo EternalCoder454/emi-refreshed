@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
@@ -147,7 +147,7 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 	}
 
 	@Override
-	public void render(GuiGraphics draw, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor draw, int mouseX, int mouseY, float delta) {
 		int o;
 		int n;
 		int m;
@@ -354,7 +354,7 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 		return mouseY >= (double)this.top && mouseY <= (double)this.bottom && mouseX >= (double)this.left && mouseX <= (double)this.right;
 	}
 
-	protected void renderList(GuiGraphics draw, int x, int y, int mouseX, int mouseY, float delta) {
+	protected void renderList(GuiGraphicsExtractor draw, int x, int y, int mouseX, int mouseY, float delta) {
 		int i = this.getEntryCount();
 		for (int j = 0; j < i; ++j) {
 			int p;
@@ -463,7 +463,7 @@ public class ListWidget extends AbstractContainerEventHandler implements Rendera
 	public static abstract class Entry extends AbstractContainerEventHandler {
 		public ListWidget parentList;
 
-		public abstract void render(GuiGraphics draw, int index, int y, int x, int width, int height, int mouseX, int mouseY,
+		public abstract void render(GuiGraphicsExtractor draw, int index, int y, int x, int width, int height, int mouseX, int mouseY,
 			boolean hovered, float delta);
 
 		@Override

@@ -13,10 +13,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -64,7 +64,7 @@ public class StackBatcher {
 		boolean isSideLit();
 		boolean isUnbatchable();
 		void setUnbatchable();
-		void renderForBatch(MultiBufferSource vcp, GuiGraphics draw, int x, int y, int z, float delta);
+		void renderForBatch(MultiBufferSource vcp, GuiGraphicsExtractor draw, int x, int y, int z, float delta);
 	}
 
 	private final BatcherVertexConsumerProvider imm;
@@ -85,7 +85,6 @@ public class StackBatcher {
 
 	public StackBatcher() {
 		Map<RenderType, ByteBufferBuilder> buffers = new HashMap<>();
-		assign(buffers, Sheets.solidBlockSheet());
 		assign(buffers, Sheets.cutoutBlockSheet());
 		assign(buffers, Sheets.translucentItemSheet());
 		assign(buffers, RenderTypes.glint());
@@ -120,7 +119,7 @@ public class StackBatcher {
 		}
 	}
 
-	public void render(Batchable batchable, GuiGraphics draw, int x, int y, float delta) {
+	public void render(Batchable batchable, GuiGraphicsExtractor draw, int x, int y, float delta) {
 		if (!populated) {
 			try {
 				batchable.renderForBatch(batchable.isSideLit() ? imm : unlitFacade, draw, x-this.x, y+this.y, z, delta);
@@ -133,11 +132,11 @@ public class StackBatcher {
 		}
 	}
 
-	public void render(EmiIngredient stack, GuiGraphics draw, int x, int y, float delta) {
+	public void render(EmiIngredient stack, GuiGraphicsExtractor draw, int x, int y, float delta) {
 		render(stack, draw, x, y, delta, -1 ^ EmiIngredient.RENDER_AMOUNT);
 	}
 
-	public void render(EmiIngredient stack, GuiGraphics draw, int x, int y, float delta, int flags) {
+	public void render(EmiIngredient stack, GuiGraphicsExtractor draw, int x, int y, float delta, int flags) {
 		if (stack instanceof Batchable b && !b.isUnbatchable() && isEnabled() && (flags & EmiIngredient.RENDER_ICON) != 0) {
 			if (!populated) {
 				try {
@@ -152,7 +151,7 @@ public class StackBatcher {
 							List<BakedQuad> quads = layer.prepareQuadList();
 							for (BakedQuad quad : quads) {
 								if (quad != null) {
-									spritesToUpdate.add(quad.sprite());
+									spritesToUpdate.add(quad.materialInfo().sprite());
 								}
 							}
 						}

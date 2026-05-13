@@ -63,7 +63,7 @@ public class RemainderTooltipComponent implements EmiTooltipComponent {
 				context.drawStack(input, 18 * 2, 18 * i, EmiIngredient.RENDER_ICON | EmiIngredient.RENDER_AMOUNT);
 				ItemStack is = input.getEmiStacks().get(0).getItemStack().copy();
 				is.setDamageValue(is.getDamageValue() - remainder.damage);
-				context.raw().renderItemDecorations(render.text, is, 18 * 2, 18 * i, "");
+				context.raw().itemDecorations(render.text, is, 18 * 2, 18 * i, "");
 				context.drawStack(input, 18 * 2, 18 * i, -1 ^ (EmiIngredient.RENDER_ICON | EmiIngredient.RENDER_AMOUNT | EmiIngredient.RENDER_REMAINDER));
 				Component t = remainder.damage > 0 ? EmiPort.literal("+" + remainder.damage, ChatFormatting.GREEN) : EmiPort.literal("" + remainder.damage, ChatFormatting.RED);
 				int width = render.text.width(t);

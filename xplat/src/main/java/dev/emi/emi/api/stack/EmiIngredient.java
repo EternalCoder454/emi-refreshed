@@ -2,7 +2,7 @@ package dev.emi.emi.api.stack;
 
 import java.util.Arrays;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.TagKey;
@@ -45,11 +45,11 @@ public interface EmiIngredient extends EmiRenderable {
 	EmiIngredient setChance(float chance);
 
 	@Override
-	default void render(GuiGraphics draw, int x, int y, float delta) {
+	default void render(GuiGraphicsExtractor draw, int x, int y, float delta) {
 		render(draw, x, y, delta, -1);
 	}
 
-	void render(GuiGraphics draw, int x, int y, float delta, int flags);
+	void render(GuiGraphicsExtractor draw, int x, int y, float delta, int flags);
 
 	List<ClientTooltipComponent> getTooltip();
 

@@ -3,7 +3,8 @@ package dev.emi.emi.recipe.special;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -19,7 +20,10 @@ import dev.emi.emi.api.widget.GeneratedSlotWidget;
 import dev.emi.emi.api.widget.SlotWidget;
 
 public class EmiArmorDyeRecipe extends EmiPatternCraftingRecipe {
-	private static final List<DyeItem> DYES = Stream.of(DyeColor.values()).map(c -> DyeItem.byColor(c)).collect(Collectors.toList());
+	private static final List<DyeItem> DYES = BuiltInRegistries.ITEM.stream()
+		.filter(item -> item instanceof DyeItem)
+		.map(item -> (DyeItem) item)
+		.collect(Collectors.toList());
 	private final Item armor;
 
 	public EmiArmorDyeRecipe(Item armor, Identifier id) {
@@ -48,7 +52,11 @@ public class EmiArmorDyeRecipe extends EmiPatternCraftingRecipe {
 	@Override
 	public SlotWidget getOutputWidget(int x, int y) {
 		return new GeneratedSlotWidget(r -> {
-			return EmiStack.of(DyedItemColor.applyDyes(new ItemStack(armor), getDyes(r)));
+			List<DyeColor> dyeColors = getDyes(r).stream().map(d -> {
+				DyeColor color = d.components().get(DataComponents.DYE);
+				return color != null ? color : DyeColor.WHITE;
+			}).collect(Collectors.toList());
+			return EmiStack.of(DyedItemColor.applyDyes(new ItemStack(armor), dyeColors));
 		}, unique, x, y);
 	}
 	

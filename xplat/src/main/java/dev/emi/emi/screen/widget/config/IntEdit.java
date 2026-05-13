@@ -20,17 +20,18 @@ public class IntEdit {
 		text = new EditBox(client.font, 0, 0, width - 14, 18, EmiPort.literal(""));
 		text.setValue("" + getter.getAsInt());
 		text.setResponder(string -> {
-			try {
-				if (string.isBlank()) {
-					setter.accept(0);
-				} else {
-					setter.accept(Integer.parseInt(string));
+			if (NUMBER.matcher(string).matches()) {
+				try {
+					if (string.isBlank()) {
+						setter.accept(0);
+					} else {
+						setter.accept(Integer.parseInt(string));
+					}
+				} catch (Exception e) {
 				}
-			} catch (Exception e) {
+			} else if (!string.isBlank()) {
+				text.setValue("" + getter.getAsInt());
 			}
-		});
-		text.setFilter(s -> {
-			return NUMBER.matcher(s).matches();
 		});
 
 		up = new SizedButtonWidget(150, 0, 12, 10, 232, 48, () -> true, button -> {

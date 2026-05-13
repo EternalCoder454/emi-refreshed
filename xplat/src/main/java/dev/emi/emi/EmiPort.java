@@ -36,8 +36,8 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
-import net.minecraft.world.item.crafting.TransmuteResult;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -153,16 +153,15 @@ public final class EmiPort {
 	}
 
 	public static ItemStack getOutput(Recipe<?> recipe) {
-		Minecraft client = Minecraft.getInstance();
 		if (recipe instanceof ShapedRecipe shaped) {
-			return shaped.assemble(CraftingInput.EMPTY, client.level.registryAccess());
+			return shaped.assemble(CraftingInput.EMPTY);
 		} else if (recipe instanceof ShapelessRecipe shapeless) {
-			return shapeless.assemble(CraftingInput.EMPTY, client.level.registryAccess());
+			return shapeless.assemble(CraftingInput.EMPTY);
 		} else if (recipe instanceof SingleItemRecipe single) {
-			return single.assemble(new SingleRecipeInput(ItemStack.EMPTY), client.level.registryAccess());
+			return single.assemble(new SingleRecipeInput(ItemStack.EMPTY));
 		} else if (recipe instanceof SmithingTransformRecipe smithing) {
-			TransmuteResult result = ((SmithingTransformRecipeAccessor) smithing).getResult();
-			return new ItemStack(result.item(), result.count(), result.components());
+			ItemStackTemplate result = ((SmithingTransformRecipeAccessor) smithing).getResult();
+			return result.create();
 		}
 		return ItemStack.EMPTY;
 	}

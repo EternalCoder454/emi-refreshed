@@ -9,7 +9,7 @@ import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.screen.EmiScreenManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 
@@ -32,8 +32,8 @@ public class ScreenMixin {
 		}
 	}
 
-	@Inject(at = @At("TAIL"), method = "renderWithTooltipAndSubtitles(Lnet/minecraft/client/gui/GuiGraphics;IIF)V")
-	private void renderWithTooltipTail(GuiGraphics raw, int mouseX, int mouseY, float delta, CallbackInfo info) {
+	@Inject(at = @At("TAIL"), method = "extractRenderStateWithTooltipAndSubtitles(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V")
+	private void renderWithTooltipTail(GuiGraphicsExtractor raw, int mouseX, int mouseY, float delta, CallbackInfo info) {
 		if ((Object) this instanceof AbstractContainerScreen && !EmiAgnos.isForge()) {
 			EmiDrawContext context = EmiDrawContext.wrap(raw);
 			context.flushDeferredTooltips();

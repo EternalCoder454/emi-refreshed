@@ -3,7 +3,7 @@ package dev.emi.emi.screen;
 import java.lang.reflect.Field;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
@@ -71,12 +71,12 @@ public class ConfigPresetScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphics raw, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor raw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		list.setScrollAmount(list.getScrollAmount());
-		this.renderMenuBackground(context.raw());
-		list.render(context.raw(), mouseX, mouseY, delta);
-		super.render(context.raw(), mouseX, mouseY, delta);
+		this.extractMenuBackground(context.raw());
+		list.extractRenderState(context.raw(), mouseX, mouseY, delta);
+		super.extractRenderState(context.raw(), mouseX, mouseY, delta);
 		if (list.getHoveredEntry() instanceof PresetWidget widget) {
 			if (widget.button.isHovered()) {
 				EmiRenderHelper.drawTooltip(this, context, widget.tooltip, mouseX, mouseY);
@@ -86,7 +86,7 @@ public class ConfigPresetScreen extends Screen {
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		// Prevent double background draw
 	}
 
@@ -144,11 +144,11 @@ public class ConfigPresetScreen extends Screen {
 		}
 
 		@Override
-		public void render(GuiGraphics raw, int index, int y, int x, int width, int height, int mouseX, int mouseY,
+		public void render(GuiGraphicsExtractor raw, int index, int y, int x, int width, int height, int mouseX, int mouseY,
 				boolean hovered, float delta) {
 			button.y = y;
 			button.x = x + width / 2 - button.getWidth() / 2;
-			button.render(raw, mouseX, mouseY, delta);
+			button.extractRenderState(raw, mouseX, mouseY, delta);
 		}
 
 		@Override
@@ -170,7 +170,7 @@ public class ConfigPresetScreen extends Screen {
 		}
 
 		@Override
-		public void render(GuiGraphics raw, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean hovered, float delta) {
+		public void render(GuiGraphicsExtractor raw, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean hovered, float delta) {
 			EmiDrawContext context = EmiDrawContext.wrap(raw);
 			context.drawCenteredTextWithShadow(text, x + width / 2, y + 3, -1);
 		}

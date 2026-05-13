@@ -19,7 +19,6 @@ import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPosition
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -680,9 +679,9 @@ public class EmiScreenManager {
 
 	private static void renderWidgets(EmiDrawContext context, int mouseX, int mouseY, float delta, EmiScreenBase base) {
 		context.push();
-		emi.render(context.raw(), mouseX, mouseY, delta);
-		tree.render(context.raw(), mouseX, mouseY, delta);
-		search.render(context.raw(), mouseX, mouseY, delta);
+		emi.extractRenderState(context.raw(), mouseX, mouseY, delta);
+		tree.extractRenderState(context.raw(), mouseX, mouseY, delta);
+		search.extractRenderState(context.raw(), mouseX, mouseY, delta);
 		context.pop();
 	}
 
@@ -824,7 +823,7 @@ public class EmiScreenManager {
 							.map(Component::getVisualOrderText)
 							.map(ClientTooltipComponent::create)
 							.toList();
-					context.deferTooltip(() -> context.raw().renderTooltip(client.font, tooltipComponents, 0, 20, DefaultTooltipPositioner.INSTANCE, null));
+					context.deferTooltip(() -> context.raw().tooltip(client.font, tooltipComponents, 0, 20, DefaultTooltipPositioner.INSTANCE, null));
 				}
 			}
 			context.drawTextWithShadow(title, devTextX, screen.height + off, color);
@@ -1363,8 +1362,7 @@ public class EmiScreenManager {
 			return true;
 		} else {
 			if (!is.isEmpty()) {
-				ItemInput argument = new ItemInput(is.getItemHolder(), is.getComponentsPatch());
-				String command = "give @s " + argument.serialize(client.level.registryAccess());
+				String command = "give @s " + is.getItem();
 				command += " " + amount;
 				if (command.length() < 256) {
 					client.player.connection.sendCommand(command);
@@ -1501,9 +1499,9 @@ public class EmiScreenManager {
 				if (isVisible()) {
 					EmiProfiler.swap(side.getName());
 					context.push();
-					pageLeft.render(context.raw(), mouseX, mouseY, delta);
-					cycle.render(context.raw(), mouseX, mouseY, delta);
-					pageRight.render(context.raw(), mouseX, mouseY, delta);
+					pageLeft.extractRenderState(context.raw(), mouseX, mouseY, delta);
+					cycle.extractRenderState(context.raw(), mouseX, mouseY, delta);
+					pageRight.extractRenderState(context.raw(), mouseX, mouseY, delta);
 					context.pop();
 					int totalPages = (space.getStacks().size() - 1) / space.pageSize + 1;
 					wrapPage();

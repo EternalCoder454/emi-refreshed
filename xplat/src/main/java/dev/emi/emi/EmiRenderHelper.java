@@ -3,7 +3,7 @@ package dev.emi.emi;
 import java.text.DecimalFormat;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
@@ -68,7 +68,7 @@ public class EmiRenderHelper {
 		context.drawTexture(texture, x + coriw, y + corih, cor,        cor,         u + corcen, v + corcen, cor, cor, 256, 256);
 	}
 
-	public static void drawTintedSprite(GuiGraphics draw, TextureAtlasSprite sprite, int color, int x, int y, int xOff, int yOff, int width, int height) {
+	public static void drawTintedSprite(GuiGraphicsExtractor draw, TextureAtlasSprite sprite, int color, int x, int y, int xOff, int yOff, int width, int height) {
 		if (sprite == null) {
 			return;
 		}
@@ -164,7 +164,7 @@ public class EmiRenderHelper {
 		context.enableDepthTest();
 		context.resetColor();
 		List<ClientTooltipComponent> finalMutable = mutable;
-		context.deferTooltip(() -> context.raw().renderTooltip(CLIENT.font, finalMutable, x, finalY, positioner, null));
+		context.deferTooltip(() -> context.raw().tooltip(CLIENT.font, finalMutable, x, finalY, positioner, null));
 	}
 
 	public static void drawSlotHightlight(EmiDrawContext context, int x, int y, int w, int h, int z) {
@@ -299,7 +299,7 @@ public class EmiRenderHelper {
 			recipe.addWidgets(holder);
 			float delta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
 			for (Widget widget : widgets) {
-				widget.render(context.raw(), -1000, -1000, delta);
+				widget.extractRenderState(context.raw(), -1000, -1000, delta);
 			}
 			if (overlayColor != -1) {
 				context.fill(-1, -1, recipe.getDisplayWidth() + 2, recipe.getDisplayHeight() + 2, overlayColor);

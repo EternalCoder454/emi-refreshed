@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -225,7 +225,7 @@ public class EmiSearchWidget extends EditBox {
 	}
 
 	@Override
-	public void renderWidget(GuiGraphics raw, int mouseX, int mouseY, float delta) {
+	public void extractWidgetRenderState(GuiGraphicsExtractor raw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		this.setEditable(EmiConfig.enabled);
 		String lower = getValue().toLowerCase();
@@ -256,7 +256,7 @@ public class EmiSearchWidget extends EditBox {
 		}
 
 		if (EmiConfig.enabled) {
-			super.renderWidget(context.raw(), mouseX, mouseY, delta);
+			super.extractWidgetRenderState(context.raw(), mouseX, mouseY, delta);
 			if (highlight) {
 				int border = 0xffeeee00;
 				context.fill(this.x - 1, this.y - 1, this.width + 2, 1, border);

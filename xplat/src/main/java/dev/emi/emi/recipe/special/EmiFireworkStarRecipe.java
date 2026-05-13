@@ -3,8 +3,8 @@ package dev.emi.emi.recipe.special;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -24,7 +24,10 @@ import it.unimi.dsi.fastutil.ints.IntList;
 
 
 public class EmiFireworkStarRecipe extends EmiPatternCraftingRecipe {
-	private static final List<DyeItem> DYES = Stream.of(DyeColor.values()).map(DyeItem::byColor).toList();
+	private static final List<DyeItem> DYES = BuiltInRegistries.ITEM.stream()
+		.filter(item -> item instanceof DyeItem)
+		.map(item -> (DyeItem) item)
+		.collect(Collectors.toList());
 
 	private static final List<Item> SHAPES = List.of(Items.FIRE_CHARGE, Items.FEATHER, Items.GOLD_NUGGET, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.CREEPER_HEAD, Items.PLAYER_HEAD, Items.DRAGON_HEAD, Items.ZOMBIE_HEAD);
 
@@ -110,7 +113,8 @@ public class EmiFireworkStarRecipe extends EmiPatternCraftingRecipe {
 				type = FireworkExplosion.Shape.CREEPER;
 			} else {
 				DyeItem dyeItem = (DyeItem) item;
-				colors.add(dyeItem.getDyeColor().getFireworkColor());
+				DyeColor color = dyeItem.components().get(DataComponents.DYE);
+			colors.add((color != null ? color : DyeColor.WHITE).getFireworkColor());
 			}
 		}
 

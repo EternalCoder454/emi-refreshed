@@ -17,7 +17,10 @@ import dev.emi.emi.api.widget.SlotWidget;
 
 public class EmiRepairItemRecipe extends EmiPatternCraftingRecipe {
 	public static final List<Item> TOOLS = EmiPort.getItemRegistry().stream()
-			.filter(i -> i.components().getOrDefault(DataComponents.MAX_DAMAGE, 0) > 0).collect(Collectors.toList());
+			.filter(i -> {
+				Integer maxDamage = i.components().get(DataComponents.MAX_DAMAGE);
+				return maxDamage != null && maxDamage > 0;
+			}).collect(Collectors.toList());
 	private final Item tool;
 
 	public EmiRepairItemRecipe(Item tool, Identifier id) {

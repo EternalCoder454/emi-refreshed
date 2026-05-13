@@ -4,7 +4,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.FluidEmiStack;
 import dev.emi.emi.platform.EmiAgnos;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.Fluid;
 
@@ -31,7 +31,7 @@ public class TankWidget extends SlotWidget {
 	}
 
 	@Override
-	public void drawStack(GuiGraphics draw, int mouseX, int mouseY, float delta) {
+	public void drawStack(GuiGraphicsExtractor draw, int mouseX, int mouseY, float delta) {
 		EmiIngredient ingredient = getStack();
 		for (EmiStack stack : ingredient.getEmiStacks()) {
 			if (stack.getKey() instanceof Fluid fluid) {

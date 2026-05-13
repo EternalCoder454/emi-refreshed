@@ -3,7 +3,7 @@ package dev.emi.emi.api.recipe;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -59,11 +59,11 @@ public class EmiRecipeCategory implements EmiRenderable {
 	}
 
 	@Override
-	public void render(GuiGraphics draw, int x, int y, float delta) {
+	public void render(GuiGraphicsExtractor draw, int x, int y, float delta) {
 		EmiRecipeCategoryProperties.getIcon(this).render(draw, x, y, delta);
 	}
 
-	public void renderSimplified(GuiGraphics draw, int x, int y, float delta) {
+	public void renderSimplified(GuiGraphicsExtractor draw, int x, int y, float delta) {
 		EmiRecipeCategoryProperties.getSimplifiedIcon(this).render(draw, x, y, delta);
 	}
 

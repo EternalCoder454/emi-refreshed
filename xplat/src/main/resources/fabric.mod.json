@@ -39,6 +39,6 @@
   "accessWidener" : "emi.accesswidener",
   "depends": {
     "fabricloader": ">=0.13.1",
-    "fabric": "*"
+    "fabric-api": "*"
   }
 }

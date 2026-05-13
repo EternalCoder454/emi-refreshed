@@ -2,7 +2,7 @@ package dev.emi.emi.api.stack;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
@@ -68,7 +68,7 @@ public class FluidEmiStack extends EmiStack {
 	}
 
 	@Override
-	public void render(GuiGraphics raw, int x, int y, float delta, int flags) {
+	public void render(GuiGraphicsExtractor raw, int x, int y, float delta, int flags) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		if ((flags & RENDER_ICON) != 0) {
 			context.push();

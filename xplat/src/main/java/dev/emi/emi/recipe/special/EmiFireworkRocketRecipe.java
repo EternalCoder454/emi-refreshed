@@ -3,8 +3,9 @@ package dev.emi.emi.recipe.special;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -24,7 +25,10 @@ import it.unimi.dsi.fastutil.ints.IntLists;
 
 
 public class EmiFireworkRocketRecipe extends EmiPatternCraftingRecipe {
-	private static final List<DyeItem> DYES = Stream.of(DyeColor.values()).map(DyeItem::byColor).toList();
+	private static final List<DyeItem> DYES = BuiltInRegistries.ITEM.stream()
+		.filter(item -> item instanceof DyeItem)
+		.map(item -> (DyeItem) item)
+		.collect(Collectors.toList());
 
 	public EmiFireworkRocketRecipe(Identifier id) {
 		super(List.of(
@@ -127,7 +131,8 @@ public class EmiFireworkRocketRecipe extends EmiPatternCraftingRecipe {
 		List<DyeItem> dyeItems = getDyes(random, 8 - items);
 		IntList colors = new IntArrayList();
 		for (DyeItem dyeItem : dyeItems) {
-			colors.add(dyeItem.getDyeColor().getFireworkColor());
+			DyeColor color = dyeItem.components().get(DataComponents.DYE);
+			colors.add((color != null ? color : DyeColor.WHITE).getFireworkColor());
 		}
 
 		amount = random.nextInt(2);
@@ -138,7 +143,8 @@ public class EmiFireworkRocketRecipe extends EmiPatternCraftingRecipe {
 			List<DyeItem> dyeItemsFaded = getDyes(random, 8);
 			fadedColors = new IntArrayList();
 			for (DyeItem dyeItem : dyeItemsFaded) {
-				fadedColors.add(dyeItem.getDyeColor().getFireworkColor());
+				DyeColor fadedColor = dyeItem.components().get(DataComponents.DYE);
+				fadedColors.add((fadedColor != null ? fadedColor : DyeColor.WHITE).getFireworkColor());
 			}
 		} else {
 			fadedColors = IntLists.emptyList();

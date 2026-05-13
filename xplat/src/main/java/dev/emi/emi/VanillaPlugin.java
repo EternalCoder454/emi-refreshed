@@ -51,7 +51,7 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.ArmorDyeRecipe;
+import net.minecraft.world.item.crafting.DyeRecipe;
 import net.minecraft.world.item.crafting.BannerDuplicateRecipe;
 import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.BookCloningRecipe;
@@ -61,7 +61,6 @@ import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.FireworkRocketRecipe;
 import net.minecraft.world.item.crafting.FireworkStarFadeRecipe;
 import net.minecraft.world.item.crafting.FireworkStarRecipe;
-import net.minecraft.world.item.crafting.MapCloningRecipe;
 import net.minecraft.world.item.crafting.MapExtendingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeInput;
@@ -76,7 +75,6 @@ import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.SmithingTrimRecipe;
-import net.minecraft.world.item.crafting.TippedArrowRecipe;
 import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.ItemLike;
@@ -328,7 +326,7 @@ public class VanillaPlugin implements EmiPlugin {
 			EmiPort.getDisabledItems()
 		).collect(Collectors.toSet());
 
-		List<Item> dyeableItems = EmiTagKey.of(ItemTags.DYEABLE).getList();
+		List<Item> dyeableItems = EmiTagKey.of(ItemTags.CAULDRON_CAN_REMOVE_DYE).getList();
 
 		for (CraftingRecipe recipe : getRecipes(registry, RecipeType.CRAFTING)) {
 			Identifier id = EmiPort.getId(recipe);
@@ -345,7 +343,7 @@ public class VanillaPlugin implements EmiPlugin {
 				addRecipeSafe(registry, () -> new EmiShapedRecipe(shaped), recipe);
 			} else if (recipe instanceof ShapelessRecipe shapeless) {
 				addRecipeSafe(registry, () -> new EmiShapelessRecipe(shapeless), recipe);
-			} else if (recipe instanceof ArmorDyeRecipe dye) {
+			} else if (recipe instanceof DyeRecipe dye) {
 				for (Item i : dyeableItems) {
 					if (!hiddenItems.contains(i)) {
 						addRecipeSafe(registry, () -> new EmiArmorDyeRecipe(i, synthetic("crafting/dying", EmiUtil.subId(i))), recipe);
@@ -355,18 +353,6 @@ public class VanillaPlugin implements EmiPlugin {
 				addRecipeSafe(registry, () -> new EmiBannerShieldRecipe(id), recipe);
 			} else if (recipe instanceof BookCloningRecipe book) {
 				addRecipeSafe(registry, () -> new EmiBookCloningRecipe(id), recipe);
-			} else if (recipe instanceof TippedArrowRecipe tipped) {
-				EmiPort.getPotionRegistry().listElements().forEach(entry -> {
-					EmiStack arrow = EmiStack.of(Items.ARROW);
-					addRecipeSafe(registry, () -> new EmiCraftingRecipe(List.of(
-							arrow, arrow, arrow, arrow,
-							EmiStack.of(EmiPort.setPotion(new ItemStack(Items.LINGERING_POTION), entry.value())),
-							arrow, arrow, arrow, arrow
-						),
-						EmiStack.of(EmiPort.setPotion(new ItemStack(Items.TIPPED_ARROW, 8), entry.value())),
-						synthetic("crafting/tipped_arrow", EmiUtil.subId(EmiPort.getPotionRegistry().getKey(entry.value()))),
-						false), recipe);
-				});
 			} else if (recipe instanceof FireworkStarRecipe star) {
 				addRecipeSafe(registry, () -> new EmiFireworkStarRecipe(id), recipe);
 			} else if (recipe instanceof FireworkStarFadeRecipe star) {
@@ -385,8 +371,6 @@ public class VanillaPlugin implements EmiPlugin {
 						addRecipeSafe(registry, () -> new EmiRepairItemRecipe(i, synthetic("crafting/repairing", EmiUtil.subId(i))), recipe);
 					}
 				}
-			} else if (recipe instanceof MapCloningRecipe map) {
-				addRecipeSafe(registry, () -> new EmiMapCloningRecipe(id), recipe);
 			} else if (!(recipe instanceof CustomRecipe)) {
 				try {
 					List<Ingredient> ingredients = recipe.placementInfo().ingredients();

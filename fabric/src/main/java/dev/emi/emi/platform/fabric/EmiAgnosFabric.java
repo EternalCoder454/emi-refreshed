@@ -10,7 +10,7 @@ import net.minecraft.resources.Identifier;
 import org.apache.commons.lang3.text.WordUtils;
 
 import com.google.common.collect.Lists;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import dev.emi.emi.EmiPort;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.EmiUtil;
@@ -209,15 +209,12 @@ public class EmiAgnosFabric extends EmiAgnos {
 	}
 
 	@Override
-	protected void renderFluidAgnos(FluidEmiStack stack, GuiGraphics draw, int x, int y, float delta, int xOff, int yOff, int width, int height) {
-		FluidVariant fluid = FluidVariant.of(stack.getKeyOfType(Fluid.class), stack.getComponentChanges());
-		TextureAtlasSprite[] sprites = FluidVariantRendering.getSprites(fluid);
-		if (sprites == null || sprites.length < 1 || sprites[0] == null) {
-			return;
-		}
-		TextureAtlasSprite sprite = sprites[0];
-		int color = FluidVariantRendering.getColor(fluid);
-		
+	protected void renderFluidAgnos(FluidEmiStack stack, GuiGraphicsExtractor draw, int x, int y, float delta, int xOff, int yOff, int width, int height) {
+		Fluid fluid = stack.getKeyOfType(Fluid.class);
+		net.minecraft.client.renderer.block.FluidModel fluidModel = Minecraft.getInstance().getModelManager().getFluidStateModelSet().get(fluid.defaultFluidState());
+		TextureAtlasSprite sprite = fluidModel.stillMaterial().sprite();
+		FluidVariant fluidVariant = FluidVariant.of(fluid, stack.getComponentChanges());
+		int color = FluidVariantRendering.getColor(fluidVariant);
 		EmiRenderHelper.drawTintedSprite(draw, sprite, color, x, y, xOff, yOff, width, height);
 	}
 

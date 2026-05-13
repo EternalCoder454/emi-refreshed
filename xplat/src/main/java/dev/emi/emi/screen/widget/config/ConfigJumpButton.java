@@ -1,7 +1,7 @@
 package dev.emi.emi.screen.widget.config;
 
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import dev.emi.emi.EmiRenderHelper;
 import dev.emi.emi.runtime.EmiDrawContext;
@@ -20,13 +20,13 @@ public class ConfigJumpButton extends SizedButtonWidget {
 	}
 
 	@Override
-	public void renderContents(GuiGraphics raw, int mouseX, int mouseY, float delta) {
+	public void extractContents(GuiGraphicsExtractor raw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		if (this.isMouseOver(mouseX, mouseY)) {
 			context.setColor(0.5f, 0.6f, 1f);
 		}
 		context.push();
-		super.renderWidget(raw, mouseX, mouseY, delta);
+		super.extractWidgetRenderState(raw, mouseX, mouseY, delta);
 		context.pop();
 		context.resetColor();
 	}

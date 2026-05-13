@@ -2,7 +2,7 @@ package dev.emi.emi.api.widget;
 
 import dev.emi.emi.runtime.EmiDrawContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.FormattedCharSequence;
 
 public class TextWidget extends Widget {
@@ -41,7 +41,7 @@ public class TextWidget extends Widget {
 	}
 
 	@Override
-	public void render(GuiGraphics draw, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor draw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(draw);
 		context.push();
 		int xOff = horizontalAlignment.offset(CLIENT.font.width(text));

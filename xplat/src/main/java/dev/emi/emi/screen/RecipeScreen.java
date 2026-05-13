@@ -3,7 +3,7 @@ package dev.emi.emi.screen;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -168,9 +168,9 @@ public class RecipeScreen extends Screen {
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public void render(GuiGraphics raw, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor raw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
-		this.renderTransparentBackground(context.raw());
+		this.extractTransparentBackground(context.raw());
 		context.resetColor();
 		EmiRenderHelper.drawNinePatch(context, TEXTURE, x, y, backgroundWidth, backgroundHeight, 0, 0, 4, 1);
 
@@ -225,7 +225,7 @@ public class RecipeScreen extends Screen {
 			context.matrices().translate(group.x(), group.y());
 			try {
 				for (Widget widget : group.widgets) {
-					widget.render(context.raw(), mx, my, delta);
+					widget.extractRenderState(context.raw(), mx, my, delta);
 				}
 			} catch (Throwable e) {
 				EmiLog.error("Error rendering widget", e);
@@ -250,13 +250,13 @@ public class RecipeScreen extends Screen {
 		EmiScreenManager.drawBackground(context, mouseX, mouseY, delta);
 		EmiScreenManager.render(context, mouseX, mouseY, delta);
 		EmiScreenManager.drawForeground(context, mouseX, mouseY, delta);
-		super.render(context.raw(), mouseX, mouseY, delta);
+		super.extractRenderState(context.raw(), mouseX, mouseY, delta);
 		if (categoryHovered) {
 			List<ClientTooltipComponent> tooltipComponents = List.of(
 				tab.category.getName(),
 				EmiPort.translatable("emi.view_all_recipes")
 			).stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).toList();
-			context.deferTooltip(() -> context.raw().renderTooltip(minecraft.font, tooltipComponents, mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null));
+			context.deferTooltip(() -> context.raw().tooltip(minecraft.font, tooltipComponents, mouseX, mouseY, DefaultTooltipPositioner.INSTANCE, null));
 		}
 		hoveredWidget = null;
 		outer:
@@ -288,7 +288,7 @@ public class RecipeScreen extends Screen {
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		// Prevent double background draw
 	}
 

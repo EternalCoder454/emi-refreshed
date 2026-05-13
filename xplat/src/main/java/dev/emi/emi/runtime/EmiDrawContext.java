@@ -2,7 +2,7 @@ package dev.emi.emi.runtime;
 
 import dev.emi.emi.api.stack.EmiIngredient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -14,20 +14,20 @@ import org.joml.Matrix3x2fStack;
 
 public class EmiDrawContext {
 	private final Minecraft client = Minecraft.getInstance();
-	private final GuiGraphics context;
+	private final GuiGraphicsExtractor context;
 	private boolean overlay = false;
 	private int color = -1;
 	private static final List<Runnable> DEFERRED_TOOLTIPS = new ArrayList<>();
 	
-	private EmiDrawContext(GuiGraphics context) {
+	private EmiDrawContext(GuiGraphicsExtractor context) {
 		this.context = context;
 	}
 
-	public static EmiDrawContext wrap(GuiGraphics context) {
+	public static EmiDrawContext wrap(GuiGraphicsExtractor context) {
 		return new EmiDrawContext(context);
 	}
 
-	public GuiGraphics raw() {
+	public GuiGraphicsExtractor raw() {
 		return context;
 	}
 
@@ -76,11 +76,11 @@ public class EmiDrawContext {
 	}
 
 	public void drawText(Component text, int x, int y, int color) {
-		context.drawString(client.font, text, x, y, opaqueColor(color), false);
+		context.text(client.font, text, x, y, opaqueColor(color), false);
 	}
 
 	public void drawText(FormattedCharSequence text, int x, int y, int color) {
-		context.drawString(client.font, text, x, y, opaqueColor(color), false);
+		context.text(client.font, text, x, y, opaqueColor(color), false);
 	}
 
 	public void drawTextWithShadow(Component text, int x, int y) {
@@ -88,11 +88,11 @@ public class EmiDrawContext {
 	}
 
 	public void drawTextWithShadow(Component text, int x, int y, int color) {
-		context.drawString(client.font, text, x, y, opaqueColor(color), true);
+		context.text(client.font, text, x, y, opaqueColor(color), true);
 	}
 
 	public void drawTextWithShadow(FormattedCharSequence text, int x, int y, int color) {
-		context.drawString(client.font, text, x, y, opaqueColor(color), true);
+		context.text(client.font, text, x, y, opaqueColor(color), true);
 	}
 
 	public void drawCenteredText(Component text, int x, int y) {
@@ -100,7 +100,7 @@ public class EmiDrawContext {
 	}
 
 	public void drawCenteredText(Component text, int x, int y, int color) {
-		context.drawString(client.font, text, x - client.font.width(text) / 2, y, opaqueColor(color), false);
+		context.text(client.font, text, x - client.font.width(text) / 2, y, opaqueColor(color), false);
 	}
 
 	public void drawCenteredTextWithShadow(Component text, int x, int y) {
@@ -108,7 +108,7 @@ public class EmiDrawContext {
 	}
 
 	public void drawCenteredTextWithShadow(Component text, int x, int y, int color) {
-		context.drawCenteredString(client.font, text.getVisualOrderText(), x, y, opaqueColor(color));
+		context.centeredText(client.font, text.getVisualOrderText(), x, y, opaqueColor(color));
 	}
 
 	private static int opaqueColor(int color) {

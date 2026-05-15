@@ -1,5 +1,12 @@
-name: Build
-on: [ pull_request, push ]
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - "26.1"
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -10,14 +17,16 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: setup JDK${{ matrix.java }}
-        uses: actions/setup-java@v1
+      - name: Setup JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java }}
+          distribution: 'temurin' 
 
-      - uses: actions/cache@v4
+      - name: Setup Gradle Cache
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -32,14 +41,21 @@ jobs:
       - name: Build NeoForge
         run: ./gradlew :neoforge:build
 
-#      - name: Build Forge
-#        run: ./gradlew :forge:build
-
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4.4.0
         with:
           name: Artifacts
           path: |
             fabric/build/libs/
-            neoforge/build/libs/
-#           forge/build/libs/
+            neoforge/build/libs/ 
+
+      - name: Create Release and Upload Artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.run_number }}
+          name: build+${{ github.run_number }}
+          files: |
+            fabric/build/libs/*
+            neoforge/build/libs/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

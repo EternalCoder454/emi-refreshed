@@ -276,8 +276,10 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 		net.minecraft.client.renderer.block.FluidModel fluidModel = client.getModelManager().getFluidStateModelSet().get(fluid.defaultFluidState());
 		TextureAtlasSprite sprite = fluidModel.stillMaterial().sprite();
 		int color = -1;
-		if (fluidModel.tintSource() != null) {
-			color = fluidModel.tintSource().color(net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+		if (fluidModel.tintSource() instanceof net.neoforged.neoforge.client.fluid.FluidTintSource fluidTintSource) {
+			color = fluidTintSource.color(fluid.defaultFluidState());
+		} else if (fluidModel.tintSource() != null) {
+			color = fluidModel.tintSource().color(fluid.defaultFluidState().createLegacyBlock());
 		}
 		EmiRenderHelper.drawTintedSprite(draw, sprite, color, x, y, xOff, yOff, width, height);
 	}

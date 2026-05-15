@@ -1,6 +1,7 @@
 package dev.emi.emi.registry;
 
 import java.util.Comparator;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ import dev.emi.emi.api.stack.ListEmiIngredient;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.data.EmiData;
 import dev.emi.emi.data.EmiRecipeCategoryProperties;
+import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiHidden;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.runtime.EmiReloadLog;
@@ -72,6 +74,13 @@ public class EmiRecipes {
 		if (manager != null) {
 			for (RecipeHolder<?> entry : manager.getRecipes()) {
 				recipeIds.put(entry.value(), entry.id().identifier());
+			}
+		} else {
+			Collection<RecipeHolder<?>> holders = EmiAgnos.getRecipeHolders();
+			if (holders != null) {
+				for (RecipeHolder<?> entry : holders) {
+					recipeIds.put(entry.value(), entry.id().identifier());
+				}
 			}
 		}
 	}

@@ -51,6 +51,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.mixin.accessor.SmithingTransformRecipeAccessor;
+import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.registry.EmiRecipes;
 
 public final class EmiPort {
@@ -191,6 +192,9 @@ public final class EmiPort {
 		RecipeManager manager = getRecipeManager();
 		if (manager != null && id != null) {
 			return manager.byKey(ResourceKey.create(Registries.RECIPE, id)).orElse(null);
+		}
+		if (id != null) {
+			return EmiAgnos.getRecipeByKey(ResourceKey.create(Registries.RECIPE, id));
 		}
 		return null;
 	}

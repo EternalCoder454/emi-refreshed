@@ -1,16 +1,22 @@
 package dev.emi.emi.platform;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import org.jetbrains.annotations.Nullable;
 import dev.emi.emi.api.EmiRegistry;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.stack.FluidEmiStack;
@@ -149,6 +155,18 @@ public abstract class EmiAgnos {
 	public static boolean isEnchantable(ItemStack stack, Enchantment enchantment) {
 		return delegate.isEnchantableAgnos(stack, enchantment);
 	}
-
+	
 	protected abstract boolean isEnchantableAgnos(ItemStack stack, Enchantment enchantment);
+
+	public static @Nullable Collection<RecipeHolder<?>> getRecipeHolders() {
+		return delegate.getRecipeHoldersAgnos();
+	}
+
+	protected @Nullable Collection<RecipeHolder<?>> getRecipeHoldersAgnos() { return null; }
+
+	public static @Nullable RecipeHolder<?> getRecipeByKey(ResourceKey<Recipe<?>> key) {
+		return delegate.getRecipeByKeyAgnos(key);
+	}
+
+	protected @Nullable RecipeHolder<?> getRecipeByKeyAgnos(ResourceKey<Recipe<?>> key) { return null; }
 }

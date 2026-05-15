@@ -1,6 +1,7 @@
 package dev.emi.emi.platform.neoforge;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,8 +10,14 @@ import java.util.stream.Stream;
 
 import dev.emi.emi.mixin.accessor.BrewingRecipeRegistryAccessor;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeMap;
 import net.neoforged.neoforge.client.ClientHooks;
 import org.apache.commons.lang3.text.WordUtils;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
 import com.google.common.collect.Lists;
@@ -58,8 +65,14 @@ import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforgespi.language.ModFileScanData;
 
 public class EmiAgnosNeoForge extends EmiAgnos {
+	private static RecipeMap receivedRecipeMap;
+
 	static {
 		EmiAgnos.delegate = new EmiAgnosNeoForge();
+	}
+
+	public static void setReceivedRecipeMap(RecipeMap recipeMap) {
+		receivedRecipeMap = recipeMap;
 	}
 
 	@Override
@@ -316,5 +329,21 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 	@Override
 	protected boolean isEnchantableAgnos(ItemStack stack, Enchantment enchantment) {
 		return stack.isEnchantable();
+	}
+
+	@Override
+	protected @Nullable Collection<RecipeHolder<?>> getRecipeHoldersAgnos() {
+		if (receivedRecipeMap != null) {
+			return receivedRecipeMap.values();
+		}
+		return null;
+	}
+
+	@Override
+	protected @Nullable RecipeHolder<?> getRecipeByKeyAgnos(ResourceKey<Recipe<?>> key) {
+		if (receivedRecipeMap != null) {
+			return receivedRecipeMap.byKey(key);
+		}
+		return null;
 	}
 }

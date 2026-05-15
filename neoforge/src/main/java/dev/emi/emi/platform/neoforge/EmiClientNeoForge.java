@@ -23,6 +23,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
@@ -39,6 +40,7 @@ public class EmiClientNeoForge {
 		EmiClient.init();
 		EmiNetwork.initClient(packet -> ClientPacketDistributor.sendToServer(EmiPacketHandler.wrap(packet)));
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::tagsReloaded);
+		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::recipesReceived);
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::renderScreenForeground);
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::postRenderScreen);
 		ModList.get().getModContainerById("emi").orElseThrow().registerExtensionPoint(IConfigScreenFactory.class,
@@ -51,6 +53,15 @@ public class EmiClientNeoForge {
 	}
 
 	public static void tagsReloaded(TagsUpdatedEvent event) {
+		Minecraft client = Minecraft.getInstance();
+		if (client.level != null) {
+			EmiReloadManager.reloadRecipes();
+			EmiReloadManager.reloadTags();
+		}
+	}
+
+	public static void recipesReceived(RecipesReceivedEvent event) {
+		EmiAgnosNeoForge.setReceivedRecipeMap(event.getRecipeMap());
 		EmiReloadManager.reloadRecipes();
 		EmiReloadManager.reloadTags();
 	}

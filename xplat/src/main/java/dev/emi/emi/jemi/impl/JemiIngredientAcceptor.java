@@ -180,15 +180,15 @@ public class JemiIngredientAcceptor implements IIngredientAcceptor<JemiIngredien
 	@Override
 	public <I> JemiIngredientAcceptor addIngredients(IIngredientType<I> ingredientType, List<@Nullable I> ingredients) {
 		for (I i : ingredients) {
-			addIngredient(ingredientType, i);
+			add(ingredientType, i);
 		}
 		return this;
 	}
 
 	@Override
+	@SuppressWarnings("removal")
 	public <I> JemiIngredientAcceptor addIngredient(IIngredientType<I> ingredientType, I ingredient) {
-		addStack(JemiUtil.getStack(ingredientType, ingredient));
-		return this;
+		return add(ingredientType, ingredient);
 	}
 
 	@Override
@@ -200,27 +200,28 @@ public class JemiIngredientAcceptor implements IIngredientAcceptor<JemiIngredien
 	}
 
 	@Override
+	@SuppressWarnings("removal")
 	public JemiIngredientAcceptor addFluidStack(Fluid fluid) {
-		return addFluidStack(fluid, FluidUnit.BUCKET);
+		return add(fluid);
 	}
 
 	@Override
+	@SuppressWarnings("removal")
 	public JemiIngredientAcceptor addFluidStack(Fluid fluid, long amount) {
-		addStack(EmiStack.of(fluid, amount));
-		return this;
+		return add(fluid, amount);
 	}
-	
+
 	@Override
+	@SuppressWarnings("removal")
 	public JemiIngredientAcceptor addFluidStack(Fluid fluid, long amount, DataComponentPatch componentChanges) {
-		addStack(EmiStack.of(fluid, componentChanges, amount));
-		return this;
+		return add(fluid, amount, componentChanges);
 	}
 
 	@Override
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public JemiIngredientAcceptor addTypedIngredients(List<ITypedIngredient<?>> ingredients) {
 		for (ITypedIngredient<?> i : ingredients) {
-			addIngredient(((IIngredientType) i.getType()), i.getIngredient());
+			add(((IIngredientType) i.getType()), i.getIngredient());
 		}
 		return this;
 	}
@@ -231,7 +232,7 @@ public class JemiIngredientAcceptor implements IIngredientAcceptor<JemiIngredien
 		for (Optional<ITypedIngredient<?>> opt : ingredients) {
 			if (opt.isPresent()) {
 				ITypedIngredient<?> i = opt.get();
-				addIngredient(((IIngredientType) i.getType()), i.getIngredient());
+				add(((IIngredientType) i.getType()), i.getIngredient());
 			}
 		}
 		return this;

@@ -121,8 +121,9 @@ public class JemiRecipeSlotBuilder implements IRecipeSlotBuilder {
 	}
 
 	@Override
+	@SuppressWarnings("removal")
 	public <I> IRecipeSlotBuilder addIngredient(IIngredientType<I> ingredientType, I ingredient) {
-		acceptor.addIngredient(ingredientType, ingredient);
+		acceptor.add(ingredientType, ingredient);
 		return this;
 	}
 
@@ -133,14 +134,16 @@ public class JemiRecipeSlotBuilder implements IRecipeSlotBuilder {
 	}
 
 	@Override
+	@SuppressWarnings("removal")
 	public IRecipeSlotBuilder addFluidStack(Fluid fluid, long amount) {
-		acceptor.addFluidStack(fluid, amount);
+		acceptor.add(fluid, amount);
 		return this;
 	}
 
 	@Override
+	@SuppressWarnings("removal")
 	public IRecipeSlotBuilder addFluidStack(Fluid fluid, long amount, DataComponentPatch componentChanges) {
-		acceptor.addFluidStack(fluid, amount, componentChanges);
+		acceptor.add(fluid, amount, componentChanges);
 		return this;
 	}
 
@@ -197,8 +200,9 @@ public class JemiRecipeSlotBuilder implements IRecipeSlotBuilder {
 	}
 
 	@Override
+	@SuppressWarnings("removal")
 	public IRecipeSlotBuilder addFluidStack(Fluid fluid) {
-		acceptor.addFluidStack(fluid);
+		acceptor.add(fluid);
 		return this;
 	}
 

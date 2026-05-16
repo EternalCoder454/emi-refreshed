@@ -49,7 +49,7 @@ public class JemiRecipe<T> implements EmiRecipe {
 		this.recipeCategory = recipeCategory;
 		this.category = category;
 		this.recipe = recipe;
-		this.originalId = category.getRegistryName(recipe);
+		this.originalId = category.getIdentifier(recipe);
 		if (this.originalId != null) {
 			this.id = EmiPort.id("jei", "/" + EmiUtil.subId(this.originalId));
 		}

@@ -53,7 +53,6 @@ import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.ingredients.subtypes.ISubtypeManager;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe;
@@ -210,7 +209,7 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 			try {
 				IRecipeType<?> type = c.getRecipeType();
 				Identifier id = type.getUid();
-				List<EmiStack> catalysts = runtime.getRecipeManager().createRecipeCatalystLookup(type).includeHidden().get().map(JemiUtil::getStack).toList();
+				List<EmiStack> catalysts = runtime.getRecipeManager().createCraftingStationLookup(type).includeHidden().get().map(JemiUtil::getStack).toList();
 				if (categoryMap.containsKey(type)) {
 					EmiRecipeCategory category = categoryMap.get(type);
 					CATEGORY_MAP.put(category, c);
@@ -323,7 +322,7 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 					if (inputs.stream().anyMatch(i -> !i.isEmpty()) && outputs.stream().anyMatch(o -> !o.isEmpty())) {
 						EmiRecipe replacement;
 						if (outputs.size() > 1) {
-							replacement = new EmiPatternCraftingRecipe(inputs, EmiStack.EMPTY, category.getRegistryName(recipe), builder.shapeless) {
+							replacement = new EmiPatternCraftingRecipe(inputs, EmiStack.EMPTY, category.getIdentifier(recipe), builder.shapeless) {
 
 								@Override
 								public List<EmiStack> getOutputs() {
@@ -346,7 +345,7 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 								
 							};
 						} else {
-							replacement = new EmiCraftingRecipe(inputs, outputs.get(0), category.getRegistryName(recipe), builder.shapeless);
+							replacement = new EmiCraftingRecipe(inputs, outputs.get(0), category.getIdentifier(recipe), builder.shapeless);
 						}
 						if (replacement.getId() != null) {
 							replaced.add(replacement.getId());

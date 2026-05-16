@@ -61,7 +61,7 @@ public class EmiStackProviders {
 							CraftingInput input = CraftingInput.of(inv.getWidth(), inv.getHeight(), inv.getItems());
 							Minecraft client = Minecraft.getInstance();
 							List<CraftingRecipe> list
-								= EmiPort.getRecipeManager().getRecipes().stream()
+								= EmiPort.getRecipeMap().values().stream()
 									.filter(h -> h.value() instanceof CraftingRecipe cr && cr.matches(input, client.level))
 									.map(RecipeHolder::value).map(r -> (CraftingRecipe) r).toList();
 							if (!list.isEmpty()) {

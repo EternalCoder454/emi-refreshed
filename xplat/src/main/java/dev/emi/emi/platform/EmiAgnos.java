@@ -13,6 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -169,4 +170,10 @@ public abstract class EmiAgnos {
 	}
 
 	protected @Nullable RecipeHolder<?> getRecipeByKeyAgnos(ResourceKey<Recipe<?>> key) { return null; }
+
+	public static @Nullable RecipeMap getRecipeMap() {
+		return delegate.getRecipeMapAgnos();
+	}
+
+	protected @Nullable RecipeMap getRecipeMapAgnos() { return null; }
 }

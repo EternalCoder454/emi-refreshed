@@ -346,4 +346,9 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 		}
 		return null;
 	}
+
+	@Override
+	protected @Nullable RecipeMap getRecipeMapAgnos() {
+		return receivedRecipeMap;
+	}
 }

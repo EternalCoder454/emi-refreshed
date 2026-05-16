@@ -28,7 +28,7 @@ public class MinecraftClientMixin {
 		if (future != null) {
 			future.thenRunAsync(() -> {
 				Minecraft client = Minecraft.getInstance();
-				if (client.level != null && EmiPort.getRecipeManager() != null) {
+				if (client.level != null && EmiPort.getRecipeMap() != null) {
 					EmiReloadManager.reload();
 				}
 			}, Executors.newFixedThreadPool(1));

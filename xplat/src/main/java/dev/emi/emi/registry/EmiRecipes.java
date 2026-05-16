@@ -12,7 +12,7 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeMap;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Iterables;
@@ -33,7 +33,6 @@ import dev.emi.emi.api.stack.ListEmiIngredient;
 import dev.emi.emi.config.EmiConfig;
 import dev.emi.emi.data.EmiData;
 import dev.emi.emi.data.EmiRecipeCategoryProperties;
-import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiHidden;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.runtime.EmiReloadLog;
@@ -69,18 +68,11 @@ public class EmiRecipes {
 		byWorkstation.clear();
 		decorators.clear();
 		manager = Manager.EMPTY;
-		RecipeManager manager = EmiPort.getRecipeManager();
+		RecipeMap map = EmiPort.getRecipeMap();
 		recipeIds = new Reference2ObjectOpenHashMap<>();
-		if (manager != null) {
-			for (RecipeHolder<?> entry : manager.getRecipes()) {
+		if (map != null) {
+			for (RecipeHolder<?> entry : map.values()) {
 				recipeIds.put(entry.value(), entry.id().identifier());
-			}
-		} else {
-			Collection<RecipeHolder<?>> holders = EmiAgnos.getRecipeHolders();
-			if (holders != null) {
-				for (RecipeHolder<?> entry : holders) {
-					recipeIds.put(entry.value(), entry.id().identifier());
-				}
 			}
 		}
 	}

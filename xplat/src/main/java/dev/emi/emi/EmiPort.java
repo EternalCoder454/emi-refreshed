@@ -31,7 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
@@ -189,22 +189,18 @@ public final class EmiPort {
 	}
 
 	public static @Nullable RecipeHolder<?> getRecipe(Identifier id) {
-		RecipeManager manager = getRecipeManager();
-		if (manager != null && id != null) {
-			return manager.byKey(ResourceKey.create(Registries.RECIPE, id)).orElse(null);
+		if (id == null) {
+			return null;
 		}
-		if (id != null) {
-			return EmiAgnos.getRecipeByKey(ResourceKey.create(Registries.RECIPE, id));
+		RecipeMap map = getRecipeMap();
+		if (map != null) {
+			return map.byKey(ResourceKey.create(Registries.RECIPE, id));
 		}
 		return null;
 	}
 
-	public static @Nullable RecipeManager getRecipeManager() {
-		Minecraft client = Minecraft.getInstance();
-		if (client.isSingleplayer() && client.getSingleplayerServer() != null) {
-			return client.getSingleplayerServer().getRecipeManager();
-		}
-		return null;
+	public static @Nullable RecipeMap getRecipeMap() {
+		return EmiAgnos.getRecipeMap();
 	}
 
 	public static Comparison compareStrict() {

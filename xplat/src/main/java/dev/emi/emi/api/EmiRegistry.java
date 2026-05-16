@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeMap;
 import org.jetbrains.annotations.ApiStatus;
 
 import dev.emi.emi.api.recipe.EmiRecipe;
@@ -49,9 +49,9 @@ public interface EmiRegistry {
 	boolean isStackDisabled(EmiIngredient stack);
 
 	/**
-	 * @return The vanilla recipe manager, for iterating recipe types.
+	 * @return The recipe map, for iterating recipe types.
 	 */
-	RecipeManager getRecipeManager();
+	RecipeMap getRecipeMap();
 	
 	/**
 	 * Adds a recipe category.

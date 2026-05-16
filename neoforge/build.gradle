@@ -140,6 +140,7 @@ def apiJar = tasks.register('apiJar', Jar, {
 	archiveClassifier = 'api'
 	dependsOn shadowJar
 	from zipTree(shadowJar.get().archiveFile)
+	include 'LICENSE'
 	include 'emi.mixins.json'
 	include 'emi-neoforge.mixins.json'
 	include 'emi.accesswidener'

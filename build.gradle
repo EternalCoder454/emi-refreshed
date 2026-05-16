@@ -39,4 +39,10 @@ allprojects {
 	java {
 		withSourcesJar()
 	}
+	tasks.withType(Jar).configureEach {
+		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+		from(rootProject.file('LICENSE')) {
+			into('')
+		}
+	}
 }

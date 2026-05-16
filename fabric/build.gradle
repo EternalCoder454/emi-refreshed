@@ -106,6 +106,7 @@ def apiJar = tasks.register('apiJar', Jar, {
 	archiveClassifier = 'api'
 	dependsOn shadowJar
 	from zipTree(shadowJar.get().archiveFile)
+	include 'LICENSE'
 	include 'fabric.mod.json'
 	include 'emi.mixins.json'
 	include 'emi-fabric.mixins.json'

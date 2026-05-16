@@ -28,16 +28,16 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeMap;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -154,16 +154,21 @@ public final class EmiPort {
 	}
 
 	public static ItemStack getOutput(Recipe<?> recipe) {
-		if (recipe instanceof ShapedRecipe shaped) {
-			return shaped.assemble(CraftingInput.EMPTY);
-		} else if (recipe instanceof ShapelessRecipe shapeless) {
-			return shapeless.assemble(CraftingInput.EMPTY);
+		if (recipe instanceof CraftingRecipe crafting) {
+			return crafting.assemble(CraftingInput.EMPTY);
 		} else if (recipe instanceof SingleItemRecipe single) {
 			return single.assemble(new SingleRecipeInput(ItemStack.EMPTY));
 		} else if (recipe instanceof SmithingTransformRecipe smithing) {
 			ItemStackTemplate result = ((SmithingTransformRecipeAccessor) smithing).getResult();
 			return result.create();
 		}
+		// maybe a more powerful choice?
+//		for (var display : recipe.display()) {
+//			ItemStack stack = display.result().resolveForFirstStack(SlotDisplayContext.fromLevel(Minecraft.getInstance().level));
+//			if (!stack.isEmpty()) {
+//				return stack;
+//			}
+//		}
 		return ItemStack.EMPTY;
 	}
 

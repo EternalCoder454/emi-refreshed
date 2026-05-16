@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import mezz.jei.api.fabric.ingredients.fluids.IJeiFluidIngredient;
 
+import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.level.block.entity.FuelValues;
 import net.fabricmc.fabric.api.transfer.v1.client.fluid.FluidVariantRendering;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
@@ -37,6 +38,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariantAttributes;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -54,8 +56,14 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.material.Fluid;
 
 public class EmiAgnosFabric extends EmiAgnos {
+	private static RecipeMap receivedRecipeMap;
+
 	static {
 		EmiAgnos.delegate = new EmiAgnosFabric();
+	}
+
+	public static void setReceivedRecipeMap(RecipeMap recipeMap) {
+		receivedRecipeMap = recipeMap;
 	}
 
 	@Override
@@ -250,5 +258,10 @@ public class EmiAgnosFabric extends EmiAgnos {
 	@Override
 	protected boolean isEnchantableAgnos(ItemStack stack, Enchantment enchantment) {
 		return true;
+	}
+
+	@Override
+	protected @Nullable RecipeMap getRecipeMapAgnos() {
+		return receivedRecipeMap;
 	}
 }

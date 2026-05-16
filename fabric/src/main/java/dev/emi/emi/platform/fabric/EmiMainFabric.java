@@ -18,10 +18,13 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.recipe.v1.sync.RecipeSynchronization;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.StreamDecoder;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 
 public class EmiMainFabric implements ModInitializer {
 
@@ -43,6 +46,14 @@ public class EmiMainFabric implements ModInitializer {
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			EmiNetwork.sendToClient(handler.player, new PingS2CPacket());
 		});
+
+		registerVanillaRecipeSerializers();
+	}
+
+	private void registerVanillaRecipeSerializers() {
+		for (RecipeSerializer<?> serializer : BuiltInRegistries.RECIPE_SERIALIZER) {
+			RecipeSynchronization.synchronizeRecipeSerializer(serializer);
+		}
 	}
 
 	private <T extends EmiPacket> void registerPacketReader(CustomPacketPayload.Type<T> id, StreamDecoder<RegistryFriendlyByteBuf, T> decode) {

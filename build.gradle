@@ -52,6 +52,12 @@ allprojects {
 
 	def synthMixinDir = layout.buildDirectory.dir("generated-class")
 
+	tasks.named('jar') {
+		from(synthMixinDir) {
+			include "**/*.class"
+		}
+	}
+
 	tasks.register('generateClassLists') {
 		inputs.files(sourceSets.main.output.classesDirs)
 		outputs.dir(synthMixinDir)

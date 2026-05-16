@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.input.KeyEvent;
@@ -268,10 +269,10 @@ public class ConfigScreen extends Screen {
 			EmiLog.error("Error initializing config screen", e);
 		}
 
-		addJumpButtons();
 		this.addWidget(list);
 		list.setScrollAmount(scroll);
 		search.setText(query);
+		addJumpButtons();
 		updateChanges();
 	}
 
@@ -367,8 +368,8 @@ public class ConfigScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor raw, int mouseX, int mouseY, float delta) {
 		EmiDrawContext context = EmiDrawContext.wrap(raw);
 		list.setScrollAmount(list.getScrollAmount());
-		super.extractRenderState(context.raw(), mouseX, mouseY, delta);
 		list.extractRenderState(context.raw(), mouseX, mouseY, delta);
+		super.extractRenderState(context.raw(), mouseX, mouseY, delta);
 		if (list.getHoveredEntry() != null) {
 			EmiRenderHelper.drawTooltip(this, context, list.getHoveredEntry().getTooltip(mouseX, mouseY), mouseX, mouseY, Math.min(width / 2 - 16, maxWidth));
 		}
@@ -382,6 +383,17 @@ public class ConfigScreen extends Screen {
 			activeBind.setBind(activeBindOffset, new ModifiedKey(InputConstants.Type.MOUSE.getOrCreate(event.button()), activeModifiers));
 			activeBind = null;
 			return true;
+		}
+		for (GuiEventListener child : children()) {
+			if (child instanceof ConfigJumpButton btn && btn.isMouseOver(event.x(), event.y())) {
+				if (btn.mouseClicked(event, doubleClick)) {
+					this.setFocused(btn);
+					if (event.button() == 0) {
+						this.setDragging(true);
+					}
+					return true;
+				}
+			}
 		}
 		return super.mouseClicked(event, doubleClick);
 	}

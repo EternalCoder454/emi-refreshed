@@ -141,7 +141,7 @@ public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements Em
 		return () -> IRecipeTransferError.Type.INTERNAL;
 	}
 
-	public static <R> JemiRecipeSlotsView createSlotsView(EmiRecipe recipe, R rawRecipe, RecipeType<R> type, List<Widget> widgets) {
+	public static <R> JemiRecipeSlotsView createSlotsView(EmiRecipe recipe, R rawRecipe, IRecipeType<R> type, List<Widget> widgets) {
 		JemiRecipeLayoutBuilder builder = null;
 		if (rawRecipe != null) {
 			/*

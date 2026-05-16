@@ -332,22 +332,6 @@ public class EmiAgnosNeoForge extends EmiAgnos {
 	}
 
 	@Override
-	protected @Nullable Collection<RecipeHolder<?>> getRecipeHoldersAgnos() {
-		if (receivedRecipeMap != null) {
-			return receivedRecipeMap.values();
-		}
-		return null;
-	}
-
-	@Override
-	protected @Nullable RecipeHolder<?> getRecipeByKeyAgnos(ResourceKey<Recipe<?>> key) {
-		if (receivedRecipeMap != null) {
-			return receivedRecipeMap.byKey(key);
-		}
-		return null;
-	}
-
-	@Override
 	protected @Nullable RecipeMap getRecipeMapAgnos() {
 		return receivedRecipeMap;
 	}

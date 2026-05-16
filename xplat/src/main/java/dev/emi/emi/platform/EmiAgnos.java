@@ -159,18 +159,6 @@ public abstract class EmiAgnos {
 	
 	protected abstract boolean isEnchantableAgnos(ItemStack stack, Enchantment enchantment);
 
-	public static @Nullable Collection<RecipeHolder<?>> getRecipeHolders() {
-		return delegate.getRecipeHoldersAgnos();
-	}
-
-	protected @Nullable Collection<RecipeHolder<?>> getRecipeHoldersAgnos() { return null; }
-
-	public static @Nullable RecipeHolder<?> getRecipeByKey(ResourceKey<Recipe<?>> key) {
-		return delegate.getRecipeByKeyAgnos(key);
-	}
-
-	protected @Nullable RecipeHolder<?> getRecipeByKeyAgnos(ResourceKey<Recipe<?>> key) { return null; }
-
 	public static @Nullable RecipeMap getRecipeMap() {
 		return delegate.getRecipeMapAgnos();
 	}

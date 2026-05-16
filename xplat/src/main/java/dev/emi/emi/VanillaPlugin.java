@@ -304,6 +304,7 @@ public class VanillaPlugin implements EmiPlugin {
 
 		List<Item> dyeableItems = EmiTagKey.of(ItemTags.CAULDRON_CAN_REMOVE_DYE).getList();
 
+		Set<Class<?>> processedCustomRecipes = Sets.newHashSet();
 		for (CraftingRecipe recipe : getRecipes(registry, RecipeType.CRAFTING)) {
 			Identifier id = EmiPort.getId(recipe);
 			if (recipe instanceof MapExtendingRecipe map) {
@@ -320,9 +321,11 @@ public class VanillaPlugin implements EmiPlugin {
 			} else if (recipe instanceof ShapelessRecipe shapeless) {
 				addRecipeSafe(registry, () -> new EmiShapelessRecipe(shapeless), recipe);
 			} else if (recipe instanceof DyeRecipe dye) {
-				for (Item i : dyeableItems) {
-					if (!hiddenItems.contains(i)) {
-						addRecipeSafe(registry, () -> new EmiArmorDyeRecipe(i, synthetic("crafting/dying", EmiUtil.subId(i))), recipe);
+				if (processedCustomRecipes.add(DyeRecipe.class)) {
+					for (Item i : dyeableItems) {
+						if (!hiddenItems.contains(i)) {
+							addRecipeSafe(registry, () -> new EmiArmorDyeRecipe(i, synthetic("crafting/dying", EmiUtil.subId(i))), recipe);
+						}
 					}
 				}
 			} else if (recipe instanceof ShieldDecorationRecipe shield) {
@@ -336,15 +339,19 @@ public class VanillaPlugin implements EmiPlugin {
 			} else if (recipe instanceof FireworkRocketRecipe rocket) {
 				addRecipeSafe(registry, () -> new EmiFireworkRocketRecipe(id), recipe);
 			} else if (recipe instanceof BannerDuplicateRecipe banner) {
-				for (Item i : EmiBannerDuplicateRecipe.BANNERS) {
-					if (!hiddenItems.contains(i)) {
-						addRecipeSafe(registry, () -> new EmiBannerDuplicateRecipe(i, synthetic("crafting/banner_copying", EmiUtil.subId(i))), recipe);
+				if (processedCustomRecipes.add(BannerDuplicateRecipe.class)) {
+					for (Item i : EmiBannerDuplicateRecipe.BANNERS) {
+						if (!hiddenItems.contains(i)) {
+							addRecipeSafe(registry, () -> new EmiBannerDuplicateRecipe(i, synthetic("crafting/banner_copying", EmiUtil.subId(i))), recipe);
+						}
 					}
 				}
 			} else if (recipe instanceof RepairItemRecipe tool) {
-				for (Item i : EmiRepairItemRecipe.TOOLS) {
-					if (!hiddenItems.contains(i)) {
-						addRecipeSafe(registry, () -> new EmiRepairItemRecipe(i, synthetic("crafting/repairing", EmiUtil.subId(i))), recipe);
+				if (processedCustomRecipes.add(RepairItemRecipe.class)) {
+					for (Item i : EmiRepairItemRecipe.TOOLS) {
+						if (!hiddenItems.contains(i)) {
+							addRecipeSafe(registry, () -> new EmiRepairItemRecipe(i, synthetic("crafting/repairing", EmiUtil.subId(i))), recipe);
+						}
 					}
 				}
 			} else if (!(recipe instanceof CustomRecipe)) {
@@ -443,7 +450,7 @@ public class VanillaPlugin implements EmiPlugin {
 				if (i.components().getOrDefault(DataComponents.MAX_DAMAGE, 0) > 0) {
 					ItemStack defaultStack = i.getDefaultInstance();
 					Repairable repairable = defaultStack.get(DataComponents.REPAIRABLE);
-					if (repairable != null) {
+					if (repairable != null && i != Items.ELYTRA && i != Items.SHIELD) {
 						EmiIngredient repairIngredient = EmiIngredient.of(repairable.items().stream()
 							.map(h -> EmiStack.of(h.value())).toList());
 						if (!repairIngredient.isEmpty()) {

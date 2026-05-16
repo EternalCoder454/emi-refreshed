@@ -21,6 +21,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
@@ -41,6 +42,7 @@ public class EmiClientNeoForge {
 		EmiNetwork.initClient(packet -> ClientPacketDistributor.sendToServer(EmiPacketHandler.wrap(packet)));
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::tagsReloaded);
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::recipesReceived);
+		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::playerLoggedOut);
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::renderScreenForeground);
 		NeoForge.EVENT_BUS.addListener(EmiClientNeoForge::postRenderScreen);
 		ModList.get().getModContainerById("emi").orElseThrow().registerExtensionPoint(IConfigScreenFactory.class,
@@ -64,6 +66,10 @@ public class EmiClientNeoForge {
 		EmiAgnosNeoForge.setReceivedRecipeMap(event.getRecipeMap());
 		EmiReloadManager.reloadRecipes();
 		EmiReloadManager.reloadTags();
+	}
+
+	public static void playerLoggedOut(ClientPlayerNetworkEvent.LoggingOut event) {
+		EmiAgnosNeoForge.setReceivedRecipeMap(null);
 	}
 
 	public static void renderScreenForeground(ContainerScreenEvent.Render.Foreground event) {

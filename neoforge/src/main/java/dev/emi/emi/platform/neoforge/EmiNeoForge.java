@@ -5,10 +5,13 @@ import dev.emi.emi.network.PingS2CPacket;
 import dev.emi.emi.platform.EmiMain;
 import dev.emi.emi.registry.EmiCommands;
 import dev.emi.emi.runtime.EmiLog;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -28,6 +31,7 @@ public class EmiNeoForge {
 		});
 		NeoForge.EVENT_BUS.addListener(this::registerCommands);
 		NeoForge.EVENT_BUS.addListener(this::playerConnect);
+		NeoForge.EVENT_BUS.addListener(this::onDatapackSync);
 	}
 
 	public void registerCommands(RegisterCommandsEvent event) {
@@ -38,5 +42,9 @@ public class EmiNeoForge {
 		if (event.getEntity() instanceof ServerPlayer spe) {
 			EmiNetwork.sendToClient(spe, new PingS2CPacket());
 		}
+	}
+
+	public void onDatapackSync(OnDatapackSyncEvent event) {
+		event.sendRecipes(BuiltInRegistries.RECIPE_TYPE);
 	}
 }

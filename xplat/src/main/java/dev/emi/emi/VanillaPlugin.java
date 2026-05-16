@@ -63,7 +63,9 @@ import net.minecraft.world.item.crafting.FireworkStarFadeRecipe;
 import net.minecraft.world.item.crafting.FireworkStarRecipe;
 import net.minecraft.world.item.crafting.MapExtendingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.RepairItemRecipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
@@ -795,10 +797,21 @@ public class VanillaPlugin implements EmiPlugin {
 		return EmiPort.id("emi", "/" + type + "/" + name);
 	}
 
+	@SuppressWarnings("unchecked")
 	private static <C extends RecipeInput, T extends Recipe<C>> Iterable<T> getRecipes(EmiRegistry registry, RecipeType<T> type) {
-		return registry.getRecipeManager().getRecipes().stream()
-			.filter(holder -> holder.value().getType() == type)
-			.map(e -> (T) e.value())::iterator;
+		RecipeManager manager = registry.getRecipeManager();
+		if (manager != null) {
+			return manager.getRecipes().stream()
+				.filter(holder -> holder.value().getType() == type)
+				.map(e -> (T) e.value())::iterator;
+		}
+		Collection<RecipeHolder<?>> holders = EmiAgnos.getRecipeHolders();
+		if (holders != null) {
+			return holders.stream()
+				.filter(holder -> holder.value().getType() == type)
+				.map(e -> (T) e.value())::iterator;
+		}
+		return List.of();
 	}
 
 	private static void safely(String name, Runnable runnable) {

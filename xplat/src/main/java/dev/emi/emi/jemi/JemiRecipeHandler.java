@@ -205,6 +205,9 @@ public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements Em
 				for (JemiRecipeSlotBuilder jrsb : builder.slots) {
 					jrsb.acceptor.coerceStacks(jrsb.richTooltipCallback, jrsb.renderers);
 				}
+				if (builder.slots.isEmpty()) {
+					builder = null;
+				}
 			} catch (Exception e) {
 				EmiLog.error("Error building JEI slots view from category", e);
 				builder = null;

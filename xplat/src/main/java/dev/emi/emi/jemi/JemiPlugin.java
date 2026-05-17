@@ -54,6 +54,7 @@ import mezz.jei.api.ingredients.subtypes.ISubtypeManager;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.recipe.vanilla.IJeiIngredientInfoRecipe;
 import mezz.jei.api.registration.IModIngredientRegistration;
@@ -411,10 +412,20 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 		}
 	}
 
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	private static EmiRecipeHandler<?> getRecipeHandler(AbstractContainerMenu handler, EmiRecipe recipe) {
 		IRecipeCategory<?> category = CATEGORY_MAP.getOrDefault(recipe.getCategory(), null);
 		if (category != null) {
-			return runtime.getRecipeTransferManager().getRecipeTransferHandler(handler, category).map(JemiRecipeHandler::new).orElse(null);
+			Optional<? extends IRecipeTransferHandler<?, ?>> opt = runtime.getRecipeTransferManager().getRecipeTransferHandler(handler, category);
+			if (opt.isPresent()) {
+				return new JemiRecipeHandler(opt.get());
+			}
+		}
+		if (recipe instanceof JemiRecipe jr && jr.category != null) {
+			Optional<? extends IRecipeTransferHandler<?, ?>> opt = runtime.getRecipeTransferManager().getRecipeTransferHandler(handler, jr.category);
+			if (opt.isPresent()) {
+				return new JemiRecipeHandler(opt.get());
+			}
 		}
 		return null;
 	}

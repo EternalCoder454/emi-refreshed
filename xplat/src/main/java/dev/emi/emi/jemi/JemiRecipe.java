@@ -15,6 +15,7 @@ import dev.emi.emi.jemi.impl.JemiIngredientAcceptor;
 import dev.emi.emi.jemi.impl.JemiRecipeLayoutBuilder;
 import dev.emi.emi.jemi.impl.JemiRecipeSlot;
 import dev.emi.emi.jemi.impl.JemiRecipeSlotBuilder;
+import dev.emi.emi.jemi.impl.JemiRecipeSlotsView;
 import dev.emi.emi.jemi.impl.JemiTooltipBuilder;
 import dev.emi.emi.jemi.impl.extras.JemiRecipeExtrasBuilder;
 import dev.emi.emi.jemi.impl.extras.JemiWidgetBuilder;
@@ -26,6 +27,7 @@ import dev.emi.emi.screen.EmiScreenManager;
 import mezz.jei.api.gui.IRecipeLayoutDrawable;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.inputs.IJeiUserInput;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.IRecipeCategory;
@@ -48,6 +50,7 @@ public class JemiRecipe<T> implements EmiRecipe {
 	public IRecipeCategory<T> category;
 	public T recipe;
 	public boolean allowTree = true;
+	public IRecipeSlotsView cachedSlotsView;
 
 	public JemiRecipe(EmiRecipeCategory recipeCategory, IRecipeCategory<T> category, T recipe) {
 		this.recipeCategory = recipeCategory;
@@ -62,6 +65,7 @@ public class JemiRecipe<T> implements EmiRecipe {
 		for (JemiRecipeSlotBuilder jrsb : builder.slots) {
 			jrsb.acceptor.coerceStacks(jrsb.richTooltipCallback, jrsb.renderers);
 		}
+		this.cachedSlotsView = new JemiRecipeSlotsView(builder.slots.stream().map(JemiRecipeSlot::new).toList());
 		for (JemiIngredientAcceptor acceptor : builder.ingredients) {
 			EmiIngredient stack = acceptor.build();
 			if (acceptor.role == RecipeIngredientRole.INPUT) {

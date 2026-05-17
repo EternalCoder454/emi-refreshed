@@ -35,18 +35,15 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle
 
-      - name: Build Fabric
-        run: ./gradlew :fabric:build
-
-      - name: Build NeoForge
-        run: ./gradlew :neoforge:build
+      - name: Build
+        run: ./gradlew build
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4.4.0
         with:
           name: Artifacts
           path: |
-            xplat/build/libs/*
+            xplat/build/libs/
             fabric/build/libs/
             neoforge/build/libs/ 
 
@@ -68,7 +65,7 @@ jobs:
           curseforge-id: 1544558
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           name: build+${{ github.run_number }}
-          version-type: alpha
+          version-type: beta
           game-versions: 26.1.2
           changelog: ${{ github.event.head_commit.message }}
           loaders: fabric
@@ -81,7 +78,7 @@ jobs:
           curseforge-id: 1544558
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           name: build+${{ github.run_number }}
-          version-type: alpha
+          version-type: beta
           game-versions: 26.1.2
           changelog: ${{ github.event.head_commit.message }}
           loaders: neoforge

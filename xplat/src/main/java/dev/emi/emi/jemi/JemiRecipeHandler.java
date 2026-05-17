@@ -28,6 +28,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.types.IRecipeType;
@@ -192,10 +193,18 @@ public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements Em
 		}
 
 		JemiRecipeLayoutBuilder builder = null;
-		if (rawRecipe != null && recipe instanceof JemiRecipe jr && jr.category != null) {
+		IRecipeCategory<?> category = null;
+		if (recipe instanceof JemiRecipe jr && jr.category != null) {
+			category = jr.category;
+		} else {
+			category = JemiPlugin.getJeiCategory(recipe.getCategory());
+		}
+		if (rawRecipe != null && category != null) {
 			try {
 				builder = new JemiRecipeLayoutBuilder();
-				jr.category.setRecipe(builder, rawRecipe, JemiPlugin.runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup());
+				@SuppressWarnings("unchecked")
+				IRecipeCategory<Object> casted = (IRecipeCategory<Object>) category;
+				casted.setRecipe(builder, rawRecipe, JemiPlugin.runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup());
 				for (var jrsb : builder.slots) {
 					jrsb.acceptor.coerceStacks(jrsb.richTooltipCallback, jrsb.renderers);
 				}
@@ -203,10 +212,6 @@ public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements Em
 				EmiLog.error("Error building JEI slots view from category", e);
 				builder = null;
 			}
-		}
-
-		if (builder == null && type != null && !(recipe instanceof JemiRecipe)) {
-			return null;
 		}
 
 		if (builder == null) {

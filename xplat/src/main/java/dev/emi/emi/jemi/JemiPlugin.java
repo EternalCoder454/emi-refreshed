@@ -412,6 +412,10 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 		}
 	}
 
+	public static IRecipeCategory<?> getJeiCategory(EmiRecipeCategory emiCategory) {
+		return CATEGORY_MAP.getOrDefault(emiCategory, null);
+	}
+
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	private static EmiRecipeHandler<?> getRecipeHandler(AbstractContainerMenu handler, EmiRecipe recipe) {
 		IRecipeCategory<?> category = CATEGORY_MAP.getOrDefault(recipe.getCategory(), null);

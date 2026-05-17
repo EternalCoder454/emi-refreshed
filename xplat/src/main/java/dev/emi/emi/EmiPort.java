@@ -1,10 +1,11 @@
 package dev.emi.emi;
 
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Random;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
+import dev.emi.emi.api.stack.Comparison;
+import dev.emi.emi.mixin.accessor.SmithingTransformRecipeAccessor;
+import dev.emi.emi.platform.EmiAgnos;
+import dev.emi.emi.registry.EmiRecipes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -28,11 +29,18 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.item.ItemStackTemplate;
-import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeMap;
+import net.minecraft.world.item.crafting.SingleItemRecipe;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.TallFlowerBlock;
@@ -40,12 +48,11 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.material.Fluid;
 import org.jetbrains.annotations.Nullable;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import dev.emi.emi.api.stack.Comparison;
-import dev.emi.emi.mixin.accessor.SmithingTransformRecipeAccessor;
-import dev.emi.emi.platform.EmiAgnos;
-import dev.emi.emi.registry.EmiRecipes;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Random;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public final class EmiPort {
 	private static final net.minecraft.util.RandomSource RANDOM = net.minecraft.util.RandomSource.create();

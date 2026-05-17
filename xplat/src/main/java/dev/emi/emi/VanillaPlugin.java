@@ -423,8 +423,6 @@ public class VanillaPlugin implements EmiPlugin {
 			addRecipeSafe(registry, () -> new EmiCookingRecipe(recipe, CAMPFIRE_COOKING, 1, true), recipe);
 		}
 		for (SmithingRecipe recipe : getRecipes(registry, RecipeType.SMITHING)) {
-			//addRecipeSafe(registry, () -> new EmiSmithingRecipe(recipe), recipe);
-			Minecraft client = Minecraft.getInstance();
 			if (recipe instanceof SmithingTransformRecipe str) {
 				addRecipeSafe(registry, () -> new EmiSmithingRecipe(
 					str.templateIngredient().map(EmiIngredient::of).orElse(EmiStack.EMPTY),
@@ -437,6 +435,12 @@ public class VanillaPlugin implements EmiPlugin {
 					EmiIngredient.of(str.baseIngredient()),
 					str.additionIngredient().map(EmiIngredient::of).orElse(EmiStack.EMPTY),
 					EmiStack.of(EmiPort.getOutput(recipe)), recipe), recipe);
+			} else {
+				addRecipeSafe(registry, () -> new EmiSmithingRecipe(
+					recipe.templateIngredient().map(EmiIngredient::of).orElse(EmiStack.EMPTY),
+					EmiIngredient.of(recipe.baseIngredient()),
+					recipe.additionIngredient().map(EmiIngredient::of).orElse(EmiStack.EMPTY),
+					EmiStack.of(EmiPort.getOutput(recipe)), EmiPort.getId(recipe)), recipe);
 			}
 		}
 		for (StonecutterRecipe recipe : getRecipes(registry, RecipeType.STONECUTTING)) {

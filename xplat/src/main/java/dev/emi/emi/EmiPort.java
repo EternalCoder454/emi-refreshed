@@ -39,6 +39,8 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.SingleItemRecipe;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.SmithingRecipe;
+import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -167,6 +169,19 @@ public final class EmiPort {
 		} else if (recipe instanceof SmithingTransformRecipe smithing) {
 			ItemStackTemplate result = ((SmithingTransformRecipeAccessor) smithing).getResult();
 			return result.create();
+		} else if (recipe instanceof SmithingRecipe smithing) {
+			try {
+				ItemStack templateStack = smithing.templateIngredient()
+					.flatMap(i -> i.items().findFirst().map(h -> new ItemStack(h.value())))
+					.orElse(ItemStack.EMPTY);
+				ItemStack baseStack = smithing.baseIngredient()
+					.items().findFirst().map(h -> new ItemStack(h.value())).orElse(ItemStack.EMPTY);
+				ItemStack additionStack = smithing.additionIngredient()
+					.flatMap(i -> i.items().findFirst().map(h -> new ItemStack(h.value())))
+					.orElse(ItemStack.EMPTY);
+				ItemStack result = smithing.assemble(new SmithingRecipeInput(templateStack, baseStack, additionStack));
+				if (!result.isEmpty()) return result;
+			} catch (Exception e) {}
 		}
 		for (var display : recipe.display()) {
 			ItemStack stack = display.result().resolveForFirstStack(SlotDisplayContext.fromLevel(Minecraft.getInstance().level));

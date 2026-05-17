@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import dev.emi.emi.EmiPort;
 import dev.emi.emi.api.recipe.EmiCraftingRecipe;
 import dev.emi.emi.api.recipe.EmiPlayerInventory;
 import dev.emi.emi.api.recipe.EmiRecipe;
@@ -18,13 +19,13 @@ import dev.emi.emi.api.widget.SlotWidget;
 import dev.emi.emi.api.widget.Widget;
 import dev.emi.emi.jemi.impl.JemiRecipeLayoutBuilder;
 import dev.emi.emi.jemi.impl.JemiRecipeSlot;
+import dev.emi.emi.jemi.impl.JemiRecipeSlotBuilder;
 import dev.emi.emi.jemi.impl.JemiRecipeSlotsView;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiLog;
 import dev.emi.emi.screen.EmiScreenManager;
 import mezz.jei.api.constants.ModIds;
 import mezz.jei.api.gui.builder.IIngredientAcceptor;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.RecipeIngredientRole;
@@ -35,16 +36,12 @@ import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
 
 public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements EmiRecipeHandler<T> {
 	private static final Identifier UNIVERSAL_RECIPE_TRANSFER_ID = Identifier.fromNamespaceAndPath(ModIds.JEI_ID, "universal_recipe_transfer_handler");
@@ -175,7 +172,7 @@ public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements Em
 			} else if (isUniversal) {
 				recipeArg = (R) (Object) recipe;
 			} else {
-				recipeArg = (R) recipe;
+				return () -> IRecipeTransferError.Type.INTERNAL;
 			}
 
 			return handler.transferRecipe(context.getScreenHandler(), recipeArg, view, client.player, context.getAmount() > 1, craft);
@@ -205,7 +202,7 @@ public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements Em
 				@SuppressWarnings("unchecked")
 				IRecipeCategory<Object> casted = (IRecipeCategory<Object>) category;
 				casted.setRecipe(builder, rawRecipe, JemiPlugin.runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup());
-				for (var jrsb : builder.slots) {
+				for (JemiRecipeSlotBuilder jrsb : builder.slots) {
 					jrsb.acceptor.coerceStacks(jrsb.richTooltipCallback, jrsb.renderers);
 				}
 			} catch (Exception e) {
@@ -271,30 +268,13 @@ public class JemiRecipeHandler<T extends AbstractContainerMenu, R> implements Em
 				return (R) jr.recipe;
 			}
 		}
-		try {
-			Minecraft client = Minecraft.getInstance();
-			if (client.level != null && client.level.recipeAccess() instanceof RecipeManager manager) {
-				if (type != null && type.getRecipeClass() != null) {
-					if (recipe.getId() != null) {
-						ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, recipe.getId());
-						Optional<? extends RecipeHolder<?>> opt = manager.byKey(key);
-						if (opt.isPresent()) {
-							RecipeHolder<?> r = opt.get();
-							if (type.getRecipeClass().isAssignableFrom(r.getClass())) {
-								return type.getRecipeClass().cast(r);
-							}
-						}
-					}
-				}
-				if (recipe.getId() != null) {
-					ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, recipe.getId());
-					Optional<? extends RecipeHolder<?>> opt = manager.byKey(key);
-					if (opt.isPresent()) {
-						return (R) opt.get();
-					}
+		if (recipe.getId() != null) {
+			RecipeHolder<?> holder = EmiPort.getRecipe(recipe.getId());
+			if (holder != null) {
+				if (type == null || type.getRecipeClass() == null || type.getRecipeClass().isAssignableFrom(holder.getClass())) {
+					return (R) holder;
 				}
 			}
-		} catch (Exception e) {
 		}
 		return null;
 	}

@@ -68,6 +68,7 @@ jobs:
           curseforge-id: 1544558
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           name: build+${{ github.run_number }}
+          version-type: alpha
           game-versions: 26.1.2
           changelog: ${{ github.event.head_commit.message }}
           loaders: fabric
@@ -80,6 +81,7 @@ jobs:
           curseforge-id: 1544558
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           name: build+${{ github.run_number }}
+          version-type: alpha
           game-versions: 26.1.2
           changelog: ${{ github.event.head_commit.message }}
           loaders: neoforge

@@ -38,8 +38,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class JemiRecipe<T> implements EmiRecipe {
 	public List<EmiIngredient> inputs = Lists.newArrayList();
@@ -51,6 +53,7 @@ public class JemiRecipe<T> implements EmiRecipe {
 	public T recipe;
 	public boolean allowTree = true;
 	public IRecipeSlotsView cachedSlotsView;
+	public Set<String> catalystSlotNames;
 
 	public JemiRecipe(EmiRecipeCategory recipeCategory, IRecipeCategory<T> category, T recipe) {
 		this.recipeCategory = recipeCategory;
@@ -66,13 +69,26 @@ public class JemiRecipe<T> implements EmiRecipe {
 			jrsb.acceptor.coerceStacks(jrsb.richTooltipCallback, jrsb.renderers);
 		}
 		this.cachedSlotsView = new JemiRecipeSlotsView(builder.slots.stream().map(JemiRecipeSlot::new).toList());
+		catalystSlotNames = JemiCatalystDetector.detectCatalystSlotNames(recipe);
+		Set<JemiIngredientAcceptor> catalystAcceptors = new HashSet<>();
+		if (!catalystSlotNames.isEmpty()) {
+			for (JemiRecipeSlotBuilder slot : builder.slots) {
+				if (catalystSlotNames.contains(slot.name.orElse(""))) {
+					catalystAcceptors.add(slot.acceptor);
+				}
+			}
+		}
 		for (JemiIngredientAcceptor acceptor : builder.ingredients) {
 			EmiIngredient stack = acceptor.build();
-			if (acceptor.role == RecipeIngredientRole.INPUT) {
+			RecipeIngredientRole effectiveRole = acceptor.role;
+			if (catalystAcceptors.contains(acceptor)) {
+				effectiveRole = RecipeIngredientRole.RENDER_ONLY;
+			}
+			if (effectiveRole == RecipeIngredientRole.INPUT) {
 				inputs.add(stack);
-			} else if (acceptor.role == RecipeIngredientRole.RENDER_ONLY) {
+			} else if (effectiveRole == RecipeIngredientRole.RENDER_ONLY) {
 				catalysts.add(stack);
-			} else if (acceptor.role == RecipeIngredientRole.OUTPUT) {
+			} else if (effectiveRole == RecipeIngredientRole.OUTPUT) {
 				if (stack.getEmiStacks().size() > 1) {
 					allowTree = false;
 				}
@@ -139,10 +155,15 @@ public class JemiRecipe<T> implements EmiRecipe {
 			widgets.add(new JemiWidget(0, 0, getDisplayWidth(), getDisplayHeight(), opt.get()));
 			for (JemiRecipeSlotBuilder sb : builder.slots) {
 				JemiRecipeSlot slot = new JemiRecipeSlot(sb);
+				boolean isCatalyst = catalystSlotNames.contains(slot.name.orElse(""));
 				if (slot.tankInfo != null && !slot.getIngredients(JemiUtil.getFluidType()).toList().isEmpty()) {
-					widgets.add(new JemiTankWidget(slot, this));
+					JemiTankWidget widget = new JemiTankWidget(slot, this);
+					if (isCatalyst) widget.catalyst(true);
+					widgets.add(widget);
 				} else {
-					widgets.add(new JemiSlotWidget(slot, this));
+					JemiSlotWidget widget = new JemiSlotWidget(slot, this);
+					if (isCatalyst) widget.catalyst(true);
+					widgets.add(widget);
 				}
 			}
 		}

@@ -418,7 +418,7 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	private static EmiRecipeHandler<?> getRecipeHandler(AbstractContainerMenu handler, EmiRecipe recipe) {
-		IRecipeCategory<?> category = CATEGORY_MAP.getOrDefault(recipe.getCategory(), null);
+		IRecipeCategory<?> category = getJeiCategory(recipe.getCategory());
 		if (category != null) {
 			Optional<? extends IRecipeTransferHandler<?, ?>> opt = runtime.getRecipeTransferManager().getRecipeTransferHandler(handler, category);
 			if (opt.isPresent()) {

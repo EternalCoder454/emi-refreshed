@@ -49,7 +49,7 @@ public interface EmiRegistry {
 	boolean isStackDisabled(EmiIngredient stack);
 
 	/**
-	 * @return The recipe map, for iterating recipe types.
+	 * @return The vanilla recipe map, for iterating recipe types.
 	 */
 	RecipeMap getRecipeMap();
 	

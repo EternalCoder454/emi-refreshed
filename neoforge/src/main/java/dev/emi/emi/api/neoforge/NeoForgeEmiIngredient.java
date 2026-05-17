@@ -1,8 +1,9 @@
 package dev.emi.emi.api.neoforge;
 
 import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
+import net.minecraft.core.Holder;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
@@ -13,7 +14,7 @@ public final class NeoForgeEmiIngredient {
     }
 
     public static EmiIngredient of(FluidIngredient ingredient) {
-        return EmiIngredient.of(ingredient.fluids().stream().map(h -> NeoForgeEmiStack.of(new FluidStack(h, 1000))).toList());
+        return EmiIngredient.of(ingredient.fluids().stream().map(Holder::value).map(EmiStack::of).toList());
     }
 
     public static EmiIngredient of(SizedFluidIngredient ingredient) {

@@ -3,7 +3,6 @@ package dev.emi.emi.api;
 import dev.emi.emi.api.stack.EmiStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.minecraft.core.component.DataComponentPatch;
 
 public final class FabricEmiStack {
 
@@ -16,10 +15,10 @@ public final class FabricEmiStack {
 	}
 	
 	public static EmiStack of(FluidVariant variant) {
-		return EmiStack.of(variant.getFluid(), DataComponentPatch.EMPTY);
+		return EmiStack.of(variant.getFluid(), variant.getComponentsPatch());
 	}
 	
 	public static EmiStack of(FluidVariant variant, long amount) {
-		return EmiStack.of(variant.getFluid(), DataComponentPatch.EMPTY, amount);
+		return EmiStack.of(variant.getFluid(), variant.getComponentsPatch(), amount);
 	}
 }

@@ -21,13 +21,6 @@ public abstract class HandledScreenMixin extends Screen {
 
 	private HandledScreenMixin() { super(null, null, null); }
 
-	@Inject(at = @At("HEAD"),
-			method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V")
-	private void renderBackground(GuiGraphicsExtractor raw, int mouseX, int mouseY, float delta, CallbackInfo info) {
-		EmiDrawContext context = EmiDrawContext.wrap(raw);
-		EmiScreenManager.drawBackground(context, mouseX, mouseY, delta);
-	}
-
 	@Inject(at = @At(value = "INVOKE",
 			target = "net/minecraft/client/gui/screens/inventory/AbstractContainerScreen.extractLabels(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V",
 			shift = Shift.AFTER),

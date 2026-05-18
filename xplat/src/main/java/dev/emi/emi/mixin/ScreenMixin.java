@@ -39,4 +39,11 @@ public class ScreenMixin {
 			context.flushDeferredTooltips();
 		}
 	}
+	@Inject(at = @At("RETURN"), method = "extractBackground(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V")
+	private void renderBackground(GuiGraphicsExtractor raw, int mouseX, int mouseY, float delta, CallbackInfo info) {
+		if ((Object) this instanceof AbstractContainerScreen && !EmiAgnos.isForge()){
+			EmiDrawContext context = EmiDrawContext.wrap(raw);
+			EmiScreenManager.drawBackground(context, mouseX, mouseY, delta);
+		}
+	}
 }

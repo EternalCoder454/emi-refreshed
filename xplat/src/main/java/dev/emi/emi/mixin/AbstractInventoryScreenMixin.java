@@ -2,8 +2,9 @@ package dev.emi.emi.mixin;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.EffectsInInventory;
@@ -17,6 +18,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -24,10 +26,10 @@ import com.google.common.collect.Ordering;
 
 import dev.emi.emi.config.EffectLocation;
 import dev.emi.emi.config.EmiConfig;
-import dev.emi.emi.mixin.accessor.EffectsInInventoryInvoker;
 import dev.emi.emi.mixin.accessor.HandledScreenAccessor;
 import dev.emi.emi.platform.EmiAgnos;
 import dev.emi.emi.runtime.EmiDrawContext;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(EffectsInInventory.class)
 public abstract class AbstractInventoryScreenMixin {
@@ -45,14 +47,30 @@ public abstract class AbstractInventoryScreenMixin {
 		throw new UnsupportedOperationException();
 	}
 
-	@Inject(at = @At("HEAD"), method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V", cancellable = true)
-	private void drawStatusEffects(GuiGraphicsExtractor draw, int mouseX, int mouseY, CallbackInfo info) {
+	@Shadow
+	private int extractBackground(final GuiGraphicsExtractor graphics, final Font font, final Component effectName, final Component duration, final int x0, final int y0, final boolean isAmbient, final int maxTextureWidth) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Shadow
+	private void extractText(final GuiGraphicsExtractor graphics, final Component effectText, final Component duration, final Font font, final int x0, final int y0, final int textureWidth, final int yStep, final int mouseX, final int mouseY) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Inject(at = @At("HEAD"), method = "extractEffects")
+	private void drawStatusEffects(final GuiGraphicsExtractor graphics, final Collection<MobEffectInstance> activeEffects, final int x0, final int yStep, final int mouseX, final int mouseY, final int maxWidth, CallbackInfo ci) {
 		if (EmiConfig.effectLocation == EffectLocation.TOP) {
-			emi$drawCenteredEffects(draw, mouseX, mouseY);
-			info.cancel();
-		} else if (EmiConfig.effectLocation == EffectLocation.HIDDEN) {
-			info.cancel();
+			emi$drawCenteredEffects(graphics, mouseX, mouseY);
 		}
+	}
+
+	@ModifyVariable(at = @At(value = "INVOKE", target = "java/util/Collection.size()I", ordinal = 0),
+			method = "extractRenderState", name = "activeEffects")
+	private Collection<MobEffectInstance> drawStatusEffects(Collection<MobEffectInstance> original) {
+		if (EmiConfig.effectLocation == EffectLocation.HIDDEN) {
+			return List.of();
+		}
+		return original;
 	}
 
 	private void emi$drawCenteredEffects(GuiGraphicsExtractor raw, int mouseX, int mouseY) {
@@ -87,9 +105,9 @@ public abstract class AbstractInventoryScreenMixin {
 			for (MobEffectInstance inst : effects) {
 				int ew = wide ? 120 : 32;
 				List<MobEffectInstance> single = List.of(inst);
-				((EffectsInInventoryInvoker) (Object) this).emi$invokeRenderBackground(context.raw(), this.screen.getFont(), this.getEffectName(inst), MobEffectUtil.formatDuration(inst, 1.0f, minecraft.level.tickRateManager().tickrate()), x, 32, inst.isAmbient(), ew);
-				((EffectsInInventoryInvoker) (Object) this).emi$invokeRenderText(context.raw(), this.getEffectName(inst), MobEffectUtil.formatDuration(inst, 1.0f, minecraft.level.tickRateManager().tickrate()), this.screen.getFont(), x, 32, ew, 33, mouseX, mouseY);
-				context.raw().blitSprite(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, net.minecraft.client.gui.Gui.getMobEffectSprite(inst.getEffect()), x + 7, 32 + 7, 18, 18);
+				this.extractBackground(context.raw(), this.screen.getFont(), this.getEffectName(inst), MobEffectUtil.formatDuration(inst, 1.0f, minecraft.level.tickRateManager().tickrate()), x, y, inst.isAmbient(), ew);
+				this.extractText(context.raw(), this.getEffectName(inst), MobEffectUtil.formatDuration(inst, 1.0f, minecraft.level.tickRateManager().tickrate()), this.screen.getFont(), x, y, ew, 33, mouseX, mouseY);
+				context.raw().blitSprite(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, net.minecraft.client.gui.Gui.getMobEffectSprite(inst.getEffect()), x + 7, y + 7, 18, 18);
 				if (mouseX >= x && mouseX < x + ew && mouseY >= y && mouseY < y + 32) {
 					hovered = inst;
 				}
@@ -105,6 +123,28 @@ public abstract class AbstractInventoryScreenMixin {
 					.map(ClientTooltipComponent::create)
 					.toList();
 			context.deferTooltip(() -> context.raw().tooltip(minecraft.font, components, mouseX, Math.max(mouseY, 16), DefaultTooltipPositioner.INSTANCE, null));
+		}
+	}
+
+	@ModifyArgs(
+			method = "extractRenderState",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/EffectsInInventory;extractEffects(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Ljava/util/Collection;IIIII)V")
+	)
+	private void adaptEmiEffectLayout(Args args) {
+		int originalXo = args.get(2);
+		if (EmiConfig.effectLocation == EffectLocation.TOP) {
+			args.set(1, List.of());
+		}
+		int newXo = switch (EmiConfig.effectLocation) {
+			case RIGHT, RIGHT_COMPRESSED, HIDDEN -> originalXo;
+			case TOP -> ((HandledScreenAccessor) this.screen).getX();
+			case LEFT_COMPRESSED -> ((HandledScreenAccessor) this.screen).getX() - 2 - 32;
+			case LEFT -> ((HandledScreenAccessor) this.screen).getX() - 2 - 120;
+		};
+		args.set(2, newXo);
+
+		if (EmiConfig.effectLocation.compressed) {
+			args.set(6, 32);
 		}
 	}
 }

@@ -108,9 +108,7 @@ public final class EmiPort {
 	}
 
 	public static BannerPatternLayers addRandomBanner(BannerPatternLayers patterns, Random random) {
-		var bannerRegistry = Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN);
-		return new BannerPatternLayers.Builder().addAll(patterns).add(bannerRegistry.get(random.nextInt(bannerRegistry.size())).orElseThrow(),
-			DyeColor.values()[random.nextInt(DyeColor.values().length)]).build();
+		return EmiPortClient.addRandomBanner(patterns, random);
 	}
 
 	public static boolean canTallFlowerDuplicate(TallFlowerBlock tallFlowerBlock) {
@@ -147,8 +145,7 @@ public final class EmiPort {
 	}
 
 	public static Registry<Enchantment> getEnchantmentRegistry() {
-		Minecraft client = Minecraft.getInstance();
-		return client.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+		return EmiPortClient.getEnchantmentRegistry();
 	}
 
 	public static Button newButton(int x, int y, int w, int h, Component name, OnPress action) {
@@ -156,57 +153,15 @@ public final class EmiPort {
 	}
 
 	public static ItemStack getOutput(Recipe<?> recipe) {
-		if (recipe instanceof CraftingRecipe crafting) {
-			try {
-				ItemStack stack = crafting.assemble(CraftingInput.EMPTY);
-				if (!stack.isEmpty()) {
-					return stack;
-				}
-			} catch (Exception e) {
-			}
-		} else if (recipe instanceof SingleItemRecipe single) {
-			return single.assemble(new SingleRecipeInput(ItemStack.EMPTY));
-		} else if (recipe instanceof SmithingTransformRecipe smithing) {
-			ItemStackTemplate result = ((SmithingTransformRecipeAccessor) smithing).getResult();
-			return result.create();
-		} else if (recipe instanceof SmithingRecipe smithing) {
-			try {
-				ItemStack templateStack = smithing.templateIngredient()
-					.flatMap(i -> i.items().findFirst().map(h -> new ItemStack(h.value())))
-					.orElse(ItemStack.EMPTY);
-				ItemStack baseStack = smithing.baseIngredient()
-					.items().findFirst().map(h -> new ItemStack(h.value())).orElse(ItemStack.EMPTY);
-				ItemStack additionStack = smithing.additionIngredient()
-					.flatMap(i -> i.items().findFirst().map(h -> new ItemStack(h.value())))
-					.orElse(ItemStack.EMPTY);
-				ItemStack result = smithing.assemble(new SmithingRecipeInput(templateStack, baseStack, additionStack));
-				if (!result.isEmpty()) return result;
-			} catch (Exception e) {}
-		}
-		for (var display : recipe.display()) {
-			ItemStack stack = display.result().resolveForFirstStack(SlotDisplayContext.fromLevel(Minecraft.getInstance().level));
-			if (!stack.isEmpty()) {
-				return stack;
-			}
-		}
-		return ItemStack.EMPTY;
+		return EmiPortClient.getOutput(recipe);
 	}
 
 	public static void focus(EditBox widget, boolean focused) {
-		Minecraft client = Minecraft.getInstance();
-		if (client != null && client.screen != null) {
-			var currentFocus = client.screen.getFocused();
-			if (!focused && currentFocus == widget || focused && currentFocus != widget) {
-				client.screen.setFocused(null);
-			}
-		}
-		widget.setFocused(focused);
+		EmiPortClient.focus(widget, focused);
 	}
 
 	public static Stream<Item> getDisabledItems() {
-		Minecraft client = Minecraft.getInstance();
-		FeatureFlagSet fs = client.level.enabledFeatures();
-		return getItemRegistry().stream().filter(i -> !i.isEnabled(fs));
+		return EmiPortClient.getDisabledItems();
 	}
 
 	public static Identifier getId(Recipe<?> recipe) {

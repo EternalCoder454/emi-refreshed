@@ -726,6 +726,7 @@ public class EmiScreenManager {
 				}
 			}
 			context.push();
+			context.raw().nextStratum();
 			EmiDragDropHandlers.render(base.screen(), draggedStack, context.raw(), mouseX, mouseY, delta);
 			draggedStack.render(context.raw(), mouseX - 8, mouseY - 8, delta, EmiIngredient.RENDER_ICON);
 			context.pop();

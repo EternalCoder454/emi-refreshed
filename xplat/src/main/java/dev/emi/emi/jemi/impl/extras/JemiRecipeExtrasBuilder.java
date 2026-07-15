@@ -24,6 +24,7 @@ public class JemiRecipeExtrasBuilder implements IRecipeExtrasBuilder {
 	public List<IJeiInputHandler> inputHandlers = Lists.newArrayList();
 	public List<IJeiGuiEventListener> eventListeners = Lists.newArrayList();
 	public List<JemiWidgetBuilder> widgets = Lists.newArrayList();
+	public List<JemiScrollGridWidget> scrollGrids = Lists.newArrayList();
 
 	public JemiRecipeExtrasBuilder(IRecipeSlotDrawablesView slots) {
 		this.slots = slots;
@@ -81,7 +82,9 @@ public class JemiRecipeExtrasBuilder implements IRecipeExtrasBuilder {
 
 	@Override
 	public IScrollGridWidget addScrollGridWidget(List<IRecipeSlotDrawable> slots, int columns, int visibleRows) {
-		return new JemiScrollGridWidget(slots, 0, 0, columns, visibleRows);
+		JemiScrollGridWidget grid = new JemiScrollGridWidget(slots, 0, 0, columns, visibleRows);
+		scrollGrids.add(grid);
+		return grid;
 	}
 
 	@Override

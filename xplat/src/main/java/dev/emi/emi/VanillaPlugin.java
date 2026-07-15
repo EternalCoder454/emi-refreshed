@@ -55,9 +55,11 @@ import net.minecraft.world.item.crafting.BookCloningRecipe;
 import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.world.item.crafting.DecoratedPotRecipe;
 import net.minecraft.world.item.crafting.FireworkRocketRecipe;
 import net.minecraft.world.item.crafting.FireworkStarFadeRecipe;
 import net.minecraft.world.item.crafting.FireworkStarRecipe;
+import net.minecraft.world.item.crafting.ImbueRecipe;
 import net.minecraft.world.item.crafting.MapExtendingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.DyeRecipe;
@@ -75,6 +77,7 @@ import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.world.item.crafting.TransmuteRecipe;
 import net.minecraft.world.item.enchantment.Repairable;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.ItemLike;
@@ -120,6 +123,7 @@ import dev.emi.emi.handler.CraftingRecipeHandler;
 import dev.emi.emi.handler.InventoryRecipeHandler;
 import dev.emi.emi.handler.StonecuttingRecipeHandler;
 import dev.emi.emi.mixin.accessor.AxeItemAccessor;
+import dev.emi.emi.mixin.accessor.DecoratedPotRecipeAccessor;
 import dev.emi.emi.mixin.accessor.HandledScreenAccessor;
 import dev.emi.emi.mixin.accessor.HoeItemAccessor;
 import dev.emi.emi.mixin.accessor.ShovelItemAccessor;
@@ -381,6 +385,23 @@ public class VanillaPlugin implements EmiPlugin {
 						}
 					}
 				}
+			} else if (recipe instanceof DecoratedPotRecipe pot) {
+				DecoratedPotRecipeAccessor acc = (DecoratedPotRecipeAccessor) pot;
+				addRecipeSafe(registry, () -> new EmiCraftingRecipe(List.of(
+					EmiStack.EMPTY, EmiIngredient.of(acc.getBackPattern()), EmiStack.EMPTY,
+					EmiIngredient.of(acc.getLeftPattern()), EmiStack.EMPTY, EmiIngredient.of(acc.getRightPattern()),
+					EmiStack.EMPTY, EmiIngredient.of(acc.getFrontPattern()), EmiStack.EMPTY
+				), EmiStack.of(acc.getResult().create()), id, false), recipe);
+			} else if (recipe instanceof ImbueRecipe imbue) {
+				List<Ingredient> ingredients = imbue.placementInfo().ingredients();
+				List<EmiIngredient> input = ingredients.stream().map(EmiIngredient::of).toList();
+				EmiShapedRecipe.setRemainders(input, imbue);
+				addRecipeSafe(registry, () -> new EmiCraftingRecipe(input, EmiStack.of(EmiPort.getOutput(imbue)), id, false), recipe);
+			} else if (recipe instanceof TransmuteRecipe transmute) {
+				List<Ingredient> ingredients = transmute.placementInfo().ingredients();
+				List<EmiIngredient> input = ingredients.stream().map(EmiIngredient::of).toList();
+				EmiShapedRecipe.setRemainders(input, transmute);
+				addRecipeSafe(registry, () -> new EmiCraftingRecipe(input, EmiStack.of(EmiPort.getOutput(transmute)), id, true), recipe);
 			} else if (!(recipe instanceof CustomRecipe)) {
 				try {
 					List<Ingredient> ingredients = recipe.placementInfo().ingredients();

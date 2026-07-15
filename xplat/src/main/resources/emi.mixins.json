@@ -9,6 +9,7 @@
     "accessor.AbstractRecipeBookScreenAccessor",
     "accessor.BrewingRecipeRegistryAccessor",
     "accessor.CraftingResultSlotAccessor",
+    "accessor.DecoratedPotRecipeAccessor",
     "accessor.GuiGraphicsAccessor",
     "accessor.HandledScreenAccessor",
     "accessor.HoeItemAccessor",

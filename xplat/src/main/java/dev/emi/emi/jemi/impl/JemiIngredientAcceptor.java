@@ -25,6 +25,7 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
@@ -32,6 +33,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 
 public class JemiIngredientAcceptor implements IIngredientAcceptor<JemiIngredientAcceptor> {
@@ -89,10 +91,22 @@ public class JemiIngredientAcceptor implements IIngredientAcceptor<JemiIngredien
 	}
 
 	@Override
+	public ContextMap getContextMap() {
+		Minecraft mc = Minecraft.getInstance();
+		Level level = mc.level;
+		// SlotDisplayContext.fromLevel dereferences the level, so fall back to an
+		// empty context (all keys in SlotDisplayContext.CONTEXT are optional) when
+		// no world is loaded yet.
+		return level != null
+			? SlotDisplayContext.fromLevel(level)
+			: new ContextMap.Builder().create(SlotDisplayContext.CONTEXT);
+	}
+
+	@Override
 	public JemiIngredientAcceptor add(SlotDisplay display) {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.level != null) {
-			for (ItemStack stack : display.resolveForStacks(SlotDisplayContext.fromLevel(mc.level))) {
+			for (ItemStack stack : display.resolveForStacks(getContextMap())) {
 				addStack(EmiStack.of(stack));
 			}
 		}

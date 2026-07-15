@@ -147,6 +147,11 @@ public class JemiRecipeSlot implements IRecipeSlotDrawable {
 	}
 
 	@Override
+	public void draw(GuiGraphicsExtractor raw, boolean highlight) {
+		// EMI renders slot contents via JemiSlotWidget; nothing to do here.
+	}
+
+	@Override
 	public void drawHoverOverlays(GuiGraphicsExtractor raw) {
 		// No-op
 	}

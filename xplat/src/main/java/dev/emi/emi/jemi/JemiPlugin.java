@@ -22,6 +22,7 @@ import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.recipe.VanillaEmiRecipeCategories;
 import dev.emi.emi.api.recipe.handler.EmiRecipeHandler;
+import dev.emi.emi.api.render.EmiTexture;
 import dev.emi.emi.api.stack.Comparison;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
@@ -29,6 +30,8 @@ import dev.emi.emi.api.stack.EmiStackInteraction;
 import dev.emi.emi.api.widget.Bounds;
 import dev.emi.emi.api.widget.GeneratedSlotWidget;
 import dev.emi.emi.api.widget.SlotWidget;
+import dev.emi.emi.api.widget.WidgetHolder;
+import dev.emi.emi.recipe.EmiSmithingRecipe;
 import dev.emi.emi.jemi.impl.JemiIngredientAcceptor;
 import dev.emi.emi.jemi.impl.JemiRecipeLayoutBuilder;
 import dev.emi.emi.jemi.runtime.JemiBookmarkOverlay;
@@ -75,6 +78,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SmithingRecipe;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
+import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import net.minecraft.world.level.material.Fluid;
 
 @JeiPlugin
@@ -224,6 +230,8 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 						addInfoRecipes(registry, (IRecipeCategory<IJeiIngredientInfoRecipe>) c);
 					} else if (type == RecipeTypes.CRAFTING) {
 						addCraftingRecipes(registry, (IRecipeCategory<RecipeHolder<CraftingRecipe>>) c);
+					} else if (type == RecipeTypes.SMITHING) {
+						addSmithingRecipes(registry, (IRecipeCategory<RecipeHolder<SmithingRecipe>>) c);
 					}
 					continue;
 				}
@@ -361,6 +369,74 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 			}
 		}
 		registry.removeRecipes(r -> r instanceof EmiCraftingRecipe && replaced.contains(r.getId()) && !replacements.contains(r));
+	}
+
+	private void addSmithingRecipes(EmiRegistry registry, IRecipeCategory<RecipeHolder<SmithingRecipe>> category) {
+		Set<Identifier> replaced = Sets.newHashSet();
+		Set<EmiRecipe> replacements = Sets.newHashSet();
+		List<RecipeHolder<SmithingRecipe>> recipes = runtime.getRecipeManager()
+			.createRecipeLookup(category.getRecipeType()).includeHidden().get().toList();
+		for (RecipeHolder<SmithingRecipe> recipe : recipes) {
+			SmithingRecipe value = recipe.value();
+			// VanillaPlugin already handles transform and trim recipes natively.
+			if (value instanceof SmithingTransformRecipe || value instanceof SmithingTrimRecipe) {
+				continue;
+			}
+			try {
+				if (category.isHandled(recipe)) {
+					JemiRecipeLayoutBuilder builder = new JemiRecipeLayoutBuilder();
+					category.setRecipe(builder, recipe, runtime.getJeiHelpers().getFocusFactory().getEmptyFocusGroup());
+					List<EmiIngredient> inputs = Lists.newArrayList();
+					List<EmiStack> outputs = Lists.newArrayList();
+					for (JemiIngredientAcceptor acceptor : builder.ingredients) {
+						EmiIngredient stack = acceptor.build();
+						if (acceptor.role == RecipeIngredientRole.INPUT) {
+							inputs.add(stack);
+						} else if (acceptor.role == RecipeIngredientRole.OUTPUT) {
+							outputs.addAll(stack.getEmiStacks());
+						}
+					}
+					if (inputs.stream().anyMatch(i -> !i.isEmpty()) && outputs.stream().anyMatch(o -> !o.isEmpty())) {
+						EmiIngredient template = inputs.size() > 0 ? inputs.get(0) : EmiStack.EMPTY;
+						EmiIngredient base = inputs.size() > 1 ? inputs.get(1) : EmiStack.EMPTY;
+						EmiIngredient addition = inputs.size() > 2 ? inputs.get(2) : EmiStack.EMPTY;
+						Identifier id = category.getIdentifier(recipe);
+						EmiRecipe replacement;
+						if (outputs.size() > 1) {
+							final List<EmiStack> multiOutputs = outputs;
+							replacement = new EmiSmithingRecipe(template, base, addition, EmiStack.EMPTY, id) {
+								@Override
+								public List<EmiStack> getOutputs() {
+									return multiOutputs;
+								}
+
+								@Override
+								public void addWidgets(WidgetHolder widgets) {
+									widgets.addTexture(EmiTexture.EMPTY_ARROW, 62, 1);
+									widgets.addSlot(template, 0, 0);
+									widgets.addSlot(base, 18, 0);
+									widgets.addSlot(addition, 36, 0);
+									widgets.addGeneratedSlot(
+										r -> multiOutputs.get(r.nextInt(multiOutputs.size())),
+										recipe.hashCode(), 94, 0
+									).recipeContext(this);
+								}
+							};
+						} else {
+							replacement = new EmiSmithingRecipe(template, base, addition, outputs.get(0), id);
+						}
+						if (replacement.getId() != null) {
+							replaced.add(replacement.getId());
+						}
+						replacements.add(replacement);
+						registry.addRecipe(replacement);
+					}
+				}
+			} catch (Throwable t) {
+				EmiLog.error("[JEMI] Exception thrown setting JEI smithing recipe", t);
+			}
+		}
+		registry.removeRecipes(r -> r instanceof EmiSmithingRecipe && replaced.contains(r.getId()) && !replacements.contains(r));
 	}
 
 	@SuppressWarnings({"unchecked"})

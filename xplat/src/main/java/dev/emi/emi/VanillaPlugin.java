@@ -152,6 +152,7 @@ import dev.emi.emi.recipe.special.EmiGrindstoneDisenchantingBookRecipe;
 import dev.emi.emi.recipe.special.EmiGrindstoneDisenchantingRecipe;
 import dev.emi.emi.recipe.special.EmiRepairItemRecipe;
 import dev.emi.emi.recipe.special.EmiSmithingTrimRecipe;
+import dev.emi.emi.recipe.special.EmiTippedArrowRecipe;
 import dev.emi.emi.registry.EmiTags;
 import dev.emi.emi.runtime.EmiDrawContext;
 import dev.emi.emi.runtime.EmiLog;
@@ -393,10 +394,14 @@ public class VanillaPlugin implements EmiPlugin {
 					EmiStack.EMPTY, EmiIngredient.of(acc.getFrontPattern()), EmiStack.EMPTY
 				), EmiStack.of(acc.getResult().create()), id, false), recipe);
 			} else if (recipe instanceof ImbueRecipe imbue) {
-				List<Ingredient> ingredients = imbue.placementInfo().ingredients();
-				List<EmiIngredient> input = ingredients.stream().map(EmiIngredient::of).toList();
-				EmiShapedRecipe.setRemainders(input, imbue);
-				addRecipeSafe(registry, () -> new EmiCraftingRecipe(input, EmiStack.of(EmiPort.getOutput(imbue)), id, false), recipe);
+				if (id.equals(EmiPort.id("minecraft", "tipped_arrow"))) {
+					addRecipeSafe(registry, () -> new EmiTippedArrowRecipe(id), recipe);
+				} else {
+					List<Ingredient> ingredients = imbue.placementInfo().ingredients();
+					List<EmiIngredient> input = ingredients.stream().map(EmiIngredient::of).toList();
+					EmiShapedRecipe.setRemainders(input, imbue);
+					addRecipeSafe(registry, () -> new EmiCraftingRecipe(input, EmiStack.of(EmiPort.getOutput(imbue)), id, false), recipe);
+				}
 			} else if (recipe instanceof TransmuteRecipe transmute) {
 				List<Ingredient> ingredients = transmute.placementInfo().ingredients();
 				List<EmiIngredient> input = ingredients.stream().map(EmiIngredient::of).toList();

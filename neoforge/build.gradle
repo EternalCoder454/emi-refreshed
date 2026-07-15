@@ -93,6 +93,15 @@ dependencies {
 	localRuntime "curse.maven:sophisticated-core-618298:8412279"
 	localRuntime "curse.maven:yeetusexperimentus-635427:7830957"
 	localRuntime "curse.maven:productivebees-377897:8303935"
+	localRuntime "curse.maven:cucumber-272335:8433624"
+	localRuntime "curse.maven:mystical-agriculture-246640:8344253"
+	localRuntime "curse.maven:mystical-automation-1265613:8205860"
+	localRuntime "curse.maven:patchouli-306770:8404543"
+	localRuntime "curse.maven:placebo-283644:8249025"
+	localRuntime "curse.maven:apothic-attributes-898963:8182592"
+	localRuntime "curse.maven:apothic-enchanting-1063926:8171092"
+	localRuntime "curse.maven:apothic-spawners-986583:8171043"
+	localRuntime "curse.maven:apotheosis-313970:8249091"
 }
 
 processResources {

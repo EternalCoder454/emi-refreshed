@@ -374,8 +374,25 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 	private void addSmithingRecipes(EmiRegistry registry, IRecipeCategory<RecipeHolder<SmithingRecipe>> category) {
 		Set<Identifier> replaced = Sets.newHashSet();
 		Set<EmiRecipe> replacements = Sets.newHashSet();
-		List<RecipeHolder<SmithingRecipe>> recipes = runtime.getRecipeManager()
-			.createRecipeLookup(category.getRecipeType()).includeHidden().get().toList();
+		// JEI's recipe manager may be empty in single-player (where
+		// VanillaPlugin.registerRecipes skips addRecipes when
+		// clientSyncedRecipes is empty). Fall back to Minecraft's own
+		// RecipeMap, mirroring addCraftingRecipes, so Apotheosis smithing
+		// recipes (UnnamingRecipe, MaliceRecipe, etc.) are still picked up
+		// and routed through JEI's ISmithingCategoryExtension mechanism.
+		List<RecipeHolder<SmithingRecipe>> recipes = Stream.concat(
+			runtime.getRecipeManager().createRecipeLookup(category.getRecipeType()).includeHidden().get(),
+			registry.getRecipeMap() != null
+				? registry.getRecipeMap().values().stream()
+					.filter(h -> h.value() instanceof SmithingRecipe)
+					.map(h -> {
+						@SuppressWarnings("unchecked")
+						RecipeHolder<SmithingRecipe> holder = (RecipeHolder<SmithingRecipe>) (RecipeHolder<?>) h;
+						return holder;
+					})
+				: Stream.<RecipeHolder<SmithingRecipe>>empty()
+		).distinct().toList();
+		EmiLog.info("[JEMI] Processing " + recipes.size() + " smithing recipes");
 		for (RecipeHolder<SmithingRecipe> recipe : recipes) {
 			SmithingRecipe value = recipe.value();
 			// VanillaPlugin already handles transform and trim recipes natively.
@@ -396,6 +413,9 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 							outputs.addAll(stack.getEmiStacks());
 						}
 					}
+					EmiLog.info("[JEMI] Smithing recipe " + recipe.id()
+						+ " (" + value.getClass().getSimpleName() + ")"
+						+ ": inputs=" + inputs.size() + " outputs=" + outputs.size());
 					if (inputs.stream().anyMatch(i -> !i.isEmpty()) && outputs.stream().anyMatch(o -> !o.isEmpty())) {
 						EmiIngredient template = inputs.size() > 0 ? inputs.get(0) : EmiStack.EMPTY;
 						EmiIngredient base = inputs.size() > 1 ? inputs.get(1) : EmiStack.EMPTY;
@@ -431,12 +451,30 @@ public class JemiPlugin implements IModPlugin, EmiPlugin {
 						replacements.add(replacement);
 						registry.addRecipe(replacement);
 					}
+				} else {
+					EmiLog.info("[JEMI] Smithing recipe " + recipe.id()
+						+ " (" + value.getClass().getSimpleName() + ") is not handled by JEI category");
 				}
 			} catch (Throwable t) {
-				EmiLog.error("[JEMI] Exception thrown setting JEI smithing recipe", t);
+				EmiLog.error("[JEMI] Exception thrown setting JEI smithing recipe " + recipe.id(), t);
 			}
 		}
-		registry.removeRecipes(r -> r instanceof EmiSmithingRecipe && replaced.contains(r.getId()) && !replacements.contains(r));
+		// Remove VanillaPlugin's empty-output smithing recipes that we replaced,
+		// plus any smithing recipe with an empty output that no replacement was
+		// created for (avoids showing "no result" recipes).
+		registry.removeRecipes(r -> {
+			if (!(r instanceof EmiSmithingRecipe)) {
+				return false;
+			}
+			if (replacements.contains(r)) {
+				return false;
+			}
+			if (replaced.contains(r.getId())) {
+				return true;
+			}
+			// Also remove smithing recipes with completely empty output
+			return r.getOutputs().stream().allMatch(EmiStack::isEmpty);
+		});
 	}
 
 	@SuppressWarnings({"unchecked"})

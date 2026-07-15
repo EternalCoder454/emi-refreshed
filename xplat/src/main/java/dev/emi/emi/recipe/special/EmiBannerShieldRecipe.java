@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -60,6 +61,10 @@ public class EmiBannerShieldRecipe extends EmiPatternCraftingRecipe {
 		}
 
 		stack.set(DataComponents.BANNER_PATTERNS, pattern);
+		// Match vanilla ShieldDecorationRecipe, which copies the banner's
+		// base color onto the shield result so the displayed stack matches
+		// the actual crafting output.
+		stack.set(DataComponents.BASE_COLOR, DyeColor.byId(base));
 
 		return EmiStack.of(stack);
 	}

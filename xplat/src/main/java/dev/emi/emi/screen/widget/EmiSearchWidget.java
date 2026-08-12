@@ -165,6 +165,7 @@ public class EmiSearchWidget extends EditBox {
 
 	@Override
 	public boolean isFocused() {
+		super.isFocused();
 		return isFocused;
 	}
 

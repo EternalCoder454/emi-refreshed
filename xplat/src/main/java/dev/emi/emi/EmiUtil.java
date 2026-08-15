@@ -4,7 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.resources.Identifier;
@@ -57,8 +59,22 @@ public class EmiUtil {
 		return prefix + id.getNamespace() + "." + id.getPath().replace('/', '.');
 	}
 
+	// Resolving a namespace to a display name walks the loader's mod list, and on a miss does it
+	// twice and then allocates through capitalizeFully. Search baking calls this once per stack,
+	// so on a large pack it runs many thousands of times over a few dozen distinct namespaces.
+	// Mod names cannot change while the game is running, so memoise them.
+	private static final Map<String, String> MOD_NAME_CACHE = new ConcurrentHashMap<>();
+
 	public static String getModName(String namespace) {
-		return EmiAgnos.getModName(namespace);
+		String cached = MOD_NAME_CACHE.get(namespace);
+		if (cached != null) {
+			return cached;
+		}
+		String name = EmiAgnos.getModName(namespace);
+		if (name != null) {
+			MOD_NAME_CACHE.put(namespace, name);
+		}
+		return name;
 	}
 
 	public static List<String> getStackTrace(Throwable t) {

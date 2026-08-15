@@ -2,6 +2,8 @@ package dev.emi.emi.search;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -134,14 +136,22 @@ public class EmiSearch {
 		search(EmiScreenManager.search.getValue());
 	}
 
+	// Every keystroke in the search box starts a search. This used to allocate a fresh OS thread
+	// each time, so typing a word spawned a thread per character, each scanning the stack list
+	// until it noticed it had been superseded. A single reusable thread does the same work: the
+	// newest query still wins through the currentWorker check, and superseded queries now cost
+	// almost nothing because they bail before scanning anything.
+	private static final ExecutorService SEARCH_EXECUTOR = Executors.newSingleThreadExecutor(runnable -> {
+		Thread thread = new Thread(runnable, "EMI Search");
+		thread.setDaemon(true);
+		return thread;
+	});
+
 	public static void search(String query) {
 		synchronized (EmiSearch.class) {
 			SearchWorker worker = new SearchWorker(query, EmiScreenManager.getSearchSource());
 			currentWorker = worker;
-			
-			searchThread = new Thread(worker);
-			searchThread.setDaemon(true);
-			searchThread.start();
+			SEARCH_EXECUTOR.execute(worker);
 		}
 	}
 
@@ -260,6 +270,15 @@ public class EmiSearch {
 
 		@Override
 		public void run() {
+			// Queries queued behind a newer one are dead on arrival, so drop them before doing
+			// any work at all.
+			if (this != currentWorker) {
+				return;
+			}
+			// ItemStackMixin compares against this by identity to suppress the mod id suffix
+			// while tooltips are being built for search, so it has to point at the thread that
+			// is actually running the query.
+			searchThread = Thread.currentThread();
 			try {
 				CompiledQuery compiled = new CompiledQuery(query);
 				compiledQuery = compiled;

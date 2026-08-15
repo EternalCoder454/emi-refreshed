@@ -315,6 +315,8 @@
   "emi.grinding.experience": "%s - %s XP",
   "emi.fuel_time.items": "Smelts %s item(s)",
 
+  "emi.category.ae2.inscriber": "Inscriber",
+  "emi.category.ae2.charger": "Charger",
   "emi.category.minecraft.crafting": "Crafting",
   "emi.category.minecraft.smelting": "Smelting",
   "emi.category.minecraft.blasting": "Blasting",

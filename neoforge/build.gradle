@@ -56,6 +56,16 @@ repositories {
 			includeGroup "curse.maven"
 		}
 	}
+	exclusiveContent {
+		forRepository {
+			maven {
+				url "https://api.modrinth.com/maven"
+			}
+		}
+		filter {
+			includeGroup "maven.modrinth"
+		}
+	}
 }
 
 configurations {
@@ -73,6 +83,10 @@ dependencies {
 
 	common(project(path: ":xplat")) { transitive = false }
 	shadowCommon(project(path: ":xplat", configuration: "transformProductionNeoForge")) { transitive = false }
+
+	// Built in AE2 support. Compile only: the integration is gated behind a mod loaded check and
+	// stays inert, and unresolved, when AE2 is absent.
+	compileOnly "maven.modrinth:ae2:${rootProject.ae2_version}"
 
 	localRuntime "curse.maven:jei-238222:8419117"
 	localRuntime "curse.maven:refined-storage-243076:8211383"

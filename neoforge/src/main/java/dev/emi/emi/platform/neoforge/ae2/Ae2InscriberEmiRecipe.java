@@ -47,6 +47,18 @@ public class Ae2InscriberEmiRecipe implements EmiRecipe {
 		this.inputs = List.copyOf(inputs);
 	}
 
+	/**
+	 * Which press slots this recipe actually uses. The handler needs this to line the crafting
+	 * slots up with {@link #getInputs()}, which omits the empty ones.
+	 */
+	public boolean hasTop() {
+		return !top.isEmpty();
+	}
+
+	public boolean hasBottom() {
+		return !bottom.isEmpty();
+	}
+
 	@Override
 	public EmiRecipeCategory getCategory() {
 		return Ae2Categories.INSCRIBER;

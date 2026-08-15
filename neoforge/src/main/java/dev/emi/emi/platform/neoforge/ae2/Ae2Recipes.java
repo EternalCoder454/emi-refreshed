@@ -8,6 +8,7 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 
 import appeng.core.definitions.AEBlocks;
+import appeng.menu.implementations.InscriberMenu;
 import appeng.recipes.AERecipeTypes;
 
 import dev.emi.emi.api.EmiRegistry;
@@ -26,6 +27,7 @@ public class Ae2Recipes {
 		registry.addCategory(Ae2Categories.INSCRIBER);
 		registry.addWorkstation(Ae2Categories.INSCRIBER, EmiStack.of(AEBlocks.INSCRIBER.stack()));
 		add(registry, AERecipeTypes.INSCRIBER, Ae2Categories.INSCRIBER, Ae2InscriberEmiRecipe::new);
+		registry.addRecipeHandler(InscriberMenu.TYPE, new Ae2InscriberRecipeHandler());
 
 		registry.addCategory(Ae2Categories.CHARGER);
 		registry.addWorkstation(Ae2Categories.CHARGER, EmiStack.of(AEBlocks.CHARGER.stack()));

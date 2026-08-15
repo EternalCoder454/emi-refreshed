@@ -55,6 +55,9 @@ public class EmiSearch {
 	public static SuffixArray<EmiStack> aliases;
 
 	public static void bake() {
+		// The reload log times every other phase but this one, which left the most expensive part
+		// of a reload invisible and impossible to compare between runs. One line per reload.
+		long bakeStart = System.currentTimeMillis();
 		SuffixArray<SearchStack> names = new SuffixArray<>();
 		SuffixArray<SearchStack> tooltips = new SuffixArray<>();
 		SuffixArray<SearchStack> mods = new SuffixArray<>();
@@ -130,6 +133,8 @@ public class EmiSearch {
 		EmiSearch.mods = mods;
 		EmiSearch.aliases = aliases;
 		EmiSearch.bakedStacks = bakedStacks;
+		EmiLog.info("Baked search for " + bakedStacks.size() + " stacks in "
+			+ (System.currentTimeMillis() - bakeStart) + "ms");
 	}
 
 	public static void update() {

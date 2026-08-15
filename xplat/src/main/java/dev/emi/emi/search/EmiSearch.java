@@ -84,15 +84,19 @@ public class EmiSearch {
 				}
 				Identifier id = stack.getId();
 				if (id != null) {
-					mods.add(searchStack, EmiUtil.getModName(id.getNamespace()).toLowerCase());
-					mods.add(searchStack, id.getNamespace().toLowerCase());
-					names.add(searchStack, id.getPath().toLowerCase());
+					// Identifier only permits [a-z0-9._-] in a namespace and [a-z0-9/._-] in a
+					// path, so both are already lowercase and toLowerCase would just be a scan.
+					mods.add(searchStack, EmiUtil.getLowercaseModName(id.getNamespace()));
+					mods.add(searchStack, id.getNamespace());
+					names.add(searchStack, id.getPath());
 				}
-				if (stack.getItemStack().getItem() == Items.ENCHANTED_BOOK) {
+				// getItemStack allocates a fresh ItemStack and wraps the item as a registry
+				// holder, which is a lot of work to answer a question the key already answers.
+				if (stack.getKey() == Items.ENCHANTED_BOOK) {
 					for (Holder<Enchantment> e : stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY).keySet()) {
 						Identifier eid = EmiPort.getEnchantmentRegistry().getKey(e.value());
 						if (eid != null && !eid.getNamespace().equals("minecraft")) {
-							mods.add(searchStack, EmiUtil.getModName(eid.getNamespace()).toLowerCase());
+							mods.add(searchStack, EmiUtil.getLowercaseModName(eid.getNamespace()));
 						}
 					}
 				}

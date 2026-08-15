@@ -64,6 +64,7 @@ public class EmiUtil {
 	// so on a large pack it runs many thousands of times over a few dozen distinct namespaces.
 	// Mod names cannot change while the game is running, so memoise them.
 	private static final Map<String, String> MOD_NAME_CACHE = new ConcurrentHashMap<>();
+	private static final Map<String, String> LOWERCASE_MOD_NAME_CACHE = new ConcurrentHashMap<>();
 
 	public static String getModName(String namespace) {
 		String cached = MOD_NAME_CACHE.get(namespace);
@@ -75,6 +76,28 @@ public class EmiUtil {
 			MOD_NAME_CACHE.put(namespace, name);
 		}
 		return name;
+	}
+
+	/**
+	 * Display names do contain uppercase, unlike namespaces, so lowercasing them really does
+	 * allocate a new string. Search baking wants the lowercase form once per stack across only a
+	 * few dozen distinct namespaces, so cache that form rather than recomputing it every time.
+	 */
+	public static String getLowercaseModName(String namespace) {
+		String cached = LOWERCASE_MOD_NAME_CACHE.get(namespace);
+		if (cached != null) {
+			return cached;
+		}
+		String name = getModName(namespace);
+		if (name == null) {
+			return null;
+		}
+		// Default locale, not ROOT, to stay consistent with how every query lowercases its input.
+		// A mismatch here would silently break mod name search wherever the two disagree, such as
+		// the dotted and dotless I in a Turkish locale.
+		String lower = name.toLowerCase();
+		LOWERCASE_MOD_NAME_CACHE.put(namespace, lower);
+		return lower;
 	}
 
 	public static List<String> getStackTrace(Throwable t) {

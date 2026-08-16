@@ -1,3 +1,25 @@
+# EMI Refreshed, NeoForge 26.1.2 port
+
+> **Original author: [Emi](https://github.com/emilyploszaj/emi)**
+> EMI is Emi's work and all credit for it belongs to them. This is an unofficial port, not
+> affiliated with or endorsed by the author.
+>
+> Built on top of [link-fgfgui's 26.1 branch](https://github.com/link-fgfgui/emi), whose porting work
+> this builds directly on.
+>
+> **Licence: MIT** (see `LICENSE`), which permits this fork and its redistribution.
+
+## What this fork changes
+
+- Runs on **NeoForge 26.1.2** / Java 25.
+- Search runs on a dedicated single thread executor rather than spawning a thread per query, and the
+  bake loop skips work that the `Identifier` contract already guarantees.
+- Mod name lookups cached, using the default locale deliberately so it matches query side casing.
+- **AE2 integration built in**: inscriber and charger categories, with recipe transfer so the plus
+  button fills an inscriber directly. Guarded so it is inert without AE2 installed.
+- Search bake timing logged, so changes can be measured rather than guessed at.
+---
+
 # EMI
 EMI is a featureful and accessible item and recipe viewer for Minecraft.
 

@@ -1,5 +1,7 @@
 # EMI Refreshed, NeoForge 26.1.2 port
 
+<img src="xplat/src/main/resources/icon.png" alt="EMI Refreshed" width="180">
+
 > **Original author: [Emi](https://github.com/emilyploszaj/emi)**
 > EMI is Emi's work and all credit for it belongs to them. This is an unofficial port, not
 > affiliated with or endorsed by the author.

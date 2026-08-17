@@ -97,6 +97,10 @@ public class EmiScreenManager {
 	private static List<? extends EmiIngredient> searchedStacks = List.of();
 	private static int lastWidth, lastHeight;
 	private static List<Bounds> lastExclusion;
+	// Reused by recalculate. That method runs from both drawBackground and render, so twice a frame,
+	// and in the steady state it computes the exclusion areas only to find them unchanged. Filling a
+	// list we already own means the common path allocates nothing at all.
+	private static final List<Bounds> exclusionScratch = Lists.newArrayList();
 	private static StackBatcher.ClaimedCollection batchers = new StackBatcher.ClaimedCollection();
 	private static List<SidebarPanel> panels = List.of(
 			new SidebarPanel(SidebarSide.LEFT, EmiConfig.leftSidebarPages),
@@ -148,8 +152,10 @@ public class EmiScreenManager {
 			return;
 		}
 		Screen screen = base.screen();
-		List<Bounds> exclusion = EmiExclusionAreas.getExclusion(base);
-		if (lastWidth == screen.width && lastHeight == screen.height && exclusion.size() == lastExclusion.size()) {
+		List<Bounds> exclusion = exclusionScratch;
+		EmiExclusionAreas.getExclusion(base, exclusion);
+		if (lastWidth == screen.width && lastHeight == screen.height
+				&& lastExclusion != null && exclusion.size() == lastExclusion.size()) {
 			boolean same = true;
 			for (int i = 0; i < exclusion.size(); i++) {
 				Bounds a = exclusion.get(i);
@@ -170,7 +176,8 @@ public class EmiScreenManager {
 		}
 		lastWidth = screen.width;
 		lastHeight = screen.height;
-		lastExclusion = exclusion;
+		// Copy, never alias: exclusion IS the scratch list and the next call clears it.
+		lastExclusion = Lists.newArrayList(exclusion);
 
 		Bounds bounds = base.bounds();
 		int left = Math.max(ENTRY_SIZE * 2, bounds.left());

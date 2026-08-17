@@ -1,82 +1,56 @@
-# EMI Refreshed, NeoForge 26.1.2 port
+# EMI Refreshed, NeoForge 26.1.2
 
 <img src="xplat/src/main/resources/icon.png" alt="EMI Refreshed" width="180">
 
-> **Original author: [Emi](https://github.com/emilyploszaj/emi)**
-> EMI is Emi's work and all credit for it belongs to them. This is an unofficial port, not
-> affiliated with or endorsed by the author.
->
-> Built on top of [link-fgfgui's 26.1 branch](https://github.com/link-fgfgui/emi), whose porting work
-> this builds directly on.
->
-> **Licence: MIT** (see `LICENSE`), which permits this fork and its redistribution.
+A personal port of EMI, the item and recipe viewer, to **Minecraft 26.1.2 on NeoForge** with Java 25,
+plus search performance work and built-in Applied Energistics 2 support.
 
 ## What this fork changes
 
+**Platform**
+
 - Runs on **NeoForge 26.1.2** / Java 25.
-- Search runs on a dedicated single thread executor rather than spawning a thread per query, and the
-  bake loop skips work that the `Identifier` contract already guarantees.
-- Mod name lookups cached, using the default locale deliberately so it matches query side casing.
-- **AE2 integration built in**: inscriber and charger categories, with recipe transfer so the plus
-  button fills an inscriber directly. Guarded so it is inert without AE2 installed.
-- Search bake timing logged, so changes can be measured rather than guessed at.
+
+**Search performance**
+
+- Search runs on a **dedicated single-thread executor** rather than spawning a fresh thread per
+  query. Typing a word used to start and abandon a thread per keystroke.
+- The bake loop skips work the `Identifier` contract already guarantees. A namespace only permits
+  `[a-z0-9._-]` and a path `[a-z0-9/._-]`, so both are lowercase by construction and calling
+  `toLowerCase` on them was a scan that could never change anything.
+- Mod name lookups are cached. Deliberately using the **default locale** rather than `Locale.ROOT`,
+  because the query side lowercases with the default locale, and mismatching those two would break
+  mod-name search in a Turkish locale in a way that is very hard to trace.
+- Bake timing is logged, so changes here can be measured rather than guessed at.
+
+**AE2 integration, built in**
+
+- **Inscriber** and **Charger** categories, so AE2 recipes show up without a separate bridge mod.
+- **Recipe transfer**: the plus button fills an inscriber directly. Slots are resolved through
+  `SlotSemantics` (`INSCRIBER_PLATE_TOP`, `MACHINE_INPUT`, `INSCRIBER_PLATE_BOTTOM`) rather than raw
+  indices, so it does not silently break if AE2 reorders its menu.
+- Every recipe is parsed inside its own try/catch, so one malformed recipe logs a warning instead of
+  taking the whole plugin down.
+- Entirely inert without AE2 installed: the entrypoint references nothing from AE2 until it has
+  confirmed the mod is loaded.
+
+## Building
+
+Requires JDK 25.
+
+```
+gradlew :neoforge:build
+```
+
 ---
 
-# EMI
-EMI is a featureful and accessible item and recipe viewer for Minecraft.
+## This is a fork
 
-![EMI Interface](https://user-images.githubusercontent.com/14813658/224562247-1588064e-39ef-475a-9108-d7a357af6939.png)
+**EMI is created and maintained by [Emi](https://github.com/emilyploszaj/emi).** All credit for it
+belongs to them. This repository is an unofficial personal port, not affiliated with or endorsed by
+the author. It also builds directly on the porting work in
+[link-fgfgui's 26.1 branch](https://github.com/link-fgfgui/emi).
 
-![Recipe Tree](https://user-images.githubusercontent.com/14813658/224562258-1a5ee67a-fd7f-489f-9eed-ae67c184ddac.png)
-
-## Developers
-To add EMI to your project as a dependency you need to add the following to your `build.gradle`:
-```gradle
-repositories {
-	maven {
-		name = "TerraformersMC"
-		url = "https://maven.terraformersmc.com/"
-	}
-}
-```
-
-How EMI gets added to your dependencies varies based on modloader and setup.
-The Gradle property `emi_version` should be something like `1.0.0+1.19.4` with EMI's version and Minecraft's version.
-Here are common dependency setups for different loaders and build systems.
-
-```gradle
-dependencies {
-	// Fabric
-	modCompileOnly "dev.emi:emi-fabric:${emi_version}:api"
-	modLocalRuntime "dev.emi:emi-fabric:${emi_version}"
-
-	// Forge (see below block as well if you use Forge Gradle)
-	compileOnly fg.deobf("dev.emi:emi-forge:${emi_version}:api")
-	runtimeOnly fg.deobf("dev.emi:emi-forge:${emi_version}") 
-
-	// NeoForge
-	compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
-	runtimeOnly "dev.emi:emi-neoforge:${emi_version}" 
-
-	// Architectury
-	modCompileOnly "dev.emi:emi-xplat-intermediary:${emi_version}:api"
-
-	// MultiLoader Template/VanillaGradle
-	compileOnly "dev.emi:emi-xplat-mojmap:${emi_version}:api"
-}
-```
-
-For Forge Gradle users, you will need to enable Mixin refmaps in your client sourceset. This can be done by adding 2 lines inside of your client runs, to look like below.
-
-```gradle
-runs {
-	client {
-		// Add these two lines
-		property 'mixin.env.remapRefMap', 'true'
-		property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-
-		// The rest of the code that was already here
-		// ...
-	}
-}
-```
+**Download EMI from the official project** or its Modrinth listing. Builds here are untested outside
+my own setup and will lag upstream. EMI is MIT licensed and this fork is distributed under the same
+terms; see `LICENSE`.
